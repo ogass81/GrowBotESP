@@ -9,7 +9,6 @@
 	#include "WProgram.h"
 #endif
 #include "Definitions.h"
-#include <RCSwitch.h>
 #include <ArduinoJson.h>
 #include <RCSwitch.h>
 #include "RealTimeClock.h"
@@ -18,13 +17,12 @@
 
 extern LogEngine logengine;
 extern RealTimeClock internalRTC;
-extern bool haltstate;
 
 class RCSocketCodeSet {
 public:
-	uint8_t id;
-	bool active;
-	String title;
+	uint8_t id = 0;
+	bool active = false;
+	String title = "";
 	
 	int repeat = 0;
 
@@ -65,11 +63,11 @@ public:
 };
 
 class RCSocketController : public RCSwitch {
-private:
+public:
 	uint8_t receiver_pin;
 	uint8_t transmitter_pin;
 	uint8_t code_set_ptr = 0;
-public:
+
 	RCSocketCodeSet *socketcode[RC_SOCKETS];
 	bool learning = false;
 
@@ -107,4 +105,3 @@ public:
 };
 
 #endif
-

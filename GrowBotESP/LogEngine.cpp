@@ -76,7 +76,7 @@ LogEngine::LogEngine()
 
 void LogEngine::begin()
 {
-	this->counter = fileLength("log.json");
+	this->counter = fileLength("/log.json");
 }
 
 void LogEngine::addLogEntry(LogTypes type, String origin, String message, String keys[], String values[], uint8_t size)
@@ -103,13 +103,13 @@ void LogEngine::serializeJSON(char * json, size_t maxSize, int end, int count)
 
 	if (count == 0) count = LOGBUFFER_SIZE;
 	
-	readLinesFromFile("log.json", counter, end, count, json, JSONCHAR_SIZE);
+	readLinesFromFile("/log.json", counter, end, count, json, JSONCHAR_SIZE);
 }
 
 void LogEngine::reset()
 {
 	saveToFile();
-	resetFile("log.json");
+	resetFile("/log.json");
 	this->counter = 0;
 }
 
@@ -120,7 +120,7 @@ void LogEngine::saveToFile()
 	for (uint8_t i = 0; i < this->entry_ptr; i++) {
 		if(log_buffer[i] != nullptr) output[i] = log_buffer[i]->serializeJSON();
 	}
-	appendLinesToFile("log.json", output, this->entry_ptr);
+	appendLinesToFile("/log.json", output, this->entry_ptr);
 
 
 	//Free Memory
@@ -132,11 +132,11 @@ void LogEngine::saveToFile()
 
 bool LogEngine::appendLinesToFile(const char * filename, String data[], uint8_t size)
 {
-	File file;
-
 	bool success = true;
 
-	if (file.open(filename, O_CREAT | O_APPEND | O_WRITE)) {
+	File file = SD.open(filename, FILE_APPEND);
+
+	if (file) {
 		//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("File Open"), "", "", "");
 		led[2]->turnOn();
 		//Settings
@@ -146,7 +146,7 @@ bool LogEngine::appendLinesToFile(const char * filename, String data[], uint8_t 
 
 		led[2]->turnOff();
 		file.close();
-		LOGDEBUG2(F("FileSystem"), F("appendLinesToFile()"), F("OK: Saved Log Entries to file"), String(filename), size, "");
+		LOGDEBUG2(F("[FileSystem]"), F("appendLinesToFile()"), F("OK: Saved Log Entries to file"), String(filename), size, "");
 	}
 	else {
 		LOGMSG(F("[FileSystem]"), F("ERROR: Could not write to file"), String(filename), "", "");
@@ -157,7 +157,7 @@ bool LogEngine::appendLinesToFile(const char * filename, String data[], uint8_t 
 
 void LogEngine::readLinesFromFile(const char* filename, int counter, int end, int count, char * json, int size)
 {
-	File file;
+	File file = SD.open(filename, FILE_READ);
 
 	DynamicJsonBuffer jsonBuffer;
 	JsonObject& container = jsonBuffer.createObject();
@@ -175,7 +175,7 @@ void LogEngine::readLinesFromFile(const char* filename, int counter, int end, in
 	start = end - count;
 	if (start < 0) start = 0;
 
-	if (file.open(filename, O_READ)) {
+	if (file) {
 
 		while (file.available()) {
 			//Buffer Needs to be here ...
@@ -203,11 +203,11 @@ void LogEngine::readLinesFromFile(const char* filename, int counter, int end, in
 
 int LogEngine::fileLength(const char * filename)
 {
-	File file;
+	File file = SD.open(filename, FILE_READ);
 
 	int counter = 0;
 
-	if (file.open(filename, O_READ)) {
+	if (file) {
 		while (file.available()) {
 			file.readStringUntil('\n');
 			counter++;
@@ -224,7 +224,7 @@ int LogEngine::fileLength(const char * filename)
 
 bool LogEngine::resetFile(const char * filename)
 {
-	if (sd.remove(filename)) {
+	if (SD.remove(filename)) {
 		LOGMSG(F("[FileSystem]"), F("OK: Reset log file"), String(filename), "", "");
 		return true;
 	}

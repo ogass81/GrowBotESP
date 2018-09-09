@@ -9,13 +9,12 @@
 	#include "WProgram.h"
 #endif
 #include "Definitions.h"
-#include <RTCDue.h>
 #include <TimeLib.h>
 
 extern long sensor_cycles;
+extern bool haltstate;
 
-
-class RealTimeClock : public RTCDue {
+class RealTimeClock {
 
 public:
 	//Name
@@ -24,7 +23,9 @@ public:
 	int timezone_offset;
 	tmElements_t defaulttime;
 
-	RealTimeClock(int src);
+	time_t haltstate_begin;
+
+	RealTimeClock();
 
 	void updateTime(tmElements_t timeset, bool adjust);
 	void updateTime(time_t timestamp, bool adjust);
@@ -36,13 +37,20 @@ public:
 	time_t static toEpochTime(uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t second);
 	time_t static toEpochTime(int year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t second);
 
+	/*
 	long getEpochTime();
+	*/
 
 	//UI Output
 	String static printDate(time_t timestamp);
 	String static printTime(time_t timestamp);
 
+	/*
 	void syncSensorCycles();
+	*/
+
+	void switch_haltstate();
+
 	void syncSensorCycles(uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t second);
 	void syncSensorCycles(int year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t second);
 	void syncSensorCycles(time_t timestamp);

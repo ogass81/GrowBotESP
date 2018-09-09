@@ -6,7 +6,7 @@
 RCSocketCodeSet::RCSocketCodeSet(uint8_t id, int repeat)
 {
 	this->id = id;
-	this->title = String("Signal " + id);
+	this->title = String("Signal " + String(id));
 	this->active = false;
 	this->repeat = repeat;
 
@@ -171,7 +171,6 @@ bool RCSocketCodeSet::deserializeJSON(JsonObject &data)
 		for (uint8_t j = 0; j < RC_SIGNALS; j++) if (data["delay"][j] != "") nReceivedDelay[j] = data["delay"][j];
 		for (uint8_t j = 0; j < RC_SIGNALS; j++) if (data["length"][j] != "") nReceivedBitlength[j] = data["length"][j];
 		for (uint8_t j = 0; j < RC_SIGNALS; j++) if (data["proto"][j] != "") nReceivedProtocol[j] = data["proto"][j];
-
 		LOGDEBUG2(F("[Sensor]"), F("deserializeJSON()"), F("OK: Sub-routine deserialized codeset"), String(data["id"].asString()), "", "");
 	}
 	else {
@@ -229,7 +228,8 @@ void RCSocketController::learningmode_on()
 
 	receiver_on();
 	learning = true;
-	haltstate = true;
+
+	internalRTC.switch_haltstate();
 }
 
 void RCSocketController::learningmode_on(int set)
@@ -245,8 +245,8 @@ void RCSocketController::learningmode_off()
 	if (learning == true) {
 		receiver_off();
 		learning = false;
-		haltstate = false;
-		internalRTC.syncSensorCycles();
+		internalRTC.switch_haltstate();
+
 		LOGMSG(F("[RCSocketController]"), F("OK: Learning Mode set OFF"), String(sensor_cycles), "@", String(RealTimeClock::printTime(sensor_cycles)));
 
 		String keys[] = { "" };
@@ -408,6 +408,8 @@ void RCSocketController::serializeJSON(uint8_t set, char * json, size_t maxSize,
 void RCSocketController::serializeJSON(char * json, size_t maxSize, Scope scope)
 {
 	DynamicJsonBuffer jsonBuffer;
+
+	jsonBuffer.clear();
 
 	JsonObject& controller = jsonBuffer.createObject();
 	

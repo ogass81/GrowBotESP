@@ -9,17 +9,16 @@
 	#include "WProgram.h"
 #endif
 
-#include <DHT_U.h>
-#include <DHT.h>
-#include <ArduinoJson.h>
 #include "Definitions.h"
-#include "SerializationInterface.h"
-
+#include <DHT.h>
+#include <BME280I2C.h>
+#include <Ultrasonic.h>
+#include <ArduinoJson.h>
 #include "LogEngine.h"
-extern LogEngine logengine;
 
-extern DHT dht;
+extern BME280I2C bme;
 extern long sensor_cycles;
+extern LogEngine logengine;
 
 //Sensor Interface
 class Sensor {
@@ -158,6 +157,28 @@ public:
 	bool compareWithValue(RelOp relop, Interval interval, ReturnType value, int8_t tolerance);
 };
 
+
+template <class ReturnType>
+class CapacityMoistureSensor : public BaseSensor<ReturnType> {
+public:
+	uint8_t resolution;
+	uint8_t width;
+	adc_attenuation_t attentuation;
+
+	CapacityMoistureSensor(uint8_t pin, uint8_t resolution, uint8_t width, adc_attenuation_t attentuation, bool active, String title, String unit, ReturnType nan_val, ReturnType min_val, ReturnType max_val, ReturnType lower_threshold, ReturnType upper_threshold);
+	ReturnType readRaw();
+	ReturnType readValue();
+	String getValue();
+
+	void setUpperThreshold();
+	void setLowerThreshold();
+
+	void reset();
+
+	bool compareWithValue(RelOp relop, Interval interval, ReturnType value, int8_t tolerance);
+};
+
+
 class DHTTemperature : public BaseSensor<int8_t> {
 private: 
 	DHT *dht = NULL;
@@ -175,6 +196,23 @@ public:
 	bool compareWithValue(RelOp relop, Interval interval, int value, int8_t tolerance);
 };
 
+class BMETemperature : public BaseSensor<float> {
+private:
+	BME280I2C *bme = NULL;
+public:
+	BMETemperature(BME280I2C *bme, bool active, String title, String unit, int8_t nan_val, int8_t min_val, int8_t max_val);
+	float readRaw();
+	float readValue();
+	String getValue();
+
+	void setUpperThreshold();
+	void setLowerThreshold();
+
+	void reset();
+
+	bool compareWithValue(RelOp relop, Interval interval, int value, int8_t tolerance);
+};
+
 class DHTHumidity : public BaseSensor<int8_t> {
 private:
 	DHT *dht = NULL;
@@ -182,6 +220,76 @@ public:
 	DHTHumidity(DHT *dht, bool active, String title, String unit, int8_t nan_val, int8_t min_val, int8_t max_val);
 	int8_t readRaw();
 	int8_t readValue();
+	String getValue();
+
+	void setUpperThreshold();
+	void setLowerThreshold();
+
+	void reset();
+
+	bool compareWithValue(RelOp relop, Interval interval, int value, int8_t tolerance);
+};
+
+class BMEHumidity : public BaseSensor<float> {
+private:
+	BME280I2C *bme = NULL;
+public:
+	BMEHumidity(BME280I2C *bme, bool active, String title, String unit, int8_t nan_val, int8_t min_val, int8_t max_val);
+	float readRaw();
+	float readValue();
+	String getValue();
+
+	void setUpperThreshold();
+	void setLowerThreshold();
+
+	void reset();
+
+	bool compareWithValue(RelOp relop, Interval interval, int value, int8_t tolerance);
+};
+
+class BMEPressure : public BaseSensor<float> {
+private:
+	BME280I2C *bme = NULL;
+public:
+	BMEPressure(BME280I2C *bme, bool active, String title, String unit, int8_t nan_val, int8_t min_val, int8_t max_val);
+	float readRaw();
+	float readValue();
+	String getValue();
+
+	void setUpperThreshold();
+	void setLowerThreshold();
+
+	void reset();
+
+	bool compareWithValue(RelOp relop, Interval interval, int value, int8_t tolerance);
+};
+
+
+class HeightSensor : public BaseSensor<int> {
+private:
+	Ultrasonic *distance1 = NULL;
+	Ultrasonic *distance2 = NULL;
+public:
+	HeightSensor(Ultrasonic *distance1, Ultrasonic *distance2, bool active, String title, String unit, int nan_val, int min_val, int max_val);
+	int readRaw();
+	int readValue();
+	String getValue();
+
+	void setUpperThreshold();
+	void setLowerThreshold();
+
+	void reset();
+
+	bool compareWithValue(RelOp relop, Interval interval, int value, int8_t tolerance);
+};
+
+class DistanceLampSensor : public BaseSensor<int> {
+private:
+	Ultrasonic *distance = NULL;
+public:
+	DistanceLampSensor(Ultrasonic *distance, bool active, String title, String unit, int nan_val, int min_val, int max_val);
+	int readRaw();
+	int readValue();
 	String getValue();
 
 	void setUpperThreshold();

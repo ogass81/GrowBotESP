@@ -8,7 +8,8 @@
 #else
 	#include "WProgram.h"
 #endif
-#include <WiFiEsp.h>
+#include "Definitions.h"
+#include <WiFi.h>
 #include <ArduinoJson.h>
 #include "RealTimeClock.h"
 #include "Sensor.h"
@@ -44,28 +45,23 @@ public:
 	void generateList(String object_type, uint8_t id, char *json, int size);
 };
 
-class WebTimeClient : public WiFiEspClient {
+class WebTimeClient : public WiFiClient {
 public:
 	unsigned long getWebTime();
 
 };
 
-class WebServer : public WiFiEspServer {
+class WebServer : public WiFiServer {
 private: 
 	//Create POST Request with JSON in HTTP body
 	String createPostRequest(char *json);
 	//Create HTTP Response with HTML Body
 	String createHtmlResponse(String code, String text);
 	//Breakup payload and send as packages
-	void sendPayload(WiFiEspClient client, String payload);
+	void sendPayload(WiFiClient client, String payload);
 
 public:
 	WebServer();
 	void checkConnection();
-};
-
-class ExtendedWebCliebt : public WiFiEspClient {
-
-
 };
 #endif

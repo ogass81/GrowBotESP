@@ -1132,6 +1132,258 @@ bool AnalogMoistureSensor<float>::compareWithValue(RelOp relop, Interval interva
 }
 
 
+
+//Capacity
+template<class ReturnType>
+CapacityMoistureSensor<ReturnType>::CapacityMoistureSensor(uint8_t pin, uint8_t resolution, uint8_t width, adc_attenuation_t attentuation, bool active, String title, String unit, ReturnType nan_val, ReturnType min_val, ReturnType max_val, ReturnType lower_threshold, ReturnType upper_threshold)
+{
+	this->pin = pin;
+	this->resolution = resolution;
+	this->width = width;
+	this->attentuation = attentuation;
+
+	this->active = active;
+	this->title = title;
+	this->type = SOILMOISTURE;
+	this->unit = unit;
+	this->nan_val = nan_val;
+	this->min_val = min_val;
+	this->max_val = max_val;
+
+	this->lower_threshold = lower_threshold;
+	this->upper_threshold = upper_threshold;
+
+	pinMode(pin, INPUT);
+}
+
+template<class ReturnType>
+ReturnType CapacityMoistureSensor<ReturnType>::readRaw()
+{
+	int dividend = 0;
+	int divisor = 0;
+	ReturnType adj_val;
+	ReturnType current_value;
+
+	//Set ADC resolution
+	analogReadResolution(resolution);
+	analogSetWidth(width);
+	analogSetPinAttenuation(this->pin, attentuation);
+
+	//Read 5 times just to make sure
+	for (uint8_t i = 0; i < 3; i++) {
+		delay(50);
+		current_value = analogRead(this->pin);
+		//LOGDEBUG(F("[Sensor]"), F("readValue()"), F("Info: Analog Moisture Raw Value"), String(current_value), "", "");
+		if (current_value != this->nan_val) {
+			dividend += current_value;
+			divisor++;
+		}
+	}
+
+	if (divisor > 0) {
+		adj_val = round(dividend / divisor);
+		//LOGDEBUG(F("[Sensor]"), F("readValue()"), F("Info: Analog Moisture Average Reading"), String(adj_val), "", "");
+	}
+	else adj_val = this->nan_val;
+
+	return ReturnType(adj_val);
+}
+
+template<class ReturnType>
+ReturnType CapacityMoistureSensor<ReturnType>::readValue()
+{
+	ReturnType adj_val;
+
+	adj_val = readRaw();
+
+	//Caluclate Percentage if NaN not set
+	if (adj_val != this->nan_val) {
+		if (adj_val >= this->upper_threshold) {
+			adj_val = ReturnType(0);
+		}
+		else if (adj_val <= this->lower_threshold) {
+			adj_val = ReturnType(100);
+		}
+		else {
+			adj_val = ReturnType(round(float(this->upper_threshold - adj_val) / float(this->upper_threshold - this->lower_threshold) * 100));
+		}
+	}
+	//LOGDEBUG(F("[Sensor]"), F("readValue()"), F("Info: Moisture Value % "), String(adj_val), String(this->lower_threshold), String(this->upper_threshold));
+	return adj_val;
+}
+
+template<>
+float CapacityMoistureSensor<float>::readRaw()
+{
+	float dividend = 0;
+	int divisor = 0;
+	float adj_val = 0;
+	float current_value = 0;
+
+	//Set ADC resolution
+	analogReadResolution(resolution);
+	analogSetWidth(width);
+	analogSetPinAttenuation(this->pin, attentuation);
+
+	//Read 5 times just to make sure
+	for (uint8_t i = 0; i < 3; i++) {
+		delay(50);
+		current_value = analogRead(this->pin);
+		//LOGDEBUG(F("[Sensor]"), F("readValue()"), F("Info: Analog Moisture Raw Value"), String(current_value), "", "");
+		if (current_value != nan_val) {
+			dividend += current_value;
+			divisor++;
+		}
+	}
+
+	if (divisor > 0) {
+		adj_val = dividend / divisor;
+		//LOGDEBUG(F("[Sensor]"), F("readValue()"), F("Info: Analog Moisture Average Raw"), String(adj_val), "", "");
+	}
+	else adj_val = nan_val;
+
+	return (float)adj_val;
+}
+
+template<>
+float CapacityMoistureSensor<float>::readValue()
+{
+	float adj_val = 0;
+
+	adj_val = readRaw();
+
+	//Caluclate Percentage if NaN not set
+	if (adj_val != nan_val) {
+		if (adj_val >= this->upper_threshold) adj_val = float(0);
+		else if (adj_val <= this->lower_threshold) adj_val = float(100);
+		else {
+			adj_val = float(float(adj_val - this->lower_threshold) / float(this->upper_threshold - this->lower_threshold) * 100);
+		}
+	}
+
+	LOGDEBUG(F("[Sensor]"), F("readValue()"), F("Info: Moisture Value % "), String(adj_val), String(this->upper_threshold), String(this->lower_threshold));
+	return adj_val;
+}
+
+
+template<class ReturnType>
+String CapacityMoistureSensor<ReturnType>::getValue()
+{
+	return String(readValue()) + String(this->unit);
+}
+
+template<class ReturnType>
+void CapacityMoistureSensor<ReturnType>::setUpperThreshold()
+{
+	this->upper_threshold = readRaw();
+	LOGDEBUG(F("[Sensor]"), F("setUpperThreshold()"), F("Info: Set Lower Threshold to "), String(this->upper_threshold), "", "");
+}
+
+template<class ReturnType>
+void CapacityMoistureSensor<ReturnType>::setLowerThreshold()
+{
+	this->lower_threshold = readRaw();
+	LOGDEBUG(F("[Sensor]"), F("setUpperThreshold()"), F("Info: Set Lower Threshold to "), String(this->lower_threshold), "", "");
+}
+
+template<class ReturnType>
+void CapacityMoistureSensor<ReturnType>::reset()
+{
+	this->lower_threshold = (ReturnType)0;
+	this->upper_threshold = (ReturnType)0;
+
+	this->minute_ptr = SENS_VALUES_MIN;
+	this->hour_ptr = SENS_VALUES_HOUR;
+	this->day_ptr = SENS_VALUES_DAY;
+	this->month_ptr = SENS_VALUES_MONTH;
+	this->year_ptr = SENS_VALUES_YEAR;
+
+	for (uint8_t i = 0; i < SENS_VALUES_MIN; i++) this->minute_values[i] = this->nan_val;
+	for (uint8_t i = 0; i < SENS_VALUES_HOUR; i++) this->hour_values[i] = this->nan_val;
+	for (uint8_t i = 0; i < SENS_VALUES_DAY; i++) this->day_values[i] = this->nan_val;
+	for (uint8_t i = 0; i < SENS_VALUES_MONTH; i++) this->month_values[i] = this->nan_val;
+	for (uint8_t i = 0; i < SENS_VALUES_YEAR; i++) this->year_values[i] = this->nan_val;
+}
+
+template<class ReturnType>
+bool CapacityMoistureSensor<ReturnType>::compareWithValue(RelOp relop, Interval interval, ReturnType value, int8_t tolerance)
+{
+	bool state;
+	int current_value = this->getAvgInt(interval);
+	float multi_low = (100.0f - (float)tolerance) / 100.0f;
+	float multi_high = (100.0f + (float)tolerance) / 100.0f;
+
+	int lower_boundery = multi_low * (float)value;
+	int upper_boundery = multi_high * (float)value;
+
+	LOGDEBUG2(F("[Sensor]"), F("compareWithValue()"), F("Info: Set Bounderies"), lower_boundery, upper_boundery, current_value);
+
+	if (current_value != this->nan_val) {
+		switch (relop) {
+		case EQUAL:
+			if (lower_boundery < upper_boundery && current_value >= lower_boundery && current_value <= upper_boundery) state = true;
+			else if (current_value <= lower_boundery && current_value >= upper_boundery) state = true;
+			else state = false;
+			break;
+		case NOTEQUAL:
+			if (lower_boundery < upper_boundery && current_value < lower_boundery && current_value > upper_boundery) state = true;
+			else if (current_value > lower_boundery && current_value < upper_boundery) state = true;
+			else state = false;
+			break;
+		case SMALLER:
+			if (current_value <= lower_boundery);
+			break;
+		case GREATER:
+			if (current_value > upper_boundery);
+			break;
+		}
+	}
+	else state = false;
+
+	return state;
+}
+
+template<>
+bool CapacityMoistureSensor<float>::compareWithValue(RelOp relop, Interval interval, float value, int8_t tolerance)
+{
+	bool state;
+	float current_value = getAvgFloat(interval);
+
+	float multi_low = (100.0f - (float)tolerance) / 100.0f;
+	float multi_high = (100.0f + (float)tolerance) / 100.0f;
+
+	float lower_boundery = multi_low * (float)value;
+	float upper_boundery = multi_high * (float)value;
+
+	LOGDEBUG2(F("[Sensor]"), F("compareWithValue()"), F("Info: Set Bounderies"), lower_boundery, upper_boundery, current_value);
+
+	if (current_value != this->nan_val) {
+		switch (relop) {
+		case EQUAL:
+			if (lower_boundery < upper_boundery && current_value >= lower_boundery && current_value <= upper_boundery) state = true;
+			else if (current_value <= lower_boundery && current_value >= upper_boundery) state = true;
+			else state = false;
+			break;
+		case NOTEQUAL:
+			if (lower_boundery < upper_boundery && current_value < lower_boundery && current_value > upper_boundery) state = true;
+			else if (current_value > lower_boundery && current_value < upper_boundery) state = true;
+			else state = false;
+			break;
+		case SMALLER:
+			if (current_value <= lower_boundery);
+			break;
+		case GREATER:
+			if (current_value > upper_boundery);
+			break;
+		}
+	}
+	else state = false;
+
+	return state;
+}
+
+
+
 template<>
 String AnalogMoistureSensor<float>::getValue()
 {
@@ -1330,4 +1582,495 @@ bool DHTHumidity::compareWithValue(RelOp relop, Interval interval, int value, in
 	return state;
 }
 
+BMETemperature::BMETemperature(BME280I2C * bme, bool active, String title, String unit, int8_t nan_val, int8_t min_val, int8_t max_val)
+{
+	this->bme = bme;
+
+	this->title = title;
+	this->type = TEMPERATURE;
+	this->active = active;
+	this->unit = unit;
+	this->nan_val = nan_val;
+	this->max_val = max_val;
+	this->min_val = min_val;
+
+	this->lower_threshold = nan_val;
+	this->upper_threshold = nan_val;
+}
+
+float BMETemperature::readRaw()
+{
+	return float(bme->temp());
+}
+
+float BMETemperature::readValue()
+{
+	return float(bme->temp());
+}
+
+String BMETemperature::getValue()
+{
+	return String(bme->temp(), 2) + String(unit);
+}
+
+void BMETemperature::setUpperThreshold()
+{
+}
+
+void BMETemperature::setLowerThreshold()
+{
+}
+
+void BMETemperature::reset()
+{
+	this->lower_threshold = this->nan_val;
+	this->upper_threshold = this->nan_val;
+
+	this->minute_ptr = SENS_VALUES_MIN;
+	this->hour_ptr = SENS_VALUES_HOUR;
+	this->day_ptr = SENS_VALUES_DAY;
+	this->month_ptr = SENS_VALUES_MONTH;
+	this->year_ptr = SENS_VALUES_YEAR;
+
+	for (uint8_t i = 0; i < SENS_VALUES_MIN; i++) this->minute_values[i] = this->nan_val;
+	for (uint8_t i = 0; i < SENS_VALUES_HOUR; i++) this->hour_values[i] = this->nan_val;
+	for (uint8_t i = 0; i < SENS_VALUES_DAY; i++) this->day_values[i] = this->nan_val;
+	for (uint8_t i = 0; i < SENS_VALUES_MONTH; i++) this->month_values[i] = this->nan_val;
+	for (uint8_t i = 0; i < SENS_VALUES_YEAR; i++) this->year_values[i] = this->nan_val;
+}
+
+bool BMETemperature::compareWithValue(RelOp relop, Interval interval, int value, int8_t tolerance)
+{
+	bool state;
+	float current_value = this->getAvgFloat(interval);
+
+	float multi_low = (100.0f - (float)tolerance) / 100.0f;
+	float multi_high = (100.0f + (float)tolerance) / 100.0f;
+
+	float lower_boundery = multi_low * (float)value;
+	float upper_boundery = multi_high * (float)value;
+
+	LOGDEBUG2(F("[Sensor]"), F("compareWithValue()"), F("Info: Set Bounderies"), lower_boundery, upper_boundery, current_value);
+
+	if (current_value != this->nan_val) {
+		switch (relop) {
+		case EQUAL:
+			if (lower_boundery < upper_boundery && current_value >= lower_boundery && current_value <= upper_boundery) state = true;
+			else if (current_value <= lower_boundery && current_value >= upper_boundery) state = true;
+			else state = false;
+			break;
+		case NOTEQUAL:
+			if (lower_boundery < upper_boundery && current_value < lower_boundery && current_value > upper_boundery) state = true;
+			else if (current_value > lower_boundery && current_value < upper_boundery) state = true;
+			else state = false;
+			break;
+		case SMALLER:
+			if (current_value <= lower_boundery);
+			break;
+		case GREATER:
+			if (current_value > upper_boundery);
+			break;
+		}
+	}
+	else state = false;
+
+
+	return state;
+}
+
+BMEHumidity::BMEHumidity(BME280I2C * bme, bool active, String title, String unit, int8_t nan_val, int8_t min_val, int8_t max_val)
+{
+	this->bme = bme;
+
+	this->title = title;
+	this->type = HUMIDITY;
+	this->active = active;
+	this->unit = unit;
+	this->nan_val = nan_val;
+	this->max_val = max_val;
+	this->min_val = min_val;
+
+	this->lower_threshold = nan_val;
+	this->upper_threshold = nan_val;
+}
+
+float BMEHumidity::readRaw()
+{
+	return float(bme->hum());
+}
+
+float BMEHumidity::readValue()
+{
+	return float(bme->hum());
+}
+
+String BMEHumidity::getValue()
+{
+	return String(bme->hum(), 2) + String(unit);
+}
+
+void BMEHumidity::setUpperThreshold()
+{
+}
+
+void BMEHumidity::setLowerThreshold()
+{
+}
+
+void BMEHumidity::reset()
+{
+	this->lower_threshold = this->nan_val;
+	this->upper_threshold = this->nan_val;
+
+	this->minute_ptr = SENS_VALUES_MIN;
+	this->hour_ptr = SENS_VALUES_HOUR;
+	this->day_ptr = SENS_VALUES_DAY;
+	this->month_ptr = SENS_VALUES_MONTH;
+	this->year_ptr = SENS_VALUES_YEAR;
+
+	for (uint8_t i = 0; i < SENS_VALUES_MIN; i++) this->minute_values[i] = this->nan_val;
+	for (uint8_t i = 0; i < SENS_VALUES_HOUR; i++) this->hour_values[i] = this->nan_val;
+	for (uint8_t i = 0; i < SENS_VALUES_DAY; i++) this->day_values[i] = this->nan_val;
+	for (uint8_t i = 0; i < SENS_VALUES_MONTH; i++) this->month_values[i] = this->nan_val;
+	for (uint8_t i = 0; i < SENS_VALUES_YEAR; i++) this->year_values[i] = this->nan_val;
+}
+
+bool BMEHumidity::compareWithValue(RelOp relop, Interval interval, int value, int8_t tolerance)
+{
+	bool state;
+	float current_value = this->getAvgFloat(interval);
+
+	float multi_low = (100.0f - (float)tolerance) / 100.0f;
+	float multi_high = (100.0f + (float)tolerance) / 100.0f;
+
+	float lower_boundery = multi_low * (float)value;
+	float upper_boundery = multi_high * (float)value;
+
+	LOGDEBUG2(F("[Sensor]"), F("compareWithValue()"), F("Info: Set Bounderies"), lower_boundery, upper_boundery, current_value);
+
+	if (current_value != this->nan_val) {
+		switch (relop) {
+		case EQUAL:
+			if (lower_boundery < upper_boundery && current_value >= lower_boundery && current_value <= upper_boundery) state = true;
+			else if (current_value <= lower_boundery && current_value >= upper_boundery) state = true;
+			else state = false;
+			break;
+		case NOTEQUAL:
+			if (lower_boundery < upper_boundery && current_value < lower_boundery && current_value > upper_boundery) state = true;
+			else if (current_value > lower_boundery && current_value < upper_boundery) state = true;
+			else state = false;
+			break;
+		case SMALLER:
+			if (current_value <= lower_boundery);
+			break;
+		case GREATER:
+			if (current_value > upper_boundery);
+			break;
+		}
+	}
+	else state = false;
+
+	return state;
+}
+
+BMEPressure::BMEPressure(BME280I2C * bme, bool active, String title, String unit, int8_t nan_val, int8_t min_val, int8_t max_val)
+{
+	this->bme = bme;
+
+	this->title = title;
+	this->type = PRESSURE;
+	this->active = active;
+	this->unit = unit;
+	this->nan_val = nan_val;
+	this->max_val = max_val;
+	this->min_val = min_val;
+
+	this->lower_threshold = nan_val;
+	this->upper_threshold = nan_val;
+}
+
+float BMEPressure::readRaw()
+{
+	return float(bme->pres());
+}
+
+float BMEPressure::readValue()
+{
+	return float(bme->pres());
+}
+
+String BMEPressure::getValue()
+{
+	return String(bme->hum(), 4) + String(unit);
+}
+
+void BMEPressure::setUpperThreshold()
+{
+}
+
+void BMEPressure::setLowerThreshold()
+{
+}
+
+void BMEPressure::reset()
+{
+	this->lower_threshold = this->nan_val;
+	this->upper_threshold = this->nan_val;
+
+	this->minute_ptr = SENS_VALUES_MIN;
+	this->hour_ptr = SENS_VALUES_HOUR;
+	this->day_ptr = SENS_VALUES_DAY;
+	this->month_ptr = SENS_VALUES_MONTH;
+	this->year_ptr = SENS_VALUES_YEAR;
+
+	for (uint8_t i = 0; i < SENS_VALUES_MIN; i++) this->minute_values[i] = this->nan_val;
+	for (uint8_t i = 0; i < SENS_VALUES_HOUR; i++) this->hour_values[i] = this->nan_val;
+	for (uint8_t i = 0; i < SENS_VALUES_DAY; i++) this->day_values[i] = this->nan_val;
+	for (uint8_t i = 0; i < SENS_VALUES_MONTH; i++) this->month_values[i] = this->nan_val;
+	for (uint8_t i = 0; i < SENS_VALUES_YEAR; i++) this->year_values[i] = this->nan_val;
+}
+
+bool BMEPressure::compareWithValue(RelOp relop, Interval interval, int value, int8_t tolerance)
+{
+	bool state;
+	float current_value = this->getAvgFloat(interval);
+
+	float multi_low = (100.0f - (float)tolerance) / 100.0f;
+	float multi_high = (100.0f + (float)tolerance) / 100.0f;
+
+	float lower_boundery = multi_low * (float)value;
+	float upper_boundery = multi_high * (float)value;
+
+	LOGDEBUG2(F("[Sensor]"), F("compareWithValue()"), F("Info: Set Bounderies"), lower_boundery, upper_boundery, current_value);
+
+	if (current_value != this->nan_val) {
+		switch (relop) {
+		case EQUAL:
+			if (lower_boundery < upper_boundery && current_value >= lower_boundery && current_value <= upper_boundery) state = true;
+			else if (current_value <= lower_boundery && current_value >= upper_boundery) state = true;
+			else state = false;
+			break;
+		case NOTEQUAL:
+			if (lower_boundery < upper_boundery && current_value < lower_boundery && current_value > upper_boundery) state = true;
+			else if (current_value > lower_boundery && current_value < upper_boundery) state = true;
+			else state = false;
+			break;
+		case SMALLER:
+			if (current_value <= lower_boundery);
+			break;
+		case GREATER:
+			if (current_value > upper_boundery);
+			break;
+		}
+	}
+	else state = false;
+
+	return state;
+}
+
+
+//Height
+HeightSensor::HeightSensor(Ultrasonic *distance1, Ultrasonic *distance2, bool active, String title, String unit, int nan_val, int min_val, int max_val)
+{
+	this->distance1 = distance1;
+	this->distance2 = distance2;
+
+	this->title = title;
+	this->type = HEIGHT;
+	this->active = active;
+	this->unit = unit;
+	this->nan_val = nan_val;
+	this->max_val = max_val;
+	this->min_val = min_val;
+
+	this->lower_threshold = nan_val;
+	this->upper_threshold = nan_val;
+}
+
+int HeightSensor::readRaw()
+{
+	int toTop = toTop = distance1->distanceRead();
+	int toBottom = distance2->distanceRead();
+
+	if(upper_threshold != nan_val && lower_threshold != nan_val) return int(upper_threshold - toTop - toBottom - lower_threshold);
+	else return 0;
+}
+
+int HeightSensor::readValue()
+{
+	int toTop = toTop = distance1->distanceRead();
+	int toBottom = distance2->distanceRead();
+
+	if (upper_threshold != nan_val && lower_threshold != nan_val) return int(upper_threshold - toTop - toBottom - lower_threshold);
+	else return 0;
+}
+
+String HeightSensor::getValue()
+{
+	return String(this->readValue()) + String(this->unit);
+}
+
+void HeightSensor::setUpperThreshold()
+{
+}
+
+void HeightSensor::setLowerThreshold()
+{
+}
+
+void HeightSensor::reset()
+{
+	this->lower_threshold = this->nan_val;
+	this->upper_threshold = this->nan_val;
+
+	this->minute_ptr = SENS_VALUES_MIN;
+	this->hour_ptr = SENS_VALUES_HOUR;
+	this->day_ptr = SENS_VALUES_DAY;
+	this->month_ptr = SENS_VALUES_MONTH;
+	this->year_ptr = SENS_VALUES_YEAR;
+
+	for (uint8_t i = 0; i < SENS_VALUES_MIN; i++) this->minute_values[i] = this->nan_val;
+	for (uint8_t i = 0; i < SENS_VALUES_HOUR; i++) this->hour_values[i] = this->nan_val;
+	for (uint8_t i = 0; i < SENS_VALUES_DAY; i++) this->day_values[i] = this->nan_val;
+	for (uint8_t i = 0; i < SENS_VALUES_MONTH; i++) this->month_values[i] = this->nan_val;
+	for (uint8_t i = 0; i < SENS_VALUES_YEAR; i++) this->year_values[i] = this->nan_val;
+}
+
+bool HeightSensor::compareWithValue(RelOp relop, Interval interval, int value, int8_t tolerance)
+{
+	bool state;
+	float current_value = this->getAvgFloat(interval);
+
+	float multi_low = (100.0f - (float)tolerance) / 100.0f;
+	float multi_high = (100.0f + (float)tolerance) / 100.0f;
+
+	float lower_boundery = multi_low * (float)value;
+	float upper_boundery = multi_high * (float)value;
+
+	LOGDEBUG2(F("[Sensor]"), F("compareWithValue()"), F("Info: Set Bounderies"), lower_boundery, upper_boundery, current_value);
+
+	if (current_value != this->nan_val) {
+		switch (relop) {
+		case EQUAL:
+			if (lower_boundery < upper_boundery && current_value >= lower_boundery && current_value <= upper_boundery) state = true;
+			else if (current_value <= lower_boundery && current_value >= upper_boundery) state = true;
+			else state = false;
+			break;
+		case NOTEQUAL:
+			if (lower_boundery < upper_boundery && current_value < lower_boundery && current_value > upper_boundery) state = true;
+			else if (current_value > lower_boundery && current_value < upper_boundery) state = true;
+			else state = false;
+			break;
+		case SMALLER:
+			if (current_value <= lower_boundery);
+			break;
+		case GREATER:
+			if (current_value > upper_boundery);
+			break;
+		}
+	}
+	else state = false;
+
+	return state;
+}
+
+//DistanceLampSensor
+DistanceLampSensor::DistanceLampSensor(Ultrasonic *distance, bool active, String title, String unit, int nan_val, int min_val, int max_val)
+{
+	this->distance = distance;
+
+	this->title = title;
+	this->type = DISTANCE;
+	this->active = active;
+	this->unit = unit;
+	this->nan_val = nan_val;
+	this->max_val = max_val;
+	this->min_val = min_val;
+
+	this->lower_threshold = nan_val;
+	this->upper_threshold = nan_val;
+}
+
+int DistanceLampSensor::readRaw()
+{
+	return int(distance->distanceRead());
+}
+
+int DistanceLampSensor::readValue()
+{
+	return int(distance->distanceRead());
+}
+
+String DistanceLampSensor::getValue()
+{
+	return String(this->readValue()) + String(this->unit);
+}
+
+void DistanceLampSensor::setUpperThreshold()
+{
+}
+
+void DistanceLampSensor::setLowerThreshold()
+{
+}
+
+void DistanceLampSensor::reset()
+{
+	this->lower_threshold = this->nan_val;
+	this->upper_threshold = this->nan_val;
+
+	this->minute_ptr = SENS_VALUES_MIN;
+	this->hour_ptr = SENS_VALUES_HOUR;
+	this->day_ptr = SENS_VALUES_DAY;
+	this->month_ptr = SENS_VALUES_MONTH;
+	this->year_ptr = SENS_VALUES_YEAR;
+
+	for (uint8_t i = 0; i < SENS_VALUES_MIN; i++) this->minute_values[i] = this->nan_val;
+	for (uint8_t i = 0; i < SENS_VALUES_HOUR; i++) this->hour_values[i] = this->nan_val;
+	for (uint8_t i = 0; i < SENS_VALUES_DAY; i++) this->day_values[i] = this->nan_val;
+	for (uint8_t i = 0; i < SENS_VALUES_MONTH; i++) this->month_values[i] = this->nan_val;
+	for (uint8_t i = 0; i < SENS_VALUES_YEAR; i++) this->year_values[i] = this->nan_val;
+}
+
+bool DistanceLampSensor::compareWithValue(RelOp relop, Interval interval, int value, int8_t tolerance)
+{
+	bool state;
+	float current_value = this->getAvgFloat(interval);
+
+	float multi_low = (100.0f - (float)tolerance) / 100.0f;
+	float multi_high = (100.0f + (float)tolerance) / 100.0f;
+
+	float lower_boundery = multi_low * (float)value;
+	float upper_boundery = multi_high * (float)value;
+
+	LOGDEBUG2(F("[Sensor]"), F("compareWithValue()"), F("Info: Set Bounderies"), lower_boundery, upper_boundery, current_value);
+
+	if (current_value != this->nan_val) {
+		switch (relop) {
+		case EQUAL:
+			if (lower_boundery < upper_boundery && current_value >= lower_boundery && current_value <= upper_boundery) state = true;
+			else if (current_value <= lower_boundery && current_value >= upper_boundery) state = true;
+			else state = false;
+			break;
+		case NOTEQUAL:
+			if (lower_boundery < upper_boundery && current_value < lower_boundery && current_value > upper_boundery) state = true;
+			else if (current_value > lower_boundery && current_value < upper_boundery) state = true;
+			else state = false;
+			break;
+		case SMALLER:
+			if (current_value <= lower_boundery);
+			break;
+		case GREATER:
+			if (current_value > upper_boundery);
+			break;
+		}
+	}
+	else state = false;
+
+	return state;
+}
+
+
+
 template class AnalogMoistureSensor<short>;
+template class CapacityMoistureSensor<short>;

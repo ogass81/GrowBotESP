@@ -5,17 +5,20 @@
 */
 
 ////Helper
+
 #include "Definitions.h"
 
 //Hardware Libaries
-#include <memorysaver.h>
-#include <SdFat.h>
+#include <Ultrasonic.h>
+#include <FS.h>
+#include <SD.h>
 #include <SPI.h>
-#include <RTCDue.h>
-#include <DHT_U.h>
+#include <Wire.h>
+#include <BME280I2C.h>
 #include <DHT.h>
 #include "RealTimeClock.h"
 #include "Led.h"
+#include <WiFi.h>
 
 //Core Features
 #include "Action.h"
@@ -55,10 +58,15 @@ String api_secret;
 Led *led[3];
 
 
-//DHT Hardware
-DHT dht(DHT_DATA_PIN, DHT_TYPE);
+//Temperature Sensor
+BME280I2C bme;
+
+//Ultrasonic Sensor
+Ultrasonic distance1(DIST1_TRIG, DIST1_ECHO);
+Ultrasonic distance2(DIST2_TRIG, DIST2_ECHO);
+
 //RealTimeClock
-RealTimeClock internalRTC(RC);
+RealTimeClock internalRTC;
 
 //433Mhz
 RCSocketController *rcsocketcontroller;
@@ -84,9 +92,6 @@ Trigger *trigger[TRIGGER_TYPES][TRIGGER_SETS];
 //Rulesets: Trigger Action Bundles
 RuleSet *rulesets[RULESETS_NUM];
 
-//FileSystem
-SdFat sd;
-
 LogEngine logengine;
 
 
@@ -94,14 +99,19 @@ void setup() {
 	// initialize serial for debugging
 	Serial.begin(115200);
 
+	delay(3000);
 	//Initialize FileSystem / SD Card
-	if (!sd.begin(SD_CONTROL_PIN, SPI_EIGHTH_SPEED)) {
-		sd.initErrorHalt();
+	auto SPI = SPIClass();
+	SPI.begin();
+	auto speed = 1000000;
+	if (!SD.begin(SD_CONTROL_PIN, SPI, speed))
+	
+	if (!SD.begin()) {
+		LOGMSG(F("[Setup]"), F("ERROR: Cannot initialize SD card"), "", "", "");
 	}
-
-	// initialize RTC
-	internalRTC.begin();
-	internalRTC.setDefaultTime();
+	else {
+		LOGMSG(F("[Setup]"), F("INFO: SD Card"), SD.cardType(), (long)SD.cardSize(), ""); 
+	}
 
 	//Status Led
 	led[0] = new Led(LED1, false);
@@ -116,16 +126,29 @@ void setup() {
 	logengine.addLogEntry(INFO, "Setup", "Starting Bot", keys, values, 0);
 
 	//Start Temp/Humidity Sensor
-	dht.begin();
+	Wire.begin();
+
+	while (!bme.begin())
+	{
+		LOGMSG(F("[Setup]"), F("ERROR: Cannot initialize BME sensor"), "", "", "");
+		delay(1000);
+	}
 
 	//433Mhz
 	rcsocketcontroller = new RCSocketController(TX_DATA_PIN, RX_DATA_PIN);
-			
+
 	//Initialize Sensors
-	sensors[0] = new	DHTTemperature(&dht, true, F("Temperature"), F("C"), -127, -50, 100);
-	sensors[1] = new 	DHTHumidity(&dht, true, F("Humidity"), F("%"), -127, 0, 100);
-	sensors[2] = new 	AnalogMoistureSensor<short>(IN_MOS_1, OUT_MOS_1, true, F("Soil 1"), F("%"), -1, 0, 1000, 150, 600);
-	sensors[3] = new 	AnalogMoistureSensor<short>(IN_MOS_2, OUT_MOS_2, true, F("Soil 2"), F("%"), -1, 0, 1000, 150, 600);
+	sensors[0] = new	BMETemperature(&bme, true, F("Temperature"), F("C"), -127, -50, 100);
+	sensors[1] = new 	BMEHumidity(&bme, true, F("Humidity"), F("%"), -127, 0, 100);
+	sensors[2] = new 	BMEPressure(&bme, true, F("Pressure"), F("p"), -127, 0, 100);
+	sensors[3] = new 	CapacityMoistureSensor<short>(IN_MOS_1, 12, 10, ADC_11db, true, F("Soil 1"), F("%"), -1, 0, 1000, 150, 600);
+	sensors[4] = new 	CapacityMoistureSensor<short>(IN_MOS_2, 12, 10, ADC_11db, true, F("Soil 2"), F("%"), -1, 0, 1000, 150, 600);
+	sensors[5] = new 	CapacityMoistureSensor<short>(IN_MOS_3, 12, 10, ADC_11db, true, F("Soil 3"), F("%"), -1, 0, 1000, 150, 600);
+	sensors[6] = new 	CapacityMoistureSensor<short>(IN_MOS_4, 12, 10, ADC_11db, true, F("Soil 4"), F("%"), -1, 0, 1000, 150, 600);
+	sensors[7] = new 	HeightSensor(&distance1, &distance2, true, F("Height Sensor"), F("cm"), -1, 0, 400);
+	sensors[8] = new 	DistanceLampSensor(&distance2, true, F("Distance Lamp"), F("cm"), -1, 0, 400);
+
+
 
 	//Intialize Actions
 	actions[0] = new NamedParameterizedSimpleAction<RCSocketController>("Send", rcsocketcontroller, &RCSocketController::sendCode, &RCSocketController::getTitle, 0, true);
@@ -136,7 +159,8 @@ void setup() {
 	actions[5] = new NamedParameterizedSimpleAction<RCSocketController>("Send", rcsocketcontroller, &RCSocketController::sendCode, &RCSocketController::getTitle, 5, true);
 	actions[6] = new NamedParameterizedSimpleAction<RCSocketController>("Send", rcsocketcontroller, &RCSocketController::sendCode, &RCSocketController::getTitle, 6, true);
 	actions[7] = new NamedParameterizedSimpleAction<RCSocketController>("Send", rcsocketcontroller, &RCSocketController::sendCode, &RCSocketController::getTitle, 7, true);
-	
+
+  
 	//Define Opposite Action / Antagonist
 	//RC1
 	actions[0]->setAntagonist("Group 1", actions[1]);
@@ -160,6 +184,7 @@ void setup() {
 	//Start Taskmanager
 	taskmanager = new TaskManager();
 
+
 	//Initialize Trigger
 	for (int tcategory = 0; tcategory < TRIGGER_TYPES; tcategory++) {
 		for (int tset = 0; tset < TRIGGER_SETS; tset++) {
@@ -174,22 +199,22 @@ void setup() {
 	for (uint8_t k = 0; k < RULESETS_NUM; k++) {
 		rulesets[k] = new RuleSet(k);
 	}
-	
+
 	if (DEBUG_RESET == false) {
-		if (Setting::loadSettings("_CURRENTCONFIG.JSON") == false) {
-			LOGMSG(F("[Setup]"), F("WARNING: Did not load primary config file"), F("Hardreset"), DEBUG_RESET, "");
+		if (Setting::loadSettings("/_CURRENTCONFIG.JSON") == false) {
+			LOGMSG("[Setup]", "WARNING: Did not load primary config file", "Hardreset", DEBUG_RESET, "");
 			String keys[] = { "" };
 			String values[] = { "" };
 			logengine.addLogEntry(WARNING, "Main", "Did not load primary config file", keys, values, 0);
 
-			if (Setting::loadSettings("BACKUPCONFIG.JSON") == false) {
-				LOGMSG(F("[Setup]"), F("WARNING: Did not load backup config file"), F("Hardreset"), DEBUG_RESET, "");
+			if (Setting::loadSettings("/BACKUPCONFIG.JSON") == false) {
+				LOGMSG("[Setup]", "WARNING: Did not load backup config file", "Hardreset", DEBUG_RESET, "");
 				String keys[] = { "" };
 				String values[] = { "" };
 				logengine.addLogEntry(WARNING, "Main", "Did not load backup config file", keys, values, 0);
 
-				if (Setting::loadSettings("DEFAULTCONFIG.JSON") == false) {
-					LOGMSG(F("[Setup]"), F("WARNING: Did not load default config file"), F("Hardreset"), DEBUG_RESET, "");
+				if (Setting::loadSettings("/DEFAULTCONFIG.JSON") == false) {
+					LOGMSG("[Setup]", "WARNING: Did not load default config file", "Hardreset", DEBUG_RESET, "");
 					String keys[] = { "" };
 					String values[] = { "" };
 					logengine.addLogEntry(WARNING, "Main", "Did not load default config file. Setting hard coded values", keys, values, 0);
@@ -200,19 +225,15 @@ void setup() {
 		}
 	}
 	else {
-		LOGMSG(F("[Setup]"), F("WARNING: Hard Reset Flag set. Setting hard coded values"), F("Hardreset"), DEBUG_RESET, "");
+		LOGMSG("[Setup]", "WARNING: Hard Reset Flag set. Setting hard coded values", "Hardreset", DEBUG_RESET, "");
 		String keys[] = { "" };
 		String values[] = { "" };
 		logengine.addLogEntry(WARNING, "Main", "Reset Flag set. Setting hard coded values", keys, values, 0);
 
 		Setting::reset();
 	}
-	//Wifi ESP2866
-	pinMode(ESP_CONTROL_PIN, OUTPUT);
-	digitalWrite(ESP_CONTROL_PIN, HIGH);
-	Serial2.begin(115200);
-	WiFi.init(&Serial2);
 
+	//Wifi
 	//Convert SSID and PW to char[]
 	char ssid[wifi_ssid.length()+1];
 	wifi_ssid.toCharArray(ssid, wifi_ssid.length()+1);
@@ -220,17 +241,30 @@ void setup() {
 	char pw[wifi_pw.length()+1];
 	wifi_pw.toCharArray(pw, wifi_pw.length()+1);
 
-	int status = WL_IDLE_STATUS;
+	WiFi.begin(ssid, pw);
+	LOGMSG("[Setup]", "Info: Attempting to connect to WPA SSID: ", String(wifi_ssid), "", "");
+
 	uint8_t failed = 0;
-	while (status != WL_CONNECTED && failed < 5) {
-		LOGMSG(F("[Setup]"), F("Info: Attempting to connect to WPA SSID: "), String(wifi_ssid), "", "");
-		// Connect to WPA/WPA2 network
-		status = WiFi.begin(ssid, pw);
+	while (WiFi.status() != WL_CONNECTED) {
+		delay(1000);
+		Serial.print(".");
 		failed++;
+
+		if (failed > WIFI_TIMEOUT) {
+			while (true) {
+				led[0]->switchState();
+				delay(500);
+			}
+		}
 	}
+
+	if (WiFi.status() == WL_CONNECTED) {
+		LOGMSG("[Setup]", "Connected to WPA SSID: ", String(wifi_ssid), "IP Address: ", String(WiFi.localIP()));
+	}
+
 	//Start Webserver
 	webserver = new WebServer();
-	webserver->begin();
+	webserver->begin(80);
 
 	//Sync with Internet
 	ntpclient = new WebTimeClient();
@@ -239,19 +273,22 @@ void setup() {
 	if (timestamp > 0) {
 		String keys[] = { "" };
 		String values[] = { "" };
-		logengine.addLogEntry(INFO, "Main", "Received Internet Time", keys, values, 0);
+		logengine.addLogEntry(INFO, "[RealTimeClock]", "Received Internet Time", keys, values, 0);
+		LOGDEBUG2("[RealTimeClock]", "syncSensorCycles()", "OK: Set new sensor cycle", String(sensor_cycles), "", "");
 
 		internalRTC.updateTime(timestamp, true);
 	}
-	sensor_last_seconds = internalRTC.getSeconds();
-	task_last_seconds = sensor_last_seconds;
+
 }
+
 
 // the loop function runs over and over again until power down or reset
 void loop() {
+  
+
 	//Get Seconds from Clock
 	cpu_current = millis();
-	if (cpu_current % 10 == 0) {
+	if (cpu_current % 5 == 0) {
 		//Webserver
 		webserver->checkConnection();
 	}
@@ -278,7 +315,7 @@ void loop() {
 			sensor_cycles++;
 
 			led[0]->switchState();
-			LOGMSG(F("[Loop]"), F("INFO: Sensor Cycle"), String(sensor_cycles), String(RealTimeClock::printTime(sensor_cycles * SENS_FRQ_SEC)), String(RealTimeClock::printTime(internalRTC.getEpochTime())));
+			LOGMSG(F("[Loop]"), F("INFO: Sensor Cycle"), String(sensor_cycles), String(RealTimeClock::printTime(sensor_cycles * SENS_FRQ_SEC)), "");
 			//LOGDEBUG4(F("Millis Cycle"), String(sensor_cycles * SENS_FRQ_SEC), F("RTC Cycle"), String(internalRTC.getEpochTime()), F("Millis Clock"), String(RealTimeClock::printTime(sensor_cycles * SENS_FRQ_SEC)), F("RTC Clock"), String(RealTimeClock::printTime(internalRTC.getEpochTime())));
 
 			//Update Sensors
@@ -300,17 +337,17 @@ void loop() {
 				String values[] = { "" };
 				logengine.addLogEntry(INFO, "Main", "Saved Configuration", keys, values, 0);
 
-				Setting::saveSettings("_CURRENTCONFIG.JSON");
+				Setting::saveSettings("/_CURRENTCONFIG.JSON");
 			}
 
 			//Backup
-			if ((sensor_cycles % (15 * SENS_VALUES_MIN)) == 0) {
+			if ((sensor_cycles % (30 * SENS_VALUES_MIN)) == 0) {
 				LOGMSG(F("[Loop]"), F("SaveActive"), "", "", "");
 				String keys[] = { "" };
 				String values[] = { "" };
 				logengine.addLogEntry(INFO, "Main", "Backup Configuration", keys, values, 0);
 
-				Setting::copyFile("_CURRENTCONFIG.JSON", "BACKUPCONFIG.JSON");
+				//Setting::copyFile("/DEFAULTCONFIG.JSON", "/BACKUPCONFIG.JSON");
 			}		
 		}
 

@@ -41,7 +41,7 @@ String WebServer::createHtmlResponse(String code, String text)
 	return String(request);
 }
 
-void WebServer::sendPayload(WiFiEspClient client, String payload)
+void WebServer::sendPayload(WiFiClient client, String payload)
 {
 	int size = payload.length();
 
@@ -62,7 +62,7 @@ void WebServer::sendPayload(WiFiEspClient client, String payload)
 	}
 }
 
-WebServer::WebServer() : WiFiEspServer(80)
+WebServer::WebServer() : WiFiServer(80)
 {
 	// print your WiFi shield's IP address
 	IPAddress ip = WiFi.localIP();
@@ -71,7 +71,7 @@ WebServer::WebServer() : WiFiEspServer(80)
 
 void WebServer::checkConnection()
 {
-	WiFiEspClient client = this->available();
+	WiFiClient client = this->available();
 
 	String line = "";
 	int8_t line_count = 0;
@@ -89,7 +89,7 @@ void WebServer::checkConnection()
 	bool success;
 
 
-	if (client == true) {
+	if (client) {
 		LOGMSG(F("[WebServer]"), F("OK: New Client connected"), "@" + RealTimeClock::printTime(SENS_FRQ_SEC*sensor_cycles), F("IPV4"), client.remoteIP());
 
 		while (client.connected()) {
@@ -246,28 +246,28 @@ void WebServer::checkConnection()
 				if (uri[1] == "") {
 					Setting::serializeJSON(json, JSONCHAR_SIZE);
 					LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Action Object Action: GET"), "", "");
-					sendPayload(client, createPostRequest(json));
+					client.print(createPostRequest(json));
 				}
 				else if (uri[1] == "default") {
 					Setting::loadSettings("DEFAULTCONFIG.JSON");
 					LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action: LOAD"), "Default Config", "");
 					Setting::serializeJSON(json, JSONCHAR_SIZE);
 					LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Action Object Action: GET"), "", "");
-					sendPayload(client, createPostRequest(json));
+					client.print(createPostRequest(json));
 				}
 				else if (uri[1] == "active") {
 					Setting::loadSettings("_CURRENTCONFIG.JSON");
 					LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action: LOAD"), "Active Config", "");
 					Setting::serializeJSON(json, JSONCHAR_SIZE);
 					LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Action Object Action: GET"), "", "");
-					sendPayload(client, createPostRequest(json));
+					client.print(createPostRequest(json));
 				}
 				else if (uri[1] == "reset") {
 					Setting::reset();
 					LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action: RESET"), "", "");
 					Setting::serializeJSON(json, JSONCHAR_SIZE);
 					LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Action Object Action: GET"), "", "");
-					sendPayload(client, createPostRequest(json));
+					client.print(createPostRequest(json));
 				}
 				else {
 					LOGMSG(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI: UNKOWN"), "", "");
@@ -279,13 +279,13 @@ void WebServer::checkConnection()
 					ListGenerator<Action> list(actions, ACTIONS_NUM);
 					list.generateList(F("ACTION"), json, JSONCHAR_SIZE);
 					LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Actions - Action: GET"), F("List View"), "");
-					sendPayload(client, createPostRequest(json));
+					client.print(createPostRequest(json));
 				}
 				else if (uri[1] != "" && uri[1].toInt() < ACTIONS_NUM) {
 					if (uri[2] == "") {
 						actions[uri[1].toInt()]->serializeJSON(uri[1].toInt(), json, JSONCHAR_SIZE, DETAILS);
 						LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Action Object Action: GET"), String(uri[1]), "");
-						sendPayload(client, createPostRequest(json));
+						client.print(createPostRequest(json));
 					}
 					else if (uri[2] == "execute") {
 						actions[uri[1].toInt()]->execute();
@@ -309,12 +309,12 @@ void WebServer::checkConnection()
 					ListGenerator<ActionChain> list(actionchains, ACTIONCHAINS_NUM);
 					list.generateList(F("ACTIONCHAIN"), json, JSONCHAR_SIZE);
 					LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Actionchain Action: GET"), F("List View"), "");
-					sendPayload(client, createPostRequest(json));
+					client.print(createPostRequest(json));
 				}
 				else if (uri[1] != "" && uri[1].toInt() < ACTIONCHAINS_NUM) {
 					actionchains[uri[1].toInt()]->serializeJSON(uri[1].toInt(), json, JSONCHAR_SIZE, DETAILS);
 					LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Actionchain Action: GET"), String(uri[1]), "");
-					sendPayload(client, createPostRequest(json));
+					client.print(createPostRequest(json));
 				}
 				else {
 					LOGMSG(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI: UNKOWN"), "", "");
@@ -325,13 +325,13 @@ void WebServer::checkConnection()
 				if (uri[1] == "") {
 					rcsocketcontroller->serializeJSON(json, JSONCHAR_SIZE, LIST);
 					LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: ### Action: GET"), F("List View"), "");
-					sendPayload(client, createPostRequest(json));
+					client.print(createPostRequest(json));
 				}
 				else if (uri[1] != "" && uri[1].toInt() < RC_SOCKETS) {
 					if (uri[2] == "") {
 						rcsocketcontroller->serializeJSON(uri[1].toInt(), json, JSONCHAR_SIZE, DETAILS);
 						LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Remote Socket Action: GET"), String(uri[1]), "");
-						sendPayload(client, createPostRequest(json));
+						client.print(createPostRequest(json));
 					}
 					else if (uri[2] != "" && uri[2] == "learn_on") {
 						rcsocketcontroller->learningmode_on(uri[1].toInt());
@@ -360,12 +360,12 @@ void WebServer::checkConnection()
 					ListGenerator<RuleSet> list(rulesets, RULESETS_NUM);
 					list.generateList(F("RULE"), json, JSONCHAR_SIZE);
 					LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Ruleset Action: GET"), F("List View"), "");
-					sendPayload(client, createPostRequest(json));
+					client.print(createPostRequest(json));
 				}
 				else if (uri[1] != "" && uri[1].toInt() < RULESETS_NUM) {
 					rulesets[uri[1].toInt()]->serializeJSON(uri[1].toInt(), json, JSONCHAR_SIZE, DETAILS);
 					LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Ruleset Action: GET"), String(uri[1]), "");
-					sendPayload(client, createPostRequest(json));
+					client.print(createPostRequest(json));
 				}
 				else {
 					LOGMSG(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI: UNKOWN"), "", "");
@@ -377,54 +377,54 @@ void WebServer::checkConnection()
 					ListGenerator<Sensor> list(sensors, SENS_NUM);
 					list.generateList(F("SENSOR"), json, JSONCHAR_SIZE);
 					LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action: GET"), F("List View"), "");
-					sendPayload(client, createPostRequest(json));
+					client.print(createPostRequest(json));
 				}
 				else if (uri[1] != "" && uri[1].toInt() < SENS_NUM) {
 					//Decide what kind of sensor data to send
 					if (uri[2] == "") {
 						sensors[uri[1].toInt()]->serializeJSON(uri[1].toInt(), json, JSONCHAR_SIZE, HEADER);
 						LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action: GET"), String(uri[1]), F("Mode: DETAILS"));
-						sendPayload(client, createPostRequest(json));
+						client.print(createPostRequest(json));
 					}
 					else if (uri[2] == "details") {
 						sensors[uri[1].toInt()]->serializeJSON(uri[1].toInt(), json, JSONCHAR_SIZE, DETAILS);
 						LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action: GET"), String(uri[1]), F("Mode: AVG"));
-						sendPayload(client, createPostRequest(json));
+						client.print(createPostRequest(json));
 					}
 					else if (uri[2] == "avg") {
 						sensors[uri[1].toInt()]->serializeJSON(uri[1].toInt(), json, JSONCHAR_SIZE, AVG);
 						LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action: GET"), String(uri[1]), F("Mode: AVG"));
-						sendPayload(client, createPostRequest(json));
+						client.print(createPostRequest(json));
 					}
 					else if (uri[2] == "date_minute") {
 						sensors[uri[1].toInt()]->serializeJSON(uri[1].toInt(), json, JSONCHAR_SIZE, DATE_MINUTE);
 						LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action: GET"), String(uri[1]), F("Mode: MINUTE"));
-						sendPayload(client, createPostRequest(json));
+						client.print(createPostRequest(json));
 					}
 					else if (uri[2] == "date_hour") {
 						sensors[uri[1].toInt()]->serializeJSON(uri[1].toInt(), json, JSONCHAR_SIZE, DATE_HOUR);
 						LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action: GET"), String(uri[1]), F("Mode: HOUR"));
-						sendPayload(client, createPostRequest(json));
+						client.print(createPostRequest(json));
 					}
 					else if (uri[2] == "date_day") {
 						sensors[uri[1].toInt()]->serializeJSON(uri[1].toInt(), json, JSONCHAR_SIZE, DATE_DAY);
 						LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action: GET"), String(uri[1]), F("Mode: DAY"));
-						sendPayload(client, createPostRequest(json));
+						client.print(createPostRequest(json));
 					}
 					else if (uri[2] == "date_month") {
 						sensors[uri[1].toInt()]->serializeJSON(uri[1].toInt(), json, JSONCHAR_SIZE, DATE_MONTH);
 						LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action: GET"), String(uri[1]), F("Mode: MONTH"));
-						sendPayload(client, createPostRequest(json));
+						client.print(createPostRequest(json));
 					}
 					else if (uri[2] == "date_year") {
 						sensors[uri[1].toInt()]->serializeJSON(uri[1].toInt(), json, JSONCHAR_SIZE, DATE_YEAR);
 						LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action: GET"), String(uri[1]), F("Mode: YEAR"));
-						sendPayload(client, createPostRequest(json));
+						client.print(createPostRequest(json));
 					}
 					else if (uri[2] == "date_all") {
 						sensors[uri[1].toInt()]->serializeJSON(uri[1].toInt(), json, JSONCHAR_SIZE, DATE_ALL);
 						LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action: GET"), String(uri[1]), F("Mode: ALL"));
-						sendPayload(client, createPostRequest(json));
+						client.print(createPostRequest(json));
 					}
 					//Commands
 					else if (uri[2] == "lower") {
@@ -456,23 +456,23 @@ void WebServer::checkConnection()
 				if (uri[1] == "") {
 					TriggerCategory::serializeJSON(trigger, json, JSONCHAR_SIZE, LIST);
 					LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Trigger Action: GET Categories"), String(uri[1]), String(uri[2]));
-					sendPayload(client, createPostRequest(json));
+					client.print(createPostRequest(json));
 				}
 				else if (uri[1] == "all") {
 					TriggerCategory::serializeJSON(trigger, json, JSONCHAR_SIZE, DETAILS);
 					LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Trigger Action: GET Flat List"), String(uri[1]), String(uri[2]));
-					sendPayload(client, createPostRequest(json));
+					client.print(createPostRequest(json));
 				}
 				else if (uri[1] != "" && uri[1].toInt() < TRIGGER_TYPES) {
 					if (uri[2] == "") {
 						ListGenerator<Trigger> list(trigger[uri[1].toInt()], TRIGGER_SETS);
 						list.generateList(F("TRIGGER"), uri[1].toInt(), json, JSONCHAR_SIZE);
 						LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Trigger Action: GET"), F("List View for category"), String(uri[1]));
-						sendPayload(client, createPostRequest(json));
+						client.print(createPostRequest(json));
 					}
 					else if (uri[2] != "" && uri[2].toInt() < TRIGGER_SETS) {
 						trigger[uri[1].toInt()][uri[2].toInt()]->serializeJSON(uri[1].toInt(), uri[2].toInt(), json, JSONCHAR_SIZE, DETAILS);
-						sendPayload(client, createPostRequest(json));
+						client.print(createPostRequest(json));
 						LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Trigger Action: GET"), String(uri[1]), String(uri[2]));
 					}
 					else {
@@ -489,7 +489,7 @@ void WebServer::checkConnection()
 				if (uri[1] == "") {
 					logengine.serializeJSON(json, JSONCHAR_SIZE, 0, 0);
 					LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Read Log file"), String(0), String(0));
-					sendPayload(client, createPostRequest(json));
+					client.print(createPostRequest(json));
 				}
 				else if (uri[1] == "reset") {
 					logengine.reset();
@@ -500,12 +500,12 @@ void WebServer::checkConnection()
 					if (uri[2] == "") {
 						logengine.serializeJSON(json, JSONCHAR_SIZE, uri[1].toInt(), 0);
 						LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Read Log file"), String(uri[1].toInt()), String(0));
-						sendPayload(client, createPostRequest(json));
+						client.print(createPostRequest(json));
 					}
 					else {
 						logengine.serializeJSON(json, JSONCHAR_SIZE, uri[1].toInt(), uri[2].toInt());
 						LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Read Log file"), String(uri[1].toInt()), String(uri[2].toInt()));
-						sendPayload(client, createPostRequest(json));
+						client.print(createPostRequest(json));
 					}
 				}
 			}

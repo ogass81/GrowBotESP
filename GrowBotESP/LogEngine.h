@@ -13,7 +13,7 @@
 #include <ArduinoJson.h>
 
 //Hardware
-#include "SdFat.h"
+#include <SD.h>
 #include "Led.h"
 #include "RealTimeClock.h"
 
@@ -24,7 +24,7 @@ extern long sensor_cycles;
 extern Led *led[3];
 extern RealTimeClock internalRTC;
 
-extern SdFat sd;
+extern SDFS sd;
 
 class LogEntry {
 private:

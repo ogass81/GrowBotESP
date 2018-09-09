@@ -146,14 +146,18 @@ bool Setting::deserializeJSON(JsonObject & data)
 
 bool Setting::saveSettings(const char* filename)
 {
-	File file;
-
 	char json[JSONCHAR_SIZE];
 	int bytes;
 	bool complete;
 	bool success = true;
 
-	if (file.open(filename, O_CREAT | O_TRUNC | O_WRITE)) {
+	File file = SD.open(filename, FILE_WRITE);
+	/*
+	file.println("test");
+	file.close();
+	*/
+
+	if (file) {
 		//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("File Open"), "", "", "");
 		led[2]->turnOn();
 		//Settings
@@ -201,24 +205,26 @@ bool Setting::saveSettings(const char* filename)
 	else {
 		LOGMSG(F("[FileSystem]"), F("ERROR: Could not write to file:"), String(filename), "", "");
 	}
+	
 	return success;
 }
 
+
 bool Setting::loadSettings(const char* filename)
 {
-	File file;
-
 	String json;
 	int cat = 0;
 	int id = 0;
 	int j = 0;
 	bool success = true;
+	
+	File file = SD.open(filename, FILE_READ);
 
-	if (file.open(filename, O_READ)) {
-
+	if (file) {
 		while (file.available()) {
 			//Buffer Needs to be here ...
 			DynamicJsonBuffer jsonBuffer;
+
 
 			json = file.readStringUntil('\n');
 
@@ -277,7 +283,7 @@ bool Setting::loadSettings(const char* filename)
 						success = false;
 					}
 				}
-				else if (node["obj"] == "RCSOCKET") {
+		     	else if (node["obj"] == "RCSOCKET") {
 					id = (int)node["id"];
 					if (id < RC_SOCKETS) {
 						success = rcsocketcontroller->deserializeJSON(id, node);
@@ -307,9 +313,6 @@ bool Setting::loadSettings(const char* filename)
 
 bool Setting::copyFile(const char* source, const char* destination)
 {
-	File backup_file;
-	File current_file;
-
 	size_t n;
 	uint8_t buf[64];
 
@@ -317,10 +320,14 @@ bool Setting::copyFile(const char* source, const char* destination)
 	String output;
 	bool success = true;
 
-	if (current_file.open(source, O_READ)) {
+	File current_file = SD.open(source, FILE_READ);
+
+	if (current_file) {
 		LOGDEBUG2(F("[FileSystem]"), F("copyFile()"), F("OK: Source File open"), F("Filename"), String(source), "");
 
-		if (backup_file.open(destination, O_CREAT | O_TRUNC | O_WRITE)) {
+		File backup_file = SD.open(source, FILE_WRITE);
+
+		if (backup_file) {
 			LOGDEBUG2(F("[FileSystem]"), F("copyFile()"), F("OK: Target File open"), F("Filename"), String(destination), "");
 
 			led[2]->turnOn();

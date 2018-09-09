@@ -4,8 +4,7 @@
 
 #include "RealTimeClock.h"
 
-RealTimeClock::RealTimeClock(int src)
-	: RTCDue(src)
+RealTimeClock::RealTimeClock()
 {
 	source = "RTC";
 	timezone_offset = 0;
@@ -15,7 +14,6 @@ RealTimeClock::RealTimeClock(int src)
 	defaulttime.Day = 1;
 	defaulttime.Hour = 0;
 	defaulttime.Minute = 0;
-
 }
 
 void RealTimeClock::updateTime(tmElements_t timeset, bool adjust)
@@ -25,10 +23,12 @@ void RealTimeClock::updateTime(tmElements_t timeset, bool adjust)
 	if(adjust == true) timestamp += timezone_offset;
 	
 	breakTime(timestamp, timeset);
-		
+	
+	/*
 	//Update RTC with Values from Data Model
 	setDate(timeset.Day, timeset.Month, (uint16_t)(timeset.Year + 1970));
 	setTime(timeset.Hour, timeset.Minute, timeset.Second);
+	*/
 
 	LOGDEBUG2(F("[RealTimeClock]"), F("setTime(timeset)"), F("OK: Updated RTC"), String((uint16_t)(timeset.Year + 1970)), String(timeset.Month), String(timeset.Day));
 
@@ -43,9 +43,11 @@ void RealTimeClock::updateTime(time_t timestamp, bool adjust)
 
 	breakTime(timestamp, timeset);
 	
+	/*
 	//Update RTC with Values from Data Model
 	setDate(timeset.Day, timeset.Month, (uint16_t)(timeset.Year + 1970));
 	setTime(timeset.Hour, timeset.Minute, timeset.Second);
+	*/
 
 	LOGDEBUG2(F("[RealTimeClock]"), F("setTime(timestamp)"), F("OK: Updated RTC"), String((uint16_t)(timeset.Year + 1970)), String(timeset.Month), String(timeset.Day));
 
@@ -61,9 +63,11 @@ void RealTimeClock::updateTime(uint8_t year, uint8_t month, uint8_t day, uint8_t
 
 	breakTime(timestamp, timeset);
 
+	/*
 	//Update RTC with Values from Data Model
 	setDate(timeset.Day, timeset.Month, (uint16_t)(timeset.Year + 1970));
 	setTime(timeset.Hour, timeset.Minute, timeset.Second);
+	*/
 
 	LOGDEBUG2(F("[RealTimeClock]"), F("setTime(single values UINT8)"), F("OK: Updated RTC"), String((uint16_t)(timeset.Year + 1970)), String(timeset.Month), String(timeset.Day));
 
@@ -79,9 +83,11 @@ void RealTimeClock::updateTime(int year, uint8_t month, uint8_t day, uint8_t hou
 	
 	breakTime(timestamp, timeset);
 
+	/*
 	//Update RTC with Values from Data Model
 	setDate(timeset.Day, timeset.Month, (uint16_t)(timeset.Year + 1970));
 	setTime(timeset.Hour, timeset.Minute, timeset.Second);
+	*/
 	
 	LOGDEBUG2(F("[RealTimeClock]"), F("setTime(single values INT)"), F("OK: Updated RTC"), String((uint16_t)(timeset.Year + 1970)), String(timeset.Month), String(timeset.Day));
 
@@ -111,8 +117,11 @@ void RealTimeClock::setDefaultTime()
 	defaulttime.Minute = minute;
 	defaulttime.Second = second;
 	
-	setDate(defaulttime.Day, defaulttime.Month, (uint16_t)(defaulttime.Year + 1970));
-	setTime(defaulttime.Hour, defaulttime.Minute, defaulttime.Second);
+	/*
+	//Update RTC with Values from Data Model
+	setDate(timeset.Day, timeset.Month, (uint16_t)(timeset.Year + 1970));
+	setTime(timeset.Hour, timeset.Minute, timeset.Second);
+	*/
 
 	LOGDEBUG2(F("[RealTimeClock]"), F("setdefaultTime()"), String(defaulttime.Year), String(defaulttime.Month), String(defaulttime.Day), String(__TIME__));
 
@@ -152,6 +161,7 @@ time_t RealTimeClock::toEpochTime(int year, uint8_t month, uint8_t day, uint8_t 
 	return makeTime(timeset);
 }
 
+/*
 long RealTimeClock::getEpochTime()
 {
 	tmElements_t timeset;
@@ -168,7 +178,7 @@ long RealTimeClock::getEpochTime()
 	
 	return long(makeTime(timeset));
 }
-
+*/
 
 
 String RealTimeClock::printDate(time_t timestamp)
@@ -195,6 +205,7 @@ String RealTimeClock::printTime(time_t timestamp)
 	return String(timeStr);
 }
 
+/*
 void RealTimeClock::syncSensorCycles()
 {
 	tmElements_t timeset;
@@ -210,6 +221,20 @@ void RealTimeClock::syncSensorCycles()
 
 	sensor_cycles =  makeTime(timeset) / SENS_FRQ_SEC;
 	LOGDEBUG2(F("[RealTimeClock]"), F("syncSensorCycles()"), F("OK: Set new sensor cycle"), String(sensor_cycles), "", "");
+}
+*/
+
+
+void RealTimeClock::switch_haltstate()
+{
+	if (haltstate == true) {
+		sensor_cycles = sensor_cycles + ((millis() - haltstate_begin) / (1000 * SENS_FRQ_SEC));
+		haltstate = false;
+	}
+	else {
+		haltstate_begin = millis();
+		haltstate = true;
+	}
 }
 
 void RealTimeClock::syncSensorCycles(uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t second)
