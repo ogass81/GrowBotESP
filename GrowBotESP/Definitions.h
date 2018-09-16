@@ -44,7 +44,7 @@
 #define PACKAGE_SIZE 1024
 
 //Settings
-#define DEBUG_RESET true
+#define DEBUG_RESET false
 
 //Tact
 #define TASK_FRQ_SEC 1
@@ -87,9 +87,9 @@
 #define IN_MOS_4 35
 
 //LED
-#define LED1 4
-#define LED2 2
-#define LED3 2
+#define LED1 2
+#define LED2 4
+#define LED3 25
 
 //LogEngine
 #define LOGBUFFER_SIZE 5

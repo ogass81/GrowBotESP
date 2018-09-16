@@ -152,10 +152,6 @@ bool Setting::saveSettings(const char* filename)
 	bool success = true;
 
 	File file = SD.open(filename, FILE_WRITE);
-	/*
-	file.println("test");
-	file.close();
-	*/
 
 	if (file) {
 		//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("File Open"), "", "", "");
@@ -354,4 +350,252 @@ bool Setting::copyFile(const char* source, const char* destination)
 	}
 
 	return success;
+}
+
+void Setting::saveSettings(void * parameter)
+{
+	LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Starting Tasks"), "", "", "");
+	char json[JSONCHAR_SIZE];
+	int bytes;
+	bool complete;
+	bool success = true;
+
+	String filename = *(String*)parameter;
+
+	File file = SD.open(filename, FILE_WRITE);
+
+	if (file) {
+		//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("File Open"), "", "", "");
+		led[2]->turnOn();
+		//Settings
+		Setting::serializeJSON(json, JSONCHAR_SIZE);
+		file.println(json);
+		LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Overall Settings"), "", "", "");
+
+		for (uint8_t i = 0; i < TRIGGER_TYPES; i++) {
+			for (uint8_t j = 0; j < TRIGGER_SETS; j++) {
+				trigger[i][j]->serializeJSON(i, j, json, JSONCHAR_SIZE, DETAILS);
+				led[2]->switchState();
+				file.println(json);
+				//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Trigger"), F("Cat | Id"), String(i), String(j));
+			}
+		}
+		for (uint8_t i = 0; i < RULESETS_NUM; i++) {
+			rulesets[i]->serializeJSON(i, json, JSONCHAR_SIZE, DETAILS);
+			led[2]->switchState();
+			file.println(json);
+			//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Rule"), F("Id"), String(i), "");
+		}
+		for (uint8_t i = 0; i < ACTIONCHAINS_NUM; i++) {
+			actionchains[i]->serializeJSON(i, json, JSONCHAR_SIZE, DETAILS);
+			led[2]->switchState();
+			file.println(json);
+			//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Actionschain"), F("Id"), String(i), "");
+		}
+		for (uint8_t i = 0; i < SENS_NUM; i++) {
+			sensors[i]->serializeJSON(i, json, JSONCHAR_SIZE, DETAILS);
+			led[2]->switchState();
+			file.println(json);
+			//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Sensor"), F("Id"), String(i), "");
+		}
+		for (uint8_t i = 0; i < RC_SOCKETS; i++) {
+			rcsocketcontroller->serializeJSON(i, json, JSONCHAR_SIZE, DETAILS);
+			led[2]->switchState();
+			file.println(json);
+			//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Remote Socket"), F("Id"), String(i), "");
+		}
+		led[2]->turnOff();
+		file.close();
+
+		LOGMSG(F("[FileSystem]"), F("OK: Saved Settings to file:"), String(filename), "", "");
+	}
+	else {
+		LOGMSG(F("[FileSystem]"), F("ERROR: Could not write to file:"), String(filename), "", "");
+	}
+
+	LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Énding Tasks"), "", "", "");
+	vTaskDelete(NULL);
+}
+
+void Setting::saveActiveConfig(void * parameter)
+{
+	LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Starting Tasks"), "", "", "");
+	char json[JSONCHAR_SIZE];
+	int bytes;
+	bool complete;
+	bool success = true;
+
+	String filename = "/_CURRENTCONFIG.JSON";
+
+	File file = SD.open(filename, FILE_WRITE);
+
+	if (file) {
+		//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("File Open"), "", "", "");
+		led[2]->turnOn();
+		//Settings
+		Setting::serializeJSON(json, JSONCHAR_SIZE);
+		file.println(json);
+		LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Overall Settings"), "", "", "");
+
+		for (uint8_t i = 0; i < TRIGGER_TYPES; i++) {
+			for (uint8_t j = 0; j < TRIGGER_SETS; j++) {
+				trigger[i][j]->serializeJSON(i, j, json, JSONCHAR_SIZE, DETAILS);
+				led[2]->switchState();
+				file.println(json);
+				//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Trigger"), F("Cat | Id"), String(i), String(j));
+			}
+		}
+		for (uint8_t i = 0; i < RULESETS_NUM; i++) {
+			rulesets[i]->serializeJSON(i, json, JSONCHAR_SIZE, DETAILS);
+			led[2]->switchState();
+			file.println(json);
+			//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Rule"), F("Id"), String(i), "");
+		}
+		for (uint8_t i = 0; i < ACTIONCHAINS_NUM; i++) {
+			actionchains[i]->serializeJSON(i, json, JSONCHAR_SIZE, DETAILS);
+			led[2]->switchState();
+			file.println(json);
+			//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Actionschain"), F("Id"), String(i), "");
+		}
+		for (uint8_t i = 0; i < SENS_NUM; i++) {
+			sensors[i]->serializeJSON(i, json, JSONCHAR_SIZE, DETAILS);
+			led[2]->switchState();
+			file.println(json);
+			//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Sensor"), F("Id"), String(i), "");
+		}
+		for (uint8_t i = 0; i < RC_SOCKETS; i++) {
+			rcsocketcontroller->serializeJSON(i, json, JSONCHAR_SIZE, DETAILS);
+			led[2]->switchState();
+			file.println(json);
+			//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Remote Socket"), F("Id"), String(i), "");
+		}
+		led[2]->turnOff();
+		file.close();
+
+		LOGMSG(F("[FileSystem]"), F("OK: Saved Settings to file:"), String(filename), "", "");
+	}
+	else {
+		LOGMSG(F("[FileSystem]"), F("ERROR: Could not write to file:"), String(filename), "", "");
+	}
+
+	LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Énding Tasks"), "", "", "");
+	vTaskDelete(NULL);
+}
+
+void Setting::saveDefaultConfig(void * parameter)
+{
+	LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Starting Tasks"), "", "", "");
+	char json[JSONCHAR_SIZE];
+	int bytes;
+	bool complete;
+	bool success = true;
+
+	String filename = "/DEFAULTCONFIG.JSON";
+
+	File file = SD.open(filename, FILE_WRITE);
+
+	if (file) {
+		//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("File Open"), "", "", "");
+		led[2]->turnOn();
+		//Settings
+		Setting::serializeJSON(json, JSONCHAR_SIZE);
+		file.println(json);
+		LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Overall Settings"), "", "", "");
+
+		for (uint8_t i = 0; i < TRIGGER_TYPES; i++) {
+			for (uint8_t j = 0; j < TRIGGER_SETS; j++) {
+				trigger[i][j]->serializeJSON(i, j, json, JSONCHAR_SIZE, DETAILS);
+				led[2]->switchState();
+				file.println(json);
+				//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Trigger"), F("Cat | Id"), String(i), String(j));
+			}
+		}
+		for (uint8_t i = 0; i < RULESETS_NUM; i++) {
+			rulesets[i]->serializeJSON(i, json, JSONCHAR_SIZE, DETAILS);
+			led[2]->switchState();
+			file.println(json);
+			//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Rule"), F("Id"), String(i), "");
+		}
+		for (uint8_t i = 0; i < ACTIONCHAINS_NUM; i++) {
+			actionchains[i]->serializeJSON(i, json, JSONCHAR_SIZE, DETAILS);
+			led[2]->switchState();
+			file.println(json);
+			//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Actionschain"), F("Id"), String(i), "");
+		}
+		for (uint8_t i = 0; i < SENS_NUM; i++) {
+			sensors[i]->serializeJSON(i, json, JSONCHAR_SIZE, DETAILS);
+			led[2]->switchState();
+			file.println(json);
+			//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Sensor"), F("Id"), String(i), "");
+		}
+		for (uint8_t i = 0; i < RC_SOCKETS; i++) {
+			rcsocketcontroller->serializeJSON(i, json, JSONCHAR_SIZE, DETAILS);
+			led[2]->switchState();
+			file.println(json);
+			//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Remote Socket"), F("Id"), String(i), "");
+		}
+		led[2]->turnOff();
+		file.close();
+
+		LOGMSG(F("[FileSystem]"), F("OK: Saved Settings to file:"), String(filename), "", "");
+	}
+	else {
+		LOGMSG(F("[FileSystem]"), F("ERROR: Could not write to file:"), String(filename), "", "");
+	}
+
+	LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Énding Tasks"), "", "", "");
+	vTaskDelete(NULL);
+}
+
+
+void Setting::backupConfig(void * parameter)
+{
+	LOGDEBUG2(F("[FileSystem]"), F("copyFile()"), F("OK: Starting Tasks"), "", "", "");
+
+	String source = "/_CURRENTCONFIG.JSON";
+	String destination = "/_CURRENTCONFIG.JSON.BAK";
+
+	size_t n;
+	uint8_t buf[64];
+
+	short i = 0;
+	String output;
+	bool success = true;
+
+
+	File current_file = SD.open(source, FILE_READ);
+
+	if (current_file) {
+		LOGDEBUG2(F("[FileSystem]"), F("copyFile()"), F("OK: Source File open"), F("Filename"), String(source), "");
+
+		File backup_file = SD.open(destination, FILE_WRITE);
+
+		if (backup_file) {
+			LOGDEBUG2(F("[FileSystem]"), F("copyFile()"), F("OK: Target File open"), F("Filename"), String(destination), "");
+
+			led[2]->turnOn();
+			while ((current_file.read(buf, sizeof(buf))) > 0) {
+				led[2]->switchState();
+				backup_file.write(buf, sizeof(buf));
+				i++;
+			}
+			led[2]->turnOff();
+
+			output = String(i * 64);
+			current_file.close();
+			backup_file.close();
+			LOGMSG(F("[FileSystem]"), F("OK: Copied settings to backup file"), String(destination), "Filesize", String(output));
+		}
+		else {
+			LOGMSG(F("[FileSystem]"), F("ERROR: Could not open destination file"), String(destination), "", "");
+			success = false;
+		}
+	}
+	else {
+		LOGMSG(F("[FileSystem]"), F("ERROR: Could not open target file"), String(source), "", "");
+		success = false;
+	}
+
+	LOGDEBUG2(F("[FileSystem]"), F("copyFile()"), F("OK: Ending Tasks"), "", "", "");
+	vTaskDelete(NULL);
 }

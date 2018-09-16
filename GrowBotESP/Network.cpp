@@ -249,14 +249,14 @@ void WebServer::checkConnection()
 					client.print(createPostRequest(json));
 				}
 				else if (uri[1] == "default") {
-					Setting::loadSettings("DEFAULTCONFIG.JSON");
+					Setting::loadSettings("/DEFAULTCONFIG.JSON");
 					LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action: LOAD"), "Default Config", "");
 					Setting::serializeJSON(json, JSONCHAR_SIZE);
 					LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Action Object Action: GET"), "", "");
 					client.print(createPostRequest(json));
 				}
 				else if (uri[1] == "active") {
-					Setting::loadSettings("_CURRENTCONFIG.JSON");
+					Setting::loadSettings("/_CURRENTCONFIG.JSON");
 					LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action: LOAD"), "Active Config", "");
 					Setting::serializeJSON(json, JSONCHAR_SIZE);
 					LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Action Object Action: GET"), "", "");
@@ -534,14 +534,16 @@ void WebServer::checkConnection()
 							LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action: SET"), "", "");
 							client.print(createHtmlResponse("200 OK", "JSON received"));
 							LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action: SAVE to Default"), "", "");
-							Setting::saveSettings("DEFAULTCONFIG.JSON");
+
+							xTaskCreate(Setting::saveDefaultConfig, "FileAccess", 16000, NULL, 1, NULL);
 						}
 						else if (uri[1] == "active") {
 							success = Setting::deserializeJSON(node);
 							LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action: SET"), "", "");
 							client.print(createHtmlResponse("200 OK", "JSON received"));
 							LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action: SAVE to Active"), "", "");
-							Setting::saveSettings("_CURRENTCONFIG.JSON");
+														
+							xTaskCreate(Setting::saveActiveConfig,  "FileAccess", 16000, NULL,   1, NULL);
 						}
 						else {
 							LOGMSG(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI: UNKOWN"), "", "");

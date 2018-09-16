@@ -56,6 +56,13 @@ public:
 	static bool loadSettings(const char* filename);
 	static bool saveSettings(const char* filename);
 	static bool copyFile(const char* source, const char* destination);
+
+	//Async File Access
+	static void saveSettings(void * parameter);
+	static void backupConfig(void * parameter);
+
+	static void saveActiveConfig(void * parameter);
+	static void saveDefaultConfig(void * parameter);
 };
 
 

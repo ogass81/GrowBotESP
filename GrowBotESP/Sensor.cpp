@@ -1791,17 +1791,17 @@ BMEPressure::BMEPressure(BME280I2C * bme, bool active, String title, String unit
 
 float BMEPressure::readRaw()
 {
-	return float(bme->pres());
+	return float(bme->pres() / 1000);
 }
 
 float BMEPressure::readValue()
 {
-	return float(bme->pres());
+	return float(bme->pres() / 1000);
 }
 
 String BMEPressure::getValue()
 {
-	return String(bme->hum(), 4) + String(unit);
+	return String(bme->pres() / 1000, 2) + String(unit);
 }
 
 void BMEPressure::setUpperThreshold()
@@ -1883,8 +1883,8 @@ HeightSensor::HeightSensor(Ultrasonic *distance1, Ultrasonic *distance2, bool ac
 	this->max_val = max_val;
 	this->min_val = min_val;
 
-	this->lower_threshold = nan_val;
-	this->upper_threshold = nan_val;
+	this->lower_threshold = 0;
+	this->upper_threshold = 0;
 }
 
 int HeightSensor::readRaw()
@@ -1920,8 +1920,8 @@ void HeightSensor::setLowerThreshold()
 
 void HeightSensor::reset()
 {
-	this->lower_threshold = this->nan_val;
-	this->upper_threshold = this->nan_val;
+	this->lower_threshold = 0;
+	this->upper_threshold = 0;
 
 	this->minute_ptr = SENS_VALUES_MIN;
 	this->hour_ptr = SENS_VALUES_HOUR;

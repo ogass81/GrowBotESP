@@ -101,11 +101,14 @@ void setup() {
 
 	delay(3000);
 	//Initialize FileSystem / SD Card
+	
+	/*
 	auto SPI = SPIClass();
 	SPI.begin();
-	auto speed = 1000000;
+	auto speed = 4000000;
 	if (!SD.begin(SD_CONTROL_PIN, SPI, speed))
-	
+	*/
+
 	if (!SD.begin()) {
 		LOGMSG(F("[Setup]"), F("ERROR: Cannot initialize SD card"), "", "", "");
 	}
@@ -140,7 +143,7 @@ void setup() {
 	//Initialize Sensors
 	sensors[0] = new	BMETemperature(&bme, true, F("Temperature"), F("C"), -127, -50, 100);
 	sensors[1] = new 	BMEHumidity(&bme, true, F("Humidity"), F("%"), -127, 0, 100);
-	sensors[2] = new 	BMEPressure(&bme, true, F("Pressure"), F("p"), -127, 0, 100);
+	sensors[2] = new 	BMEPressure(&bme, true, F("Pressure"), F("kPa"), -127, 50, 150);
 	sensors[3] = new 	CapacityMoistureSensor<short>(IN_MOS_1, 12, 10, ADC_11db, true, F("Soil 1"), F("%"), -1, 0, 1000, 150, 600);
 	sensors[4] = new 	CapacityMoistureSensor<short>(IN_MOS_2, 12, 10, ADC_11db, true, F("Soil 2"), F("%"), -1, 0, 1000, 150, 600);
 	sensors[5] = new 	CapacityMoistureSensor<short>(IN_MOS_3, 12, 10, ADC_11db, true, F("Soil 3"), F("%"), -1, 0, 1000, 150, 600);
@@ -207,7 +210,7 @@ void setup() {
 			String values[] = { "" };
 			logengine.addLogEntry(WARNING, "Main", "Did not load primary config file", keys, values, 0);
 
-			if (Setting::loadSettings("/BACKUPCONFIG.JSON") == false) {
+			if (Setting::loadSettings("/_CURRENTCONFIG.JSON.BAK") == false) {
 				LOGMSG("[Setup]", "WARNING: Did not load backup config file", "Hardreset", DEBUG_RESET, "");
 				String keys[] = { "" };
 				String values[] = { "" };
@@ -273,12 +276,11 @@ void setup() {
 	if (timestamp > 0) {
 		String keys[] = { "" };
 		String values[] = { "" };
-		logengine.addLogEntry(INFO, "[RealTimeClock]", "Received Internet Time", keys, values, 0);
+		logengine.addLogEntry(INFO, "RealTimeClock", "Received Internet Time", keys, values, 0);
 		LOGDEBUG2("[RealTimeClock]", "syncSensorCycles()", "OK: Set new sensor cycle", String(sensor_cycles), "", "");
 
 		internalRTC.updateTime(timestamp, true);
 	}
-
 }
 
 
@@ -337,17 +339,17 @@ void loop() {
 				String values[] = { "" };
 				logengine.addLogEntry(INFO, "Main", "Saved Configuration", keys, values, 0);
 
-				Setting::saveSettings("/_CURRENTCONFIG.JSON");
+				xTaskCreate(Setting::saveActiveConfig, "FileAccess", 16000, NULL, 1, NULL);
 			}
 
 			//Backup
-			if ((sensor_cycles % (30 * SENS_VALUES_MIN)) == 0) {
+			if ((sensor_cycles % (15 * SENS_VALUES_MIN)) == 0) {
 				LOGMSG(F("[Loop]"), F("SaveActive"), "", "", "");
 				String keys[] = { "" };
 				String values[] = { "" };
 				logengine.addLogEntry(INFO, "Main", "Backup Configuration", keys, values, 0);
 
-				//Setting::copyFile("/DEFAULTCONFIG.JSON", "/BACKUPCONFIG.JSON");
+				xTaskCreate(Setting::backupConfig, "FileAccess", 32000, NULL, 1, NULL);
 			}		
 		}
 
