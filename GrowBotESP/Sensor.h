@@ -264,13 +264,11 @@ public:
 	bool compareWithValue(RelOp relop, Interval interval, int value, int8_t tolerance);
 };
 
-
-class HeightSensor : public BaseSensor<int> {
+class DistanceLampSensor : public BaseSensor<int> {
 private:
-	Ultrasonic *distance1 = NULL;
-	Ultrasonic *distance2 = NULL;
+	Ultrasonic *distance = NULL;
 public:
-	HeightSensor(Ultrasonic *distance1, Ultrasonic *distance2, bool active, String title, String unit, int nan_val, int min_val, int max_val);
+	DistanceLampSensor(Ultrasonic *distance, bool active, String title, String unit, int nan_val, int min_val, int max_val);
 	int readRaw();
 	int readValue();
 	String getValue();
@@ -283,11 +281,15 @@ public:
 	bool compareWithValue(RelOp relop, Interval interval, int value, int8_t tolerance);
 };
 
-class DistanceLampSensor : public BaseSensor<int> {
+class HeightSensor : public BaseSensor<int> {
 private:
-	Ultrasonic *distance = NULL;
+	Ultrasonic *distance1 = NULL;
+	Ultrasonic *distance2 = NULL;
 public:
-	DistanceLampSensor(Ultrasonic *distance, bool active, String title, String unit, int nan_val, int min_val, int max_val);
+	HeightSensor(Ultrasonic *distance1, Ultrasonic *distance2, bool active, String title, String unit, int nan_val, int min_val, int max_val);
+	
+	float readSensor(Ultrasonic *sensor);
+	
 	int readRaw();
 	int readValue();
 	String getValue();

@@ -100,15 +100,16 @@ void setup() {
 	Serial.begin(115200);
 
 	delay(3000);
-	//Initialize FileSystem / SD Card
-	
-	/*
-	auto SPI = SPIClass();
-	SPI.begin();
-	auto speed = 4000000;
-	if (!SD.begin(SD_CONTROL_PIN, SPI, speed))
-	*/
 
+	//Status Led
+	led[0] = new Led(LED1, false);
+	led[1] = new Led(LED2, false);
+	led[2] = new Led(LED3, false);
+	
+	
+	led[1]->turnOn();
+
+	//Initialize FileSystem / SD Card
 	if (!SD.begin()) {
 		LOGMSG(F("[Setup]"), F("ERROR: Cannot initialize SD card"), "", "", "");
 	}
@@ -148,9 +149,8 @@ void setup() {
 	sensors[4] = new 	CapacityMoistureSensor<short>(IN_MOS_2, 12, 10, ADC_11db, true, F("Soil 2"), F("%"), -1, 0, 1000, 150, 600);
 	sensors[5] = new 	CapacityMoistureSensor<short>(IN_MOS_3, 12, 10, ADC_11db, true, F("Soil 3"), F("%"), -1, 0, 1000, 150, 600);
 	sensors[6] = new 	CapacityMoistureSensor<short>(IN_MOS_4, 12, 10, ADC_11db, true, F("Soil 4"), F("%"), -1, 0, 1000, 150, 600);
-	sensors[7] = new 	HeightSensor(&distance1, &distance2, true, F("Height Sensor"), F("cm"), -1, 0, 400);
-	sensors[8] = new 	DistanceLampSensor(&distance2, true, F("Distance Lamp"), F("cm"), -1, 0, 400);
-
+	sensors[7] = new 	DistanceLampSensor(&distance2, true, F("Distance Lamp"), F("cm"), -1, 0, 400);
+	sensors[8] = new 	HeightSensor(&distance1, &distance2, true, F("Height Sensor"), F("cm"), -1, 0, 400);
 
 
 	//Intialize Actions
@@ -255,7 +255,7 @@ void setup() {
 
 		if (failed > WIFI_TIMEOUT) {
 			while (true) {
-				led[0]->switchState();
+				led[2]->switchState();
 				delay(500);
 			}
 		}
@@ -286,8 +286,7 @@ void setup() {
 
 // the loop function runs over and over again until power down or reset
 void loop() {
-  
-
+ 
 	//Get Seconds from Clock
 	cpu_current = millis();
 	if (cpu_current % 5 == 0) {

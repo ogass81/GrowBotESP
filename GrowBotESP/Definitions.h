@@ -9,7 +9,7 @@
 	#include "WProgram.h"
 #endif
 
-#define GROWBOT_FIRMWARE 1
+#define GROWBOT_FIRMWARE 2
 
 #define SERIAL_BUFFER_SIZE 256
 
@@ -34,11 +34,11 @@
 #define JSONBUFFER_BIG 1500
 
 //Distance
-#define DIST1_TRIG 32
-#define DIST1_ECHO 33
+#define DIST1_TRIG 33
+#define DIST1_ECHO 32
 
-#define DIST2_TRIG 26
-#define DIST2_ECHO 27
+#define DIST2_TRIG 27
+#define DIST2_ECHO 26
 
 //Network
 #define PACKAGE_SIZE 1024
@@ -105,13 +105,13 @@ enum TriggerTypes { TIME, SENSOR };
 enum LogTypes { INFO, DEBUG, ERROR, WARNING, ACTION};
 enum SensorTypes { TEMPERATURE, HUMIDITY, PRESSURE, DISTANCE, SOILMOISTURE, HEIGHT, OTHER };
 
-#define LOGLEVEL 5
+#define LOGLEVEL 3
 
 #define LOGMSG(classname, msg, par1, par2, par3)   if(LOGLEVEL >1) { Serial.print(classname); Serial.print(" "); Serial.print(msg); Serial.print(" "); Serial.print(par1); Serial.print(" "); Serial.print(par2); Serial.print(" "); Serial.println(par3); }
 #define LOGMSG2(classname, msg, par1, par2, par3, par4)   if(LOGLEVEL >2) { Serial.print(classname); Serial.print(" "); Serial.print(msg); Serial.print(" "); Serial.print(par1); Serial.print(" "); Serial.print(par2); Serial.print(" "); Serial.print(par3);  }
 #define LOGDEBUG(classname, method, msg, par1, par2, par3)   if(LOGLEVEL >3) { Serial.print(classname); Serial.print(" "); Serial.print(method); Serial.print(" "); Serial.print(msg); Serial.print(" "); Serial.print(par1); Serial.print(" "); Serial.print(par2); Serial.print(" "); Serial.println(par3); }
 #define LOGDEBUG2(classname, method, msg, par1, par2, par3)   if(LOGLEVEL >4) { Serial.print(classname); Serial.print(" "); Serial.print(method); Serial.print(" "); Serial.print(msg); Serial.print(" "); Serial.print(par1); Serial.print(" "); Serial.print(par2); Serial.print(" "); Serial.println(par3); }
-#define LOGDEBUG3(classname, method)   if(LOGLEVEL >5) { Serial.print(classname); Serial.print(" "); Serial.print(method);}
+#define LOGDEBUG3(classname, method, msg, par1, par2, par3)   if(LOGLEVEL >5) { Serial.print(classname); Serial.print(" "); Serial.print(method); Serial.print(" "); Serial.print(msg); Serial.print(" "); Serial.print(par1); Serial.print(" "); Serial.print(par2); Serial.print(" "); Serial.println(par3); }
 
 #define LOGDEBUG4(label1, value1, label2, value2, label3, value3, label4, value4)   if(LOGLEVEL > 0) { Serial.print(label1); Serial.print(":"); Serial.print(value1); Serial.print(" "); Serial.print(label2); Serial.print(":"); Serial.print(value2);  Serial.print(" ");  Serial.print(label3); Serial.print(":"); Serial.print(value3);  Serial.print(" ");  Serial.print(label4); Serial.print(":"); Serial.println(value4);}
 
