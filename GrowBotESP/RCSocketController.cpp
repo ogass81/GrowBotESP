@@ -426,6 +426,24 @@ void RCSocketController::serializeJSON(char * json, size_t maxSize, Scope scope)
 	LOGDEBUG2(F("[RCSocketController]"), F("serializeJSON()"), F("OK: Serialized remote sockets"), String(controller.measureLength()), String(maxSize), "");
 }
 
+void RCSocketController::serializeJSON(JsonObject & data, Scope scope, uint8_t set)
+{
+	if (set >= RC_SOCKETS) {
+		data["obj"] = "RCSOCKET";
+		JsonArray& list = data.createNestedArray("list");
+
+		for (uint8_t i = 0; i < RC_SOCKETS; i++) {
+			JsonObject& socket = list.createNestedObject();
+			socketcode[i]->serializeJSON(socket, scope);
+			list.add(socket);
+		}
+	}
+	else {
+		socketcode[set]->serializeJSON(data, scope);
+	}
+	LOGDEBUG2(F("[RCSocketController]"), F("serializeJSON()"), F("OK: Serialized remote sockets"), String(data.measureLength()), "", "");
+}
+
 bool RCSocketController::deserializeJSON(uint8_t set, JsonObject & data)
 {
 	bool success = true;

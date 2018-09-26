@@ -45,6 +45,7 @@ public:
 	virtual void reset();
 
 	virtual void serializeJSON(uint8_t id, char* json, size_t maxSize, Scope scope);
+	virtual void serializeJSON(JsonObject& data, Scope scope);
 	virtual bool deserializeJSON(JsonObject& data);
 };
 
@@ -57,6 +58,7 @@ private:
 	ReturnType fromNAN(String str);
 public:
 	//Sensor Info
+	uint8_t id;
 	String title;
 	String unit;
 	SensorTypes type;
@@ -136,6 +138,7 @@ public:
 	
 	//Serialize
 	void serializeJSON(uint8_t id, char* json, size_t maxSize, Scope scope);
+	void serializeJSON(JsonObject& data, Scope scope);
 	bool deserializeJSON(JsonObject& data);
 };
 
@@ -144,7 +147,7 @@ class AnalogMoistureSensor : public BaseSensor<ReturnType> {
 public:
 	uint8_t power_pin;
 
-	AnalogMoistureSensor(uint8_t pin, uint8_t power_pin, bool active, String title, String unit, ReturnType nan_val, ReturnType min_val, ReturnType max_val, ReturnType lower_threshold, ReturnType upper_threshold);
+	AnalogMoistureSensor(uint8_t id, uint8_t pin, uint8_t power_pin, bool active, String title, String unit, ReturnType nan_val, ReturnType min_val, ReturnType max_val, ReturnType lower_threshold, ReturnType upper_threshold);
 	ReturnType readRaw();
 	ReturnType readValue();
 	String getValue();
@@ -165,7 +168,7 @@ public:
 	uint8_t width;
 	adc_attenuation_t attentuation;
 
-	CapacityMoistureSensor(uint8_t pin, uint8_t resolution, uint8_t width, adc_attenuation_t attentuation, bool active, String title, String unit, ReturnType nan_val, ReturnType min_val, ReturnType max_val, ReturnType lower_threshold, ReturnType upper_threshold);
+	CapacityMoistureSensor(uint8_t id, uint8_t pin, uint8_t resolution, uint8_t width, adc_attenuation_t attentuation, bool active, String title, String unit, ReturnType nan_val, ReturnType min_val, ReturnType max_val, ReturnType lower_threshold, ReturnType upper_threshold);
 	ReturnType readRaw();
 	ReturnType readValue();
 	String getValue();
@@ -183,7 +186,7 @@ class DHTTemperature : public BaseSensor<int8_t> {
 private: 
 	DHT *dht = NULL;
 public:
-	DHTTemperature(DHT *dht, bool active, String title, String unit, int8_t nan_val, int8_t min_val, int8_t max_val);
+	DHTTemperature(uint8_t id, DHT *dht, bool active, String title, String unit, int8_t nan_val, int8_t min_val, int8_t max_val);
 	int8_t readRaw();
 	int8_t readValue();
 	String getValue();
@@ -200,7 +203,7 @@ class BMETemperature : public BaseSensor<float> {
 private:
 	BME280I2C *bme = NULL;
 public:
-	BMETemperature(BME280I2C *bme, bool active, String title, String unit, int8_t nan_val, int8_t min_val, int8_t max_val);
+	BMETemperature(uint8_t id, BME280I2C *bme, bool active, String title, String unit, int8_t nan_val, int8_t min_val, int8_t max_val);
 	float readRaw();
 	float readValue();
 	String getValue();
@@ -217,7 +220,7 @@ class DHTHumidity : public BaseSensor<int8_t> {
 private:
 	DHT *dht = NULL;
 public:
-	DHTHumidity(DHT *dht, bool active, String title, String unit, int8_t nan_val, int8_t min_val, int8_t max_val);
+	DHTHumidity(uint8_t id, DHT *dht, bool active, String title, String unit, int8_t nan_val, int8_t min_val, int8_t max_val);
 	int8_t readRaw();
 	int8_t readValue();
 	String getValue();
@@ -234,7 +237,7 @@ class BMEHumidity : public BaseSensor<float> {
 private:
 	BME280I2C *bme = NULL;
 public:
-	BMEHumidity(BME280I2C *bme, bool active, String title, String unit, int8_t nan_val, int8_t min_val, int8_t max_val);
+	BMEHumidity(uint8_t id, BME280I2C *bme, bool active, String title, String unit, int8_t nan_val, int8_t min_val, int8_t max_val);
 	float readRaw();
 	float readValue();
 	String getValue();
@@ -251,7 +254,7 @@ class BMEPressure : public BaseSensor<float> {
 private:
 	BME280I2C *bme = NULL;
 public:
-	BMEPressure(BME280I2C *bme, bool active, String title, String unit, int8_t nan_val, int8_t min_val, int8_t max_val);
+	BMEPressure(uint8_t id, BME280I2C *bme, bool active, String title, String unit, int8_t nan_val, int8_t min_val, int8_t max_val);
 	float readRaw();
 	float readValue();
 	String getValue();
@@ -268,7 +271,7 @@ class DistanceLampSensor : public BaseSensor<int> {
 private:
 	Ultrasonic *distance = NULL;
 public:
-	DistanceLampSensor(Ultrasonic *distance, bool active, String title, String unit, int nan_val, int min_val, int max_val);
+	DistanceLampSensor(uint8_t id, Ultrasonic *distance, bool active, String title, String unit, int nan_val, int min_val, int max_val);
 	int readRaw();
 	int readValue();
 	String getValue();
@@ -286,7 +289,7 @@ private:
 	Ultrasonic *distance1 = NULL;
 	Ultrasonic *distance2 = NULL;
 public:
-	HeightSensor(Ultrasonic *distance1, Ultrasonic *distance2, bool active, String title, String unit, int nan_val, int min_val, int max_val);
+	HeightSensor(uint8_t id, Ultrasonic *distance1, Ultrasonic *distance2, bool active, String title, String unit, int nan_val, int min_val, int max_val);
 	
 	float readSensor(Ultrasonic *sensor);
 	

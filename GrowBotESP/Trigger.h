@@ -24,7 +24,8 @@ extern long sensor_cycles;
 class Trigger {
 public:
 	//Basic Information
-	uint8_t id;
+	int id;
+	uint8_t cat;
 	String title;
 	String source;
 	bool active;
@@ -60,16 +61,18 @@ public:
 
 	//Serialization
 	virtual void serializeJSON(uint8_t cat, uint8_t id, char* json, size_t maxSize, Scope scope);
+	virtual void serializeJSON(JsonObject& data, Scope scope);
 	virtual bool deserializeJSON(JsonObject& data);
 };
 
 //Specialization of Trigger with predefined methods for RTC access
 class TimeTrigger : public Trigger {
 public:
-	TimeTrigger(int id);
+	TimeTrigger(int id, uint8_t cat);
 	bool checkState();
 
 	void serializeJSON(uint8_t cat, uint8_t id, char* json, size_t maxSize, Scope scope);
+	void serializeJSON(JsonObject& data, Scope scope);
 	bool deserializeJSON(JsonObject& data);
 
 	void reset();
@@ -83,11 +86,12 @@ public:
 	Sensor *sens_ptr;
 
 	//Ref to Sensor Object
-	SensorTrigger(int id, Sensor *ptr);
+	SensorTrigger(int id, uint8_t cat, Sensor *ptr);
 
 	bool checkState();
 
 	void serializeJSON(uint8_t cat, uint8_t id, char* json, size_t maxSize, Scope scope);
+	void serializeJSON(JsonObject& data, Scope scope);
 	bool deserializeJSON(JsonObject& data);
 
 	void reset();

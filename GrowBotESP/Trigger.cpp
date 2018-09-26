@@ -34,6 +34,10 @@ void Trigger::serializeJSON(uint8_t cat, uint8_t id, char * json, size_t maxSize
 {
 }
 
+void Trigger::serializeJSON(JsonObject & data, Scope scope)
+{
+}
+
 bool Trigger::deserializeJSON(JsonObject & data)
 {
 	return false;
@@ -67,6 +71,31 @@ void TimeTrigger::serializeJSON(uint8_t cat, uint8_t id, char * json, size_t max
 
 	trigger.printTo(json, maxSize);
 	LOGDEBUG2(F("[Trigger]"), F("serializeJSON()"), F("OK: Serialized Members for Trigger"), String(getTitle()), String(trigger.measureLength()), String(maxSize));
+}
+
+void TimeTrigger::serializeJSON(JsonObject & data, Scope scope)
+{
+	if (scope == LIST || scope == DETAILS) {
+		data["tit"] = title;
+		data["act"] = active;
+		data["src"] = source;
+		data["typ"] = static_cast<int>(type);
+	}
+
+	if (scope == DETAILS) {
+		data["obj"] = "TRIGGER";
+		data["cat"] = cat;
+		data["id"] = id;
+		data["start_time"] = start_time;
+		data["end_time"] = end_time;
+		data["relop"] = static_cast<int>(relop);
+		data["fire"] = fired;
+		data["val"] = threshold;
+		data["intv"] = static_cast<int>(interval);
+		data["tol"] = tolerance;
+	}
+
+	LOGDEBUG2(F("[Trigger]"), F("serializeJSON()"), F("OK: Serialized Members for Trigger"), String(data.measureLength()), "" , "");
 }
 
 bool TimeTrigger::deserializeJSON(JsonObject& data)
@@ -151,10 +180,11 @@ void TimeTrigger::reset()
 }
 
 
-TimeTrigger::TimeTrigger(int id)
+TimeTrigger::TimeTrigger(int id, uint8_t cat)
 	: Trigger()
 {
 	this->id = id;
+	this->cat = cat;
 	this->title = "Timer " + String(id);
 	this->type = TIME;
 	this->source = String(F("RTC"));
@@ -389,10 +419,11 @@ int TimeTrigger::checkStateInterval(long sensor_start, uint8_t length)
 }
 
 
-SensorTrigger::SensorTrigger(int id, Sensor *ptr)
+SensorTrigger::SensorTrigger(int id, uint8_t cat, Sensor *ptr)
 	: Trigger()
 {
 	this->id = id;
+	this->cat = cat;
 	this->sens_ptr = ptr;
 	this->title += "Comparator ";
 	this->title += String(id);
@@ -438,6 +469,30 @@ if (scope == DETAILS) {
 
 trigger.printTo(json, maxSize);
 LOGDEBUG2(F("[Trigger]"), F("serializeJSON()"), F("OK: Serialized Members for Trigger"), String(getTitle()), String(trigger.measureLength()), String(maxSize));
+}
+
+void SensorTrigger::serializeJSON(JsonObject & data, Scope scope)
+{
+	if (scope == LIST || scope == DETAILS) {
+		data["tit"] = title;
+		data["act"] = active;
+		data["src"] = source;
+		data["typ"] = static_cast<int>(type);
+	}
+
+	if (scope == DETAILS) {
+		data["obj"] = "TRIGGER";
+		data["cat"] = cat;
+		data["id"] = id;
+		data["start_time"] = start_time;
+		data["end_time"] = end_time;
+		data["intv"] = static_cast<int>(interval);
+		data["relop"] = static_cast<int>(relop);
+		data["val"] = threshold;
+		data["tol"] = tolerance;
+	}
+
+	LOGDEBUG2(F("[Trigger]"), F("serializeJSON()"), F("OK: Serialized Members for Trigger"), String(data.measureLength()), "", "");
 }
 
 bool SensorTrigger::deserializeJSON(JsonObject& data)

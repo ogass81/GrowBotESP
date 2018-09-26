@@ -35,7 +35,7 @@ public:
 	BoolOp assignedBoolOp[2];
 	ActionChain *assignedChain;
 
-	RuleSet(int count);
+	RuleSet(uint8_t id);
 
 	//UI Output
 	String getTitle();
@@ -49,6 +49,7 @@ public:
 
 	//Serialize
 	void serializeJSON(uint8_t id, char* json, size_t maxSize, Scope scope);
+	void serializeJSON(JsonObject& data, Scope scope);
 	bool deserializeJSON(JsonObject& data);
 
 	void execute();

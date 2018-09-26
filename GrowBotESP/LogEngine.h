@@ -46,6 +46,7 @@ public:
 
 	void addParameter(String key, String value);
 	String serializeJSON();
+	void serializeJSON(JsonObject& data);
 };
 
 
@@ -53,22 +54,24 @@ class LogEngine {
 private:
 	uint8_t entry_ptr;
 	LogEntry *log_buffer[LOGBUFFER_SIZE];
+	const char* filename;
 
 public:
-	LogEngine();
+	LogEngine(const char* filename);
 
 	void begin();
 	int counter;
 	void addLogEntry(LogTypes type, String origin, String message, String keys[], String values[], uint8_t size);
 	void serializeJSON(char* json, size_t maxSize, int end, int count);
+	void serializeJSON(JsonObject& data, DynamicJsonBuffer& buffer, int end, int count);
 	void reset();
 private:
 	void saveToFile();
 
-	bool appendLinesToFile(const char * filename, String data[], uint8_t size);
-	void readLinesFromFile(const char* filename, int counter, int start, int end, char * json, int size);
-	int fileLength(const char* filename);
-	bool resetFile(const char* filename);
+	bool appendLinesToFile(String data[], uint8_t size);
+	void readLinesFromFile(int counter, int start, int end, char * json, int size);
+	int fileLength();
+	bool resetFile();
 };
 
 #endif

@@ -11,11 +11,6 @@
 
 #define GROWBOT_FIRMWARE 2
 
-#define SERIAL_BUFFER_SIZE 256
-
-//SD Card Control Pin
-#define SD_CONTROL_PIN 5
-
 //Wifi
 #define WIFI_TIMEOUT 30
 
@@ -44,7 +39,7 @@
 #define PACKAGE_SIZE 1024
 
 //Settings
-#define DEBUG_RESET false
+#define DEBUG_RESET true
 
 //Tact
 #define TASK_FRQ_SEC 1
@@ -64,7 +59,7 @@
 
 //Rules Enginge
 //Trigger Categories and number for each category
-#define TRIGGER_TYPES 5
+#define TRIGGER_TYPES 10
 #define TRIGGER_SETS 8
 
 //Number of Rulesssets

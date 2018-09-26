@@ -4,9 +4,9 @@
 
 #include "Ruleset.h"
 
-RuleSet::RuleSet(int count)
+RuleSet::RuleSet(uint8_t id)
 {
-	id = count;
+	this->id = id;
 	reset();
 }
 
@@ -109,6 +109,32 @@ void RuleSet::serializeJSON(uint8_t id, char * json, size_t maxSize, Scope scope
 
 	rules.printTo(json, maxSize);
 	LOGDEBUG2(F("[Ruleset]"), F("serializeJSON()"), F("OK: Serialized Members for Ruleset"), String(id), String(rules.measureLength()), String(maxSize));
+}
+
+void RuleSet::serializeJSON(JsonObject & data, Scope scope)
+{
+	if (scope == LIST || scope == DETAILS) {
+		data["tit"] = title;
+		data["act"] = active;
+	}
+
+	if (scope == DETAILS) {
+		data["id"] = id;
+		data["obj"] = "RULESET";
+		data["tcat1_ptr"] = triggercat1_ptr;
+		data["tset1_ptr"] = triggerset1_ptr;
+		data["tcat2_ptr"] = triggercat2_ptr;
+		data["tset2_ptr"] = triggerset2_ptr;
+		data["tcat3_ptr"] = triggercat3_ptr;
+		data["tset3_ptr"] = triggerset3_ptr;
+		data["chain_ptr"] = chain_ptr;
+
+		JsonArray& boolop = data.createNestedArray("bool");
+		boolop.add(static_cast<int>(assignedBoolOp[0]));
+		boolop.add(static_cast<int>(assignedBoolOp[1]));
+	}
+
+	LOGDEBUG2(F("[Ruleset]"), F("serializeJSON()"), F("OK: Serialized Members for Ruleset"), String(data.measureLength()), "", "");
 }
 
 bool RuleSet::deserializeJSON(JsonObject & data)

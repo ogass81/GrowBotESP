@@ -63,6 +63,10 @@ void Sensor::serializeJSON(uint8_t id, char * json, size_t maxSize, Scope scope)
 {
 }
 
+void Sensor::serializeJSON(JsonObject & data, Scope scope)
+{
+}
+
 bool Sensor::deserializeJSON(JsonObject & data)
 {
 	return false;
@@ -858,6 +862,131 @@ void BaseSensor<ReturnType>::serializeJSON(uint8_t id, char * json, size_t maxSi
 }
 
 template<class ReturnType>
+void BaseSensor<ReturnType>::serializeJSON(JsonObject & data, Scope scope)
+{
+	//List View
+	if (scope == LIST) {
+
+		data["tit"] = title;
+		data["unit"] = unit;
+		data["typ"] = static_cast<int>(type);
+		data["val"] = getTenSecAvg();
+	}
+
+	//Sensor View
+	//Header
+	if (scope == HEADER || scope == DETAILS || scope == AVG || scope == DATE_MINUTE || scope == DATE_HOUR || scope == DATE_DAY || scope == DATE_MONTH || scope == DATE_YEAR || scope == DATE_ALL) {
+		data["obj"] = "SENSOR";
+
+		//Too much data for AT Interface => different scopes
+		switch (scope) {
+		case Scope::HEADER:
+			data["scp"] = "HEADER";
+			break;
+		case Scope::DETAILS:
+			data["scp"] = "DETAILS";
+			break;
+		case Scope::AVG:
+			data["scp"] = "AVG";
+			break;
+		case Scope::DATE_MINUTE:
+			data["scp"] = "MIN";
+			break;
+		case Scope::DATE_HOUR:
+			data["scp"] = "HOUR";
+			break;
+		case Scope::DATE_DAY:
+			data["scp"] = "DAY";
+			break;
+		case Scope::DATE_MONTH:
+			data["scp"] = "MON";
+			break;
+		case Scope::DATE_YEAR:
+			data["scp"] = "YEAR";
+			break;
+		case Scope::DATE_ALL:
+			data["scp"] = "ALL";
+			break;
+		}
+
+		data["id"] = id;
+		data["tit"] = title;
+		data["typ"] = static_cast<int>(type);
+		data["unit"] = unit;
+		data["nan"] = nan_val;
+		data["min"] = min_val;
+		data["max"] = max_val;
+		data["low"] = lower_threshold;
+		data["high"] = upper_threshold;
+	}
+
+	//AVG Values
+	if (scope == DETAILS || scope == AVG) {
+		JsonObject& avg = data.createNestedObject("avg_vals");
+		avg["last"] = getLastValue();
+		avg["10s"] = getTenSecAvg();
+		avg["20s"] = getTwentySecAvg();
+		avg["30s"] = getThirtySecAvg();
+		avg["1min"] = getOneMinAvg();
+		avg["2min"] = getTwoMinAvg();
+		avg["5min"] = getFiveMinAvg();
+		avg["15min"] = getQuarterHourAvg();
+		avg["30min"] = getHalfHourAvg();
+		avg["1h"] = getHourAvg();
+		avg["2h"] = getTwoHourAvg();
+		avg["3h"] = getThreeHourAvg();
+		avg["4h"] = getFourHourAvg();
+		avg["6h"] = getSixHourAvg();
+		avg["12h"] = getTwelveHourAvg();
+		avg["1d"] = getDayAvg();
+		avg["2d"] = getTwoDayAvg();
+		avg["1w"] = getWeekAvg();
+		avg["2w"] = getTwoWeekAvg();
+	}
+
+	//Min Values
+	if (scope == DETAILS || scope == DATE_MINUTE || scope == DATE_ALL) {
+		data["min_ptr"] = minute_ptr;
+		data["frq"] = SENS_VALUES_MIN;
+		JsonArray& minutes = data.createNestedArray("min_vals");
+		for (uint8_t j = 0; j < SENS_VALUES_MIN; j++) minutes.add(toNAN(minute_values[j]));
+	}
+
+	//Hour Values
+	if (scope == DETAILS || scope == DATE_HOUR || scope == DATE_ALL) {
+		data["h_ptr"] = hour_ptr;
+		data["frq"] = SENS_VALUES_HOUR;
+		JsonArray& hours = data.createNestedArray("h_vals");
+		for (uint8_t j = 0; j < SENS_VALUES_HOUR; j++) hours.add(toNAN(hour_values[j]));
+	}
+
+	//Day Values
+	if (scope == DETAILS || scope == DATE_DAY || scope == DATE_ALL) {
+		data["d_ptr"] = day_ptr;
+		data["frq"] = SENS_VALUES_DAY;
+		JsonArray& days = data.createNestedArray("d_vals");
+		for (uint8_t j = 0; j < SENS_VALUES_DAY; j++) days.add(toNAN(day_values[j]));
+	}
+
+	//Month Values
+	if (scope == DETAILS || scope == DATE_MONTH || scope == DATE_ALL) {
+		data["m_ptr"] = month_ptr;
+		data["frq"] = SENS_VALUES_MONTH;
+		JsonArray& month = data.createNestedArray("m_vals");
+		for (uint8_t j = 0; j < SENS_VALUES_MONTH; j++) month.add(toNAN(month_values[j]));
+	}
+
+	//Year Values
+	if (scope == DETAILS || scope == DATE_YEAR || scope == DATE_ALL) {
+		data["y_ptr"] = year_ptr;
+		data["frq"] = SENS_VALUES_YEAR;
+		JsonArray& year = data.createNestedArray("y_vals");
+		for (uint8_t j = 0; j < SENS_VALUES_YEAR; j++) year.add(toNAN(year_values[j]));
+	}
+	LOGDEBUG2(F("[BaseSensor]"), F("serializeJSON()"), F("OK: Serialized members for Sensor"), String(data.measureLength()), "", "");
+}
+
+template<class ReturnType>
 bool BaseSensor<ReturnType>::deserializeJSON(JsonObject & data)
 {
 	if (data.success() == true) {
@@ -885,8 +1014,9 @@ bool BaseSensor<ReturnType>::deserializeJSON(JsonObject & data)
 }
 
 template<class ReturnType>
-AnalogMoistureSensor<ReturnType>::AnalogMoistureSensor(uint8_t pin, uint8_t power_pin, bool active, String title, String unit, ReturnType nan_val, ReturnType min_val, ReturnType max_val, ReturnType lower_threshold, ReturnType upper_threshold)
+AnalogMoistureSensor<ReturnType>::AnalogMoistureSensor(uint8_t id, uint8_t pin, uint8_t power_pin, bool active, String title, String unit, ReturnType nan_val, ReturnType min_val, ReturnType max_val, ReturnType lower_threshold, ReturnType upper_threshold)
 {
+	this->id = id;
 	this->pin = pin;
 	this->power_pin = power_pin;
 	this->active = active;
@@ -1139,8 +1269,9 @@ String AnalogMoistureSensor<float>::getValue()
 
 //Capacity
 template<class ReturnType>
-CapacityMoistureSensor<ReturnType>::CapacityMoistureSensor(uint8_t pin, uint8_t resolution, uint8_t width, adc_attenuation_t attentuation, bool active, String title, String unit, ReturnType nan_val, ReturnType min_val, ReturnType max_val, ReturnType lower_threshold, ReturnType upper_threshold)
+CapacityMoistureSensor<ReturnType>::CapacityMoistureSensor(uint8_t id, uint8_t pin, uint8_t resolution, uint8_t width, adc_attenuation_t attentuation, bool active, String title, String unit, ReturnType nan_val, ReturnType min_val, ReturnType max_val, ReturnType lower_threshold, ReturnType upper_threshold)
 {
+	this->id = id;
 	this->pin = pin;
 	this->resolution = resolution;
 	this->width = width;
@@ -1386,8 +1517,9 @@ bool CapacityMoistureSensor<float>::compareWithValue(RelOp relop, Interval inter
 	return state;
 }
 
-DHTTemperature::DHTTemperature(DHT *hardware, bool active, String title, String unit, int8_t nan_val, int8_t min_val, int8_t max_val)
+DHTTemperature::DHTTemperature(uint8_t id, DHT *hardware, bool active, String title, String unit, int8_t nan_val, int8_t min_val, int8_t max_val)
 {
+	this->id = id;
 	this->dht = hardware;
 
 	this->title = title;
@@ -1484,8 +1616,9 @@ bool DHTTemperature::compareWithValue(RelOp relop, Interval interval, int value,
 	return state;
 }
 
-DHTHumidity::DHTHumidity(DHT *hardware, bool active, String title, String unit, int8_t nan_val, int8_t min_val, int8_t max_val)
+DHTHumidity::DHTHumidity(uint8_t id, DHT *hardware, bool active, String title, String unit, int8_t nan_val, int8_t min_val, int8_t max_val)
 {
+	this->id = id;
 	this->dht = hardware;
 
 	this->title = title;
@@ -1577,8 +1710,9 @@ bool DHTHumidity::compareWithValue(RelOp relop, Interval interval, int value, in
 	return state;
 }
 
-BMETemperature::BMETemperature(BME280I2C * bme, bool active, String title, String unit, int8_t nan_val, int8_t min_val, int8_t max_val)
+BMETemperature::BMETemperature(uint8_t id, BME280I2C * bme, bool active, String title, String unit, int8_t nan_val, int8_t min_val, int8_t max_val)
 {
+	this->id = id;
 	this->bme = bme;
 
 	this->title = title;
@@ -1677,8 +1811,9 @@ bool BMETemperature::compareWithValue(RelOp relop, Interval interval, int value,
 	return state;
 }
 
-BMEHumidity::BMEHumidity(BME280I2C * bme, bool active, String title, String unit, int8_t nan_val, int8_t min_val, int8_t max_val)
+BMEHumidity::BMEHumidity(uint8_t id, BME280I2C * bme, bool active, String title, String unit, int8_t nan_val, int8_t min_val, int8_t max_val)
 {
+	this->id = id;
 	this->bme = bme;
 
 	this->title = title;
@@ -1776,8 +1911,9 @@ bool BMEHumidity::compareWithValue(RelOp relop, Interval interval, int value, in
 	return state;
 }
 
-BMEPressure::BMEPressure(BME280I2C * bme, bool active, String title, String unit, int8_t nan_val, int8_t min_val, int8_t max_val)
+BMEPressure::BMEPressure(uint8_t id, BME280I2C * bme, bool active, String title, String unit, int8_t nan_val, int8_t min_val, int8_t max_val)
 {
+	this->id = id;
 	this->bme = bme;
 
 	this->title = title;
@@ -1875,8 +2011,9 @@ bool BMEPressure::compareWithValue(RelOp relop, Interval interval, int value, in
 }
 
 //DistanceLampSensor
-DistanceLampSensor::DistanceLampSensor(Ultrasonic *distance, bool active, String title, String unit, int nan_val, int min_val, int max_val)
+DistanceLampSensor::DistanceLampSensor(uint8_t id, Ultrasonic *distance, bool active, String title, String unit, int nan_val, int min_val, int max_val)
 {
+	this->id = id;
 	this->distance = distance;
 
 	this->title = title;
@@ -1999,8 +2136,9 @@ bool DistanceLampSensor::compareWithValue(RelOp relop, Interval interval, int va
 }
 
 //Height
-HeightSensor::HeightSensor(Ultrasonic *distance1, Ultrasonic *distance2, bool active, String title, String unit, int nan_val, int min_val, int max_val)
+HeightSensor::HeightSensor(uint8_t id, Ultrasonic *distance1, Ultrasonic *distance2, bool active, String title, String unit, int nan_val, int min_val, int max_val)
 {
+	this->id = id;
 	this->distance1 = distance1;
 	this->distance2 = distance2;
 

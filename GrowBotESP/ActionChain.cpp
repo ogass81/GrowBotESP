@@ -56,6 +56,33 @@ void ActionChain::serializeJSON(uint8_t id, char * json, size_t maxSize, Scope s
 	LOGDEBUG2(F("[ActionChain]"), F("serializeJSON()"), F("OK: Serialized Members for Actionchain"), String(id), String(actions.measureLength()), String(maxSize));
 }
 
+void ActionChain::serializeJSON(JsonObject & data, Scope scope)
+{
+	if (scope == LIST || scope == DETAILS) {
+		data["tit"] = title;
+		data["act"] = active;
+	}
+
+	if (scope == DETAILS) {
+		data["id"] = id;
+		data["obj"] = "ACTIONCHAIN";
+
+		JsonArray& ptr = data.createNestedArray("actptr");
+
+		for (uint8_t i = 0; i < ACTIONCHAIN_LENGTH; i++) {
+			ptr.add(actionPtr[i]);
+		}
+
+		JsonArray& par = data.createNestedArray("actpar");
+
+		for (uint8_t i = 0; i < ACTIONCHAIN_LENGTH; i++) {
+			par.add(actionPar[i]);
+		}
+
+	}
+	LOGDEBUG2(F("[ActionChain]"), F("serializeJSON()"), F("OK: Serialized Members for Actionchain"), String(data.measureLength()), "", "");
+}
+
 bool ActionChain::deserializeJSON(JsonObject & data)
 {
 	if (data.success() == true) {

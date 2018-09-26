@@ -55,14 +55,17 @@
     <Filter Include="src\_micro-api-readonly\libraries\Time">
       <UniqueIdentifier>{1575f89d-5e56-4419-8b7b-5fc060a4c473}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\_micro-api-readonly\libraries\ArduinoJson">
-      <UniqueIdentifier>{048c4646-f97f-4b00-b2b6-0fcf1a4437d0}</UniqueIdentifier>
-    </Filter>
     <Filter Include="src\_micro-api-readonly\libraries\rc-switch">
       <UniqueIdentifier>{e813b5e6-944a-4b1c-adb6-2f4ac0d554c3}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\_micro-api-readonly\libraries\Adafruit_Unified_Sensor">
       <UniqueIdentifier>{ea000049-d387-4bf7-8ec3-10fafe0ca35e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\_micro-api-readonly\libraries\ESPAsyncWebServer-master">
+      <UniqueIdentifier>{8b02adab-9ec2-4dce-ac6d-864388ea112c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\_micro-api-readonly\libraries\ArduinoJson">
+      <UniqueIdentifier>{1869a019-16ec-471d-9da8-2ad41d38a36a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -97,12 +100,6 @@
     <None Include="..\..\..\libraries\Time\library.properties">
       <Filter>src\_micro-api-readonly\libraries\Time</Filter>
     </None>
-    <None Include="..\..\..\libraries\ArduinoJson\library.json">
-      <Filter>src\_micro-api-readonly\libraries\ArduinoJson</Filter>
-    </None>
-    <None Include="..\..\..\libraries\ArduinoJson\library.properties">
-      <Filter>src\_micro-api-readonly\libraries\ArduinoJson</Filter>
-    </None>
     <None Include="..\..\..\libraries\rc-switch\library.json">
       <Filter>src\_micro-api-readonly\libraries\rc-switch</Filter>
     </None>
@@ -111,6 +108,21 @@
     </None>
     <None Include="..\..\..\libraries\Adafruit_Unified_Sensor\library.properties">
       <Filter>src\_micro-api-readonly\libraries\Adafruit_Unified_Sensor</Filter>
+    </None>
+    <None Include="..\..\..\libraries\ESPAsyncWebServer-master\library.json">
+      <Filter>src\_micro-api-readonly\libraries\ESPAsyncWebServer-master</Filter>
+    </None>
+    <None Include="..\..\..\libraries\ESPAsyncWebServer-master\library.properties">
+      <Filter>src\_micro-api-readonly\libraries\ESPAsyncWebServer-master</Filter>
+    </None>
+    <None Include="..\..\..\libraries\ESPAsyncWebServer-master\src\edit.htm">
+      <Filter>src\_micro-api-readonly\libraries\ESPAsyncWebServer-master</Filter>
+    </None>
+    <None Include="..\..\..\libraries\ArduinoJson\library.json">
+      <Filter>src\_micro-api-readonly\libraries\ArduinoJson</Filter>
+    </None>
+    <None Include="..\..\..\libraries\ArduinoJson\library.properties">
+      <Filter>src\_micro-api-readonly\libraries\ArduinoJson</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -369,6 +381,42 @@
     <ClInclude Include="..\..\..\libraries\Time\TimeLib.h">
       <Filter>src\_micro-api-readonly\libraries\Time</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\libraries\rc-switch\RCSwitch.h">
+      <Filter>src\_micro-api-readonly\libraries\rc-switch</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\libraries\Adafruit_Unified_Sensor\Adafruit_Sensor.h">
+      <Filter>src\_micro-api-readonly\libraries\Adafruit_Unified_Sensor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\libraries\ESPAsyncWebServer-master\src\AsyncEventSource.h">
+      <Filter>src\_micro-api-readonly\libraries\ESPAsyncWebServer-master</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\libraries\ESPAsyncWebServer-master\src\AsyncJson.h">
+      <Filter>src\_micro-api-readonly\libraries\ESPAsyncWebServer-master</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\libraries\ESPAsyncWebServer-master\src\AsyncWebSocket.h">
+      <Filter>src\_micro-api-readonly\libraries\ESPAsyncWebServer-master</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\libraries\ESPAsyncWebServer-master\src\ESPAsyncWebServer.h">
+      <Filter>src\_micro-api-readonly\libraries\ESPAsyncWebServer-master</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\libraries\ESPAsyncWebServer-master\src\SPIFFSEditor.h">
+      <Filter>src\_micro-api-readonly\libraries\ESPAsyncWebServer-master</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\libraries\ESPAsyncWebServer-master\src\StringArray.h">
+      <Filter>src\_micro-api-readonly\libraries\ESPAsyncWebServer-master</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\libraries\ESPAsyncWebServer-master\src\WebAuthentication.h">
+      <Filter>src\_micro-api-readonly\libraries\ESPAsyncWebServer-master</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\libraries\ESPAsyncWebServer-master\src\WebHandlerImpl.h">
+      <Filter>src\_micro-api-readonly\libraries\ESPAsyncWebServer-master</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\libraries\ESPAsyncWebServer-master\src\WebResponseImpl.h">
+      <Filter>src\_micro-api-readonly\libraries\ESPAsyncWebServer-master</Filter>
+    </ClInclude>
+    <ClInclude Include="WebHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\libraries\ArduinoJson\ArduinoJson.h">
       <Filter>src\_micro-api-readonly\libraries\ArduinoJson</Filter>
     </ClInclude>
@@ -618,12 +666,6 @@
     <ClInclude Include="..\..\..\libraries\ArduinoJson\third-party\catch\catch.hpp">
       <Filter>src\_micro-api-readonly\libraries\ArduinoJson</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\libraries\rc-switch\RCSwitch.h">
-      <Filter>src\_micro-api-readonly\libraries\rc-switch</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\libraries\Adafruit_Unified_Sensor\Adafruit_Sensor.h">
-      <Filter>src\_micro-api-readonly\libraries\Adafruit_Unified_Sensor</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Action.cpp">
@@ -787,6 +829,36 @@
     </ClCompile>
     <ClCompile Include="..\..\..\libraries\Time\Time.cpp">
       <Filter>src\_micro-api-readonly\libraries\Time</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libraries\rc-switch\RCSwitch.cpp">
+      <Filter>src\_micro-api-readonly\libraries\rc-switch</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libraries\ESPAsyncWebServer-master\src\AsyncEventSource.cpp">
+      <Filter>src\_micro-api-readonly\libraries\ESPAsyncWebServer-master</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libraries\ESPAsyncWebServer-master\src\AsyncWebSocket.cpp">
+      <Filter>src\_micro-api-readonly\libraries\ESPAsyncWebServer-master</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libraries\ESPAsyncWebServer-master\src\SPIFFSEditor.cpp">
+      <Filter>src\_micro-api-readonly\libraries\ESPAsyncWebServer-master</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libraries\ESPAsyncWebServer-master\src\WebAuthentication.cpp">
+      <Filter>src\_micro-api-readonly\libraries\ESPAsyncWebServer-master</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libraries\ESPAsyncWebServer-master\src\WebHandlers.cpp">
+      <Filter>src\_micro-api-readonly\libraries\ESPAsyncWebServer-master</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libraries\ESPAsyncWebServer-master\src\WebRequest.cpp">
+      <Filter>src\_micro-api-readonly\libraries\ESPAsyncWebServer-master</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libraries\ESPAsyncWebServer-master\src\WebResponses.cpp">
+      <Filter>src\_micro-api-readonly\libraries\ESPAsyncWebServer-master</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libraries\ESPAsyncWebServer-master\src\WebServer.cpp">
+      <Filter>src\_micro-api-readonly\libraries\ESPAsyncWebServer-master</Filter>
+    </ClCompile>
+    <ClCompile Include="WebHandler.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\libraries\ArduinoJson\fuzzing\fuzzer.cpp">
       <Filter>src\_micro-api-readonly\libraries\ArduinoJson</Filter>
@@ -1001,9 +1073,6 @@
     <ClCompile Include="..\..\..\libraries\ArduinoJson\third-party\catch\catch.cpp">
       <Filter>src\_micro-api-readonly\libraries\ArduinoJson</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\libraries\rc-switch\RCSwitch.cpp">
-      <Filter>src\_micro-api-readonly\libraries\rc-switch</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\..\libraries\Ultrasonic\keywords.txt">
@@ -1029,6 +1098,12 @@
     </Text>
     <Text Include="..\..\..\libraries\Time\Readme.txt">
       <Filter>src\_micro-api-readonly\libraries\Time</Filter>
+    </Text>
+    <Text Include="..\..\..\libraries\rc-switch\keywords.txt">
+      <Filter>src\_micro-api-readonly\libraries\rc-switch</Filter>
+    </Text>
+    <Text Include="..\..\..\libraries\ESPAsyncWebServer-master\keywords.txt">
+      <Filter>src\_micro-api-readonly\libraries\ESPAsyncWebServer-master</Filter>
     </Text>
     <Text Include="..\..\..\libraries\ArduinoJson\CMakeLists.txt">
       <Filter>src\_micro-api-readonly\libraries\ArduinoJson</Filter>
@@ -1071,9 +1146,6 @@
     </Text>
     <Text Include="..\..\..\libraries\ArduinoJson\third-party\catch\CMakeLists.txt">
       <Filter>src\_micro-api-readonly\libraries\ArduinoJson</Filter>
-    </Text>
-    <Text Include="..\..\..\libraries\rc-switch\keywords.txt">
-      <Filter>src\_micro-api-readonly\libraries\rc-switch</Filter>
     </Text>
   </ItemGroup>
 </Project>

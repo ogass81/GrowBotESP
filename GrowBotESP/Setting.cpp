@@ -38,12 +38,14 @@ void Setting::reset()
 	//Default Values
 	wifi_ssid = "wgempire";
 	wifi_pw = "ert456sdf233sa!!!";
-	api_secret = "schnitzel";
 
-	LOGMSG(F("[FileSystem]"), F("OK: Factory Reset to Default Settings (SSID | Password | API_secret)"), String(wifi_ssid), String(wifi_pw), String(api_secret));
+	http_user = "admin";
+	http_password = "schnitzel";
 
-	String keys[] = { "SSID", "Password", "API_secret" };
-	String values[] = { wifi_ssid, wifi_pw, api_secret };
+	LOGMSG(F("[FileSystem]"), F("OK: Factory Reset to Default Settings (SSID | Password | API_secret)"), String(wifi_ssid), String(wifi_pw), http_password);
+
+	String keys[] = { "SSID", "Password", "Http User", "Http Password" };
+	String values[] = { wifi_ssid, wifi_pw, http_user, http_password };
 	logengine.addLogEntry(INFO, "Setting", "Factory Reset to Default Settings", keys, values, 3);
 }
 
@@ -75,14 +77,49 @@ void Setting::serializeJSON(char * json, size_t maxSize)
 	//Variable Settings	
 	settings["wifi_SSID"] = wifi_ssid;
 	settings["wifi_pw"] = wifi_pw;
-	settings["api_secret"] = api_secret;
-	//RTC problem 	settings["time"] = internalRTC.getEpochTime() - internalRTC.timezone_offset; //UTC
+	settings["http_user"] = http_user;
+	settings["http_password"] = http_password;
 	settings["time"] = sensor_cycles * SENS_FRQ_SEC - internalRTC.timezone_offset;
 
 	settings["timezone"] = internalRTC.timezone_offset;
 	settings["log_size"] = logengine.counter;
 	settings.printTo(json, maxSize);
 	LOGDEBUG(F("[Setting]"), F("serializeJSON()"), F("OK: Serialized Overall Settings"), String(settings.measureLength()), String(maxSize), "");
+}
+
+void Setting::serializeJSON(JsonObject & data)
+{
+	data["obj"] = "SETTING";
+	//Constants
+	data["firm_version"] = GROWBOT_FIRMWARE;
+	data["firm_date"] = __DATE__;
+	data["firm_time"] = __TIME__;
+	data["actions_num"] = ACTIONS_NUM;
+	data["actionschains_num"] = ACTIONCHAINS_NUM;
+	data["actionschains_length"] = ACTIONCHAIN_LENGTH;
+	data["rulesets_num"] = RULESETS_NUM;
+	data["trigger_sets"] = TRIGGER_SETS;
+	data["trigger_types"] = TRIGGER_TYPES;
+	data["sensor_num"] = SENS_NUM;
+	data["task_queue_length"] = TASK_QUEUE_LENGTH;
+	data["actionchain_task_maxduration"] = ACTIONCHAIN_TASK_MAXDURATION;
+	data["task_parallel_sec"] = TASK_PARALLEL_SEC;
+	data["rc_sockets_num"] = RC_SOCKETS;
+	data["rc_signals_num"] = RC_SIGNALS;
+	data["task_frq_sec"] = TASK_FRQ_SEC;
+	data["sens_frq_sec"] = SENS_FRQ_SEC;
+
+	//Variable Settings	
+	data["wifi_SSID"] = wifi_ssid;
+	data["wifi_pw"] = wifi_pw;
+	data["http_user"] = http_user;
+	data["http_password"] = http_password;
+	data["time"] = sensor_cycles * SENS_FRQ_SEC - internalRTC.timezone_offset;
+
+	data["timezone"] = internalRTC.timezone_offset;
+	data["log_size"] = logengine.counter;
+
+	LOGDEBUG(F("[Setting]"), F("serializeJSON()"), F("OK: Serialized Overall Settings "), String(data.measureLength()), "", "");
 }
 
 bool Setting::deserializeJSON(JsonObject & data)
@@ -107,13 +144,22 @@ bool Setting::deserializeJSON(JsonObject & data)
 			LOGMSG(F("[Setting]"), F("ERROR: No Wifi password loaded"), "", "", "");
 		}
 
-		if (data["api_secret"].asString() != "") {
-			api_secret = data["api_secret"].asString();
-			LOGMSG(F("[Setting]"), F("OK: Loaded API secret"), String(api_secret.substring(0, 3)) + "*****", "", "");
+		if (data["http_user"].asString() != "") {
+			http_user = data["http_user"].as<const char*>();
+			LOGMSG(F("[Setting]"), F("OK: Loaded http user"), http_user, "", "");
 		}
 		else {
-			LOGMSG(F("[Setting]"), F("WARNING: No API secret loaded"), "", "", "");
+			LOGMSG(F("[Setting]"), F("WARNING: No http user loaded"), "", "", "");
 		}
+
+		if (data["http_password"].asString() != "") {
+			http_password = data["http_password"].as<const char*>();
+			LOGMSG(F("[Setting]"), F("OK: Loaded http password"), http_password, "", "");
+		}
+		else {
+			LOGMSG(F("[Setting]"), F("WARNING: No http password loaded"), "", "", "");
+		}
+
 
 		if (data["timezone"] != "") {
 			//Set RTC

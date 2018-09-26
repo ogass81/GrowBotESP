@@ -101,6 +101,7 @@ public:
 	//Serialize
 	void serializeJSON(uint8_t set, char* json, size_t maxSize, Scope scope);
 	void serializeJSON(char * json, size_t maxSize, Scope scope);
+	void serializeJSON(JsonObject& data, Scope scope, uint8_t set = RC_SOCKETS);
 	bool deserializeJSON(uint8_t set, JsonObject& data);
 };
 

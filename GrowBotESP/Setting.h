@@ -29,7 +29,8 @@
 //Settings Globals
 extern String wifi_ssid;
 extern String wifi_pw;
-extern String api_secret;
+extern const char* http_user;
+extern const char* http_password;
 extern long sensor_cycles;
 
 //Hardware Globals
@@ -51,6 +52,7 @@ public:
 	static void reset();
 
 	static void serializeJSON(char* json, size_t maxSize);
+	static void serializeJSON(JsonObject& data);
 	static bool deserializeJSON(JsonObject& data);
 
 	static bool loadSettings(const char* filename);

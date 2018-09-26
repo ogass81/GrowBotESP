@@ -21,6 +21,7 @@ extern LogEngine logengine;
 //Abstract Class for Actions
 class Action {
 public:
+	uint8_t id;
 	String title;
 	bool visible;
 	
@@ -33,6 +34,7 @@ public:
 	virtual void execute();
 	//Serialize
 	virtual void serializeJSON(uint8_t id, char* json, size_t maxSize, Scope scope);
+	virtual void serializeJSON(JsonObject& data, Scope scope);
 
 	//UI Output
 	virtual String getTitle();
@@ -44,10 +46,11 @@ public:
 	ActionType *actionObject = NULL;
 	void (ActionType::*callback)();
 	
-	SimpleAction(String title, ActionType *actionObj, void (ActionType::*cFunct)(), bool visible = false);
+	SimpleAction(uint8_t id, String title, ActionType *actionObj, void (ActionType::*cFunct)(), bool visible = false);
 
 	//Serialize
 	void serializeJSON(uint8_t id, char* json, size_t maxSize, Scope scope);
+	void serializeJSON(JsonObject& data, Scope scope);
 
 	void execute();
 	String getTitle();
@@ -60,10 +63,11 @@ public:
 	void (ActionType::*callback)(int);
 	int parameter;
 
-	ParameterizedSimpleAction(String title, ActionType *actionObj, void (ActionType::*cFunct)(int), int par, bool visible = false);
+	ParameterizedSimpleAction(uint8_t id, String title, ActionType *actionObj, void (ActionType::*cFunct)(int), int par, bool visible = false);
 
 	//Serialize
 	void serializeJSON(uint8_t id, char* json, size_t maxSize, Scope scope);
+	void serializeJSON(JsonObject& data, Scope scope);
 
 	void execute();
 	String getTitle();
@@ -74,10 +78,11 @@ class NamedParameterizedSimpleAction : public ParameterizedSimpleAction<ActionTy
 public:
 	String (ActionType::*getForeignTitle)(int);
 
-	NamedParameterizedSimpleAction(String title, ActionType *actionObj, void (ActionType::*cFunct)(int), String (ActionType::*getTitle)(int), int par, bool visible = false);
+	NamedParameterizedSimpleAction(uint8_t id, String title, ActionType *actionObj, void (ActionType::*cFunct)(int), String (ActionType::*getTitle)(int), int par, bool visible = false);
 
 	//Overwrite
 	void serializeJSON(uint8_t id, char* json, size_t maxSize, Scope scope);
+	void serializeJSON(JsonObject& data, Scope scope);
 	String getTitle();
 };
 

@@ -48,7 +48,6 @@ String LogEntry::serializeJSON()
 	
 	log["id"] = id;
 	log["typ"] = static_cast<int>(type);
-	//RTC problem log["time"] = internalRTC.getEpochTime() - internalRTC.timezone_offset;
 	log["time"] = timestamp;
 	log["src"] = origin;
 	log["msg"] = message;
@@ -69,14 +68,37 @@ String LogEntry::serializeJSON()
 	return String(json);
 }
 
-LogEngine::LogEngine()
+void LogEntry::serializeJSON(JsonObject & data)
+{
+	data["id"] = id;
+	data["typ"] = static_cast<int>(type);
+	//RTC problem data["time"] = internalRTC.getEpochTime() - internalRTC.timezone_offset;
+	data["time"] = timestamp;
+	data["src"] = origin;
+	data["msg"] = message;
+
+
+	JsonArray& keys = data.createNestedArray("keys");
+	for (uint8_t j = 0; j < this->para_size; j++) {
+		if (this->keys[j] != "") keys.add(this->keys[j]);
+	}
+
+	JsonArray& values = data.createNestedArray("vals");
+	for (uint8_t j = 0; j < this->para_size; j++) {
+		if (this->values[j] != "") values.add(this->values[j]);
+	}
+	LOGDEBUG(F("[LogEntry]"), F("serializeJSON()"), F("OK: Serialized LogEntry"), "", "", "");
+}
+
+LogEngine::LogEngine(const char* filename)
 {
 	this->counter = 0; // fileLength("log.json");
+	this->filename = filename;
 }
 
 void LogEngine::begin()
 {
-	this->counter = fileLength("/log.json");
+	this->counter = fileLength();
 }
 
 void LogEngine::addLogEntry(LogTypes type, String origin, String message, String keys[], String values[], uint8_t size)
@@ -103,13 +125,58 @@ void LogEngine::serializeJSON(char * json, size_t maxSize, int end, int count)
 
 	if (count == 0) count = LOGBUFFER_SIZE;
 	
-	readLinesFromFile("/log.json", counter, end, count, json, JSONCHAR_SIZE);
+	readLinesFromFile(counter, end, count, json, JSONCHAR_SIZE);
+}
+
+void LogEngine::serializeJSON(JsonObject & data, DynamicJsonBuffer& buffer, int end, int count)
+{
+	saveToFile();
+
+	if (count == 0) count = LOGBUFFER_SIZE;
+	
+	data["num"] = counter;
+	data["obj"] = "LOG";
+	JsonArray& list = data.createNestedArray("list");
+	
+	int start = 0;
+	int line_ptr = 0;
+
+	if (end <= 0) {
+		end = counter;
+	}
+
+	start = end - count;
+	if (start < 0) start = 0;
+
+	File file = SD.open(filename, FILE_READ);
+
+	if (file) {
+
+		while (file.available()) {
+			//Buffer Needs to be here ...
+			String line = file.readStringUntil('\n');
+
+			if (line_ptr < end) {
+				if (line_ptr >= start) {
+					JsonObject& element = buffer.parseObject(line);
+					list.add(element);
+				}
+			}
+			else break;
+			line_ptr++;
+		}
+		file.close();
+		LOGDEBUG2(F("FileSystem"), F("readLinesFromFile()"), F("OK: Loading Logentries from File"), String(start), String(end), String(list.size()));
+	}
+	else {
+		LOGMSG(F("[FileSystem]"), F("ERROR: Could not read from file"), String(filename), "", "");
+	}
 }
 
 void LogEngine::reset()
 {
 	saveToFile();
-	resetFile("/log.json");
+	resetFile();
 	this->counter = 0;
 }
 
@@ -120,7 +187,7 @@ void LogEngine::saveToFile()
 	for (uint8_t i = 0; i < this->entry_ptr; i++) {
 		if(log_buffer[i] != nullptr) output[i] = log_buffer[i]->serializeJSON();
 	}
-	appendLinesToFile("/log.json", output, this->entry_ptr);
+	appendLinesToFile(output, this->entry_ptr);
 
 
 	//Free Memory
@@ -130,7 +197,7 @@ void LogEngine::saveToFile()
 	LOGDEBUG2(F("LogEngine"), F("addLogEntry()"), F("Reset LogBuffer"), String(entry_ptr), "", "")
 }
 
-bool LogEngine::appendLinesToFile(const char * filename, String data[], uint8_t size)
+bool LogEngine::appendLinesToFile(String data[], uint8_t size)
 {
 	bool success = true;
 
@@ -155,7 +222,7 @@ bool LogEngine::appendLinesToFile(const char * filename, String data[], uint8_t 
 	return success;
 }
 
-void LogEngine::readLinesFromFile(const char* filename, int counter, int end, int count, char * json, int size)
+void LogEngine::readLinesFromFile(int counter, int end, int count, char * json, int size)
 {
 	File file = SD.open(filename, FILE_READ);
 
@@ -201,7 +268,7 @@ void LogEngine::readLinesFromFile(const char* filename, int counter, int end, in
 	container.printTo(json, size);
 }
 
-int LogEngine::fileLength(const char * filename)
+int LogEngine::fileLength()
 {
 	File file = SD.open(filename, FILE_READ);
 
@@ -222,7 +289,7 @@ int LogEngine::fileLength(const char * filename)
 	return counter;
 }
 
-bool LogEngine::resetFile(const char * filename)
+bool LogEngine::resetFile()
 {
 	if (SD.remove(filename)) {
 		LOGMSG(F("[FileSystem]"), F("OK: Reset log file"), String(filename), "", "");
