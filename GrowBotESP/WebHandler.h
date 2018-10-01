@@ -41,19 +41,29 @@ public:
 	AsyncWebServer classWebServer = AsyncWebServer(80);
 	
 	Webhandler();
-
-
+	
 	void begin();
 
-	void loginRequest(AsyncWebServerRequest *request);
-	void actionRequest(AsyncWebServerRequest *request);
-	void actionchainRequest(AsyncWebServerRequest *request);
-	void logRequest(AsyncWebServerRequest *request);
-	void rcsocketRequest(AsyncWebServerRequest *request);
-	void rulesetRequest(AsyncWebServerRequest *request);
-	void sensorRequest(AsyncWebServerRequest *request);
-	void settingRequest(AsyncWebServerRequest *request);
-	void triggerRequest(AsyncWebServerRequest *request);
+	void loginGet(AsyncWebServerRequest *request);
+	void actionGet(AsyncWebServerRequest *request);
+	void actionchainGet(AsyncWebServerRequest *request);
+	void logGet(AsyncWebServerRequest *request);
+	void rcsocketGet(AsyncWebServerRequest *request);
+	void rulesetGet(AsyncWebServerRequest *request);
+	void sensorGet(AsyncWebServerRequest *request);
+	void settingGet(AsyncWebServerRequest *request);
+	void triggerGet(AsyncWebServerRequest *request);
+
+	void actionchainPatch(AsyncWebServerRequest *request, JsonVariant &json);
+	void rcsocketPatch(AsyncWebServerRequest *request, JsonVariant &json);
+	void rulesetPatch(AsyncWebServerRequest *request, JsonVariant &json);
+	void sensorPatch(AsyncWebServerRequest *request, JsonVariant &json);
+	void settingPatch(AsyncWebServerRequest *request, JsonVariant &json);
+	void triggerPatch(AsyncWebServerRequest *request, JsonVariant &json);
+
+
+
+
 
 	void breakupURL(String uri[REST_URI_DEPTH], char * url);
 };
