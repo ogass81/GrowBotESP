@@ -11,8 +11,8 @@ Webhandler::Webhandler()
 void Webhandler::begin()
 {
 	classWebServer.on("/", HTTP_GET, std::bind(&Webhandler::loginGet, this, std::placeholders::_1));
-	classWebServer.on("/actionchain", HTTP_GET, std::bind(&Webhandler::actionGet, this, std::placeholders::_1));
-	classWebServer.on("/chain", HTTP_GET, std::bind(&Webhandler::actionchainGet, this, std::placeholders::_1));
+	classWebServer.on("/action", HTTP_GET, std::bind(&Webhandler::actionGet, this, std::placeholders::_1));
+	classWebServer.on("/actionchain", HTTP_GET, std::bind(&Webhandler::actionchainGet, this, std::placeholders::_1));
 	classWebServer.on("/log", HTTP_GET, std::bind(&Webhandler::logGet, this, std::placeholders::_1));
 	classWebServer.on("/rcsocket", HTTP_GET, std::bind(&Webhandler::rcsocketGet, this, std::placeholders::_1));
 	classWebServer.on("/ruleset", HTTP_GET, std::bind(&Webhandler::rulesetGet, this, std::placeholders::_1));
@@ -34,24 +34,26 @@ void Webhandler::begin()
 	handler = new AsyncCallbackJsonWebHandler("/sensor", std::bind(&Webhandler::sensorPatch, this, std::placeholders::_1, std::placeholders::_2));
 	classWebServer.addHandler(handler);
 
-	handler = new AsyncCallbackJsonWebHandler("/sensor", std::bind(&Webhandler::settingPatch, this, std::placeholders::_1, std::placeholders::_2));
+	handler = new AsyncCallbackJsonWebHandler("/setting", std::bind(&Webhandler::settingPatch, this, std::placeholders::_1, std::placeholders::_2));
 	classWebServer.addHandler(handler);
 
 	handler = new AsyncCallbackJsonWebHandler("/trigger", std::bind(&Webhandler::triggerPatch, this, std::placeholders::_1, std::placeholders::_2));
 	classWebServer.addHandler(handler);
+
+	classWebServer.onNotFound(std::bind(&Webhandler::unknownGet, this, std::placeholders::_1));
 
 	classWebServer.begin();
 }
 
 void Webhandler::loginGet(AsyncWebServerRequest * request)
 {
-	if (!request->authenticate(http_user, http_password))
+	if (!request->authenticate(settings.http_user, settings.http_pw))
 		return request->requestAuthentication();
 
 	AsyncJsonResponse * response = new AsyncJsonResponse();
 	response->addHeader("Server", "GrowAI");
 	JsonObject& root = response->getRoot();
-	Setting::serializeJSON(root);
+	settings.serializeJSON(root);
 	response->setLength();
 	request->send(response);
 
@@ -67,7 +69,7 @@ void Webhandler::actionGet(AsyncWebServerRequest * request)
 	url.toCharArray(temp, url.length() + 1);
 	breakupURL(uri, temp);
 
-	if (!request->authenticate(http_user, http_password))
+	if (!request->authenticate(settings.http_user, settings.http_pw))
 		return request->requestAuthentication();
 
 	if (uri[1] == "") {
@@ -120,7 +122,7 @@ void Webhandler::actionchainGet(AsyncWebServerRequest * request)
 	url.toCharArray(temp, url.length() + 1);
 	breakupURL(uri, temp);
 
-	if (!request->authenticate(http_user, http_password))
+	if (!request->authenticate(settings.http_user, settings.http_pw))
 		return request->requestAuthentication();
 
 	if (uri[1] == "") {
@@ -164,7 +166,7 @@ void Webhandler::logGet(AsyncWebServerRequest * request)
 	url.toCharArray(temp, url.length() + 1);
 	breakupURL(uri, temp);
 
-	if (!request->authenticate(http_user, http_password))
+	if (!request->authenticate(settings.http_user, settings.http_pw))
 		return request->requestAuthentication();
 
 	if (uri[1] == "") {
@@ -225,7 +227,7 @@ void Webhandler::rcsocketGet(AsyncWebServerRequest * request)
 	url.toCharArray(temp, url.length() + 1);
 	breakupURL(uri, temp);
 
-	if (!request->authenticate(http_user, http_password))
+	if (!request->authenticate(settings.http_user, settings.http_pw))
 		return request->requestAuthentication();
 
 	if (uri[1] == "") {
@@ -289,7 +291,7 @@ void Webhandler::rulesetGet(AsyncWebServerRequest * request)
 	url.toCharArray(temp, url.length() + 1);
 	breakupURL(uri, temp);
 
-	if (!request->authenticate(http_user, http_password))
+	if (!request->authenticate(settings.http_user, settings.http_pw))
 		return request->requestAuthentication();
 
 	if (uri[1] == "") {
@@ -334,7 +336,7 @@ void Webhandler::sensorGet(AsyncWebServerRequest * request)
 	url.toCharArray(temp, url.length() + 1);
 	breakupURL(uri, temp);
 
-	if (!request->authenticate(http_user, http_password))
+	if (!request->authenticate(settings.http_user, settings.http_pw))
 		return request->requestAuthentication();
 
 	if (uri[1] == "") {
@@ -492,53 +494,53 @@ void Webhandler::settingGet(AsyncWebServerRequest * request)
 	url.toCharArray(temp, url.length() + 1);
 	breakupURL(uri, temp);
 
-	if (!request->authenticate(http_user, http_password))
+	if (!request->authenticate(settings.http_user, settings.http_pw))
 		return request->requestAuthentication();
 
 	if (uri[1] == "") {
 		AsyncJsonResponse * response = new AsyncJsonResponse();
 		response->addHeader("Server", "GrowAI");
 		JsonObject& root = response->getRoot();
-		Setting::serializeJSON(root);
+		settings.serializeJSON(root);
 		response->setLength();
 		request->send(response);
 
 		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings: GET"), "Current Settings", "");
 	}
 	else if (uri[1] == "default") {
-		Setting::loadSettings("/DEFAULTCONFIG.JSON");
+		settings.loadDefaultConfig();
 		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action: LOAD"), "Default Config", "");
 
 		AsyncJsonResponse * response = new AsyncJsonResponse();
 		response->addHeader("Server", "GrowAI");
 		JsonObject& root = response->getRoot();
-		Setting::serializeJSON(root);
+		settings.serializeJSON(root);
 		response->setLength();
 		request->send(response);
 
 		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings: GET"), "Default Settings", "");
 	}
 	else if (uri[1] == "active") {
-		Setting::loadSettings("/_CURRENTCONFIG.JSON");
+		settings.loadActiveConfig();
 		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action: LOAD"), "Active Config", "");
 
 		AsyncJsonResponse * response = new AsyncJsonResponse();
 		response->addHeader("Server", "GrowAI");
 		JsonObject& root = response->getRoot();
-		Setting::serializeJSON(root);
+		settings.serializeJSON(root);
 		response->setLength();
 		request->send(response);
 
 		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings: GET"), "Active Settings", "");
 	}
 	else if (uri[1] == "reset") {
-		Setting::reset();
+		settings.reset();
 		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action: RESET"), "", "");
 
 		AsyncJsonResponse * response = new AsyncJsonResponse();
 		response->addHeader("Server", "GrowAI");
 		JsonObject& root = response->getRoot();
-		Setting::serializeJSON(root);
+		settings.serializeJSON(root);
 		response->setLength();
 		request->send(response);
 
@@ -556,7 +558,7 @@ void Webhandler::triggerGet(AsyncWebServerRequest * request)
 	url.toCharArray(temp, url.length() + 1);
 	breakupURL(uri, temp);
 
-	if (!request->authenticate(http_user, http_password))
+	if (!request->authenticate(settings.http_user, settings.http_pw))
 		return request->requestAuthentication();
 
 	if (uri[1] == "") {
@@ -651,6 +653,11 @@ void Webhandler::triggerGet(AsyncWebServerRequest * request)
 	}
 }
 
+void Webhandler::unknownGet(AsyncWebServerRequest * request)
+{
+	request->send(404);
+}
+
 void Webhandler::actionchainPatch(AsyncWebServerRequest * request, JsonVariant & json)
 {
 	String uri[REST_URI_DEPTH];
@@ -660,7 +667,7 @@ void Webhandler::actionchainPatch(AsyncWebServerRequest * request, JsonVariant &
 	url.toCharArray(temp, url.length() + 1);
 	breakupURL(uri, temp);
 
-	if (!request->authenticate(http_user, http_password))
+	if (!request->authenticate(settings.http_user, settings.http_pw))
 		return request->requestAuthentication();
 	
 	if (uri[1] != "" && uri[1].toInt() < ACTIONS_NUM) {
@@ -683,7 +690,7 @@ void Webhandler::rcsocketPatch(AsyncWebServerRequest * request, JsonVariant & js
 	url.toCharArray(temp, url.length() + 1);
 	breakupURL(uri, temp);
 
-	if (!request->authenticate(http_user, http_password))
+	if (!request->authenticate(settings.http_user, settings.http_pw))
 		return request->requestAuthentication();
 
 	if (uri[1] != "" && uri[1].toInt() < RC_SOCKETS) {
@@ -707,7 +714,7 @@ void Webhandler::rulesetPatch(AsyncWebServerRequest * request, JsonVariant & jso
 	url.toCharArray(temp, url.length() + 1);
 	breakupURL(uri, temp);
 
-	if (!request->authenticate(http_user, http_password))
+	if (!request->authenticate(settings.http_user, settings.http_pw))
 		return request->requestAuthentication();
 
 	if (uri[1] != "" && uri[1].toInt() < RULESETS_NUM) {
@@ -731,7 +738,7 @@ void Webhandler::sensorPatch(AsyncWebServerRequest * request, JsonVariant & json
 	url.toCharArray(temp, url.length() + 1);
 	breakupURL(uri, temp);
 
-	if (!request->authenticate(http_user, http_password))
+	if (!request->authenticate(settings.http_user, settings.http_pw))
 		return request->requestAuthentication();
 
 	if (uri[1] != "" && uri[1].toInt() < SENS_NUM) {
@@ -753,25 +760,25 @@ void Webhandler::settingPatch(AsyncWebServerRequest * request, JsonVariant & jso
 	url.toCharArray(temp, url.length() + 1);
 	breakupURL(uri, temp);
 
-	if (!request->authenticate(http_user, http_password))
+	if (!request->authenticate(settings.http_user, settings.http_pw))
 		return request->requestAuthentication();
 
 	if (uri[1] == "") {
-		Setting::deserializeJSON(json);
+		settings.deserializeJSON(json);
 		request->send(200);
 		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action: SET"), "", "");
 	}
 	else if (uri[1] == "default") {
-		Setting::deserializeJSON(json);
+		settings.deserializeJSON(json);
 		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action: SET"), "", "");
-		xTaskCreate(Setting::saveDefaultConfig, "FileAccess", 16000, NULL, 1, NULL);
+		settings.saveDefaultConfig();
 		request->send(200);
 		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action: SAVE to Default"), "", "");
 	}
 	else if (uri[1] == "active") {
-		Setting::deserializeJSON(json);
+		settings.deserializeJSON(json);
 		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action: SET"), "", "");
-		xTaskCreate(Setting::saveActiveConfig, "FileAccess", 16000, NULL, 1, NULL);
+		settings.saveActiveConfig();
 		request->send(200);
 		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action: SAVE to Active"), "", "");
 	}
@@ -790,7 +797,7 @@ void Webhandler::triggerPatch(AsyncWebServerRequest * request, JsonVariant & jso
 	url.toCharArray(temp, url.length() + 1);
 	breakupURL(uri, temp);
 
-	if (!request->authenticate(http_user, http_password))
+	if (!request->authenticate(settings.http_user, settings.http_pw))
 		return request->requestAuthentication();
 
 	if (uri[2] != "" && uri[2].toInt() < TRIGGER_SETS) {

@@ -35,6 +35,7 @@ extern ActionChain *actionchains[ACTIONCHAINS_NUM];
 extern RCSocketController *rcsocketcontroller;
 extern TaskManager *taskmanager;
 extern LogEngine logengine;
+extern Setting settings;
 
 class Webhandler {
 public:
@@ -54,12 +55,16 @@ public:
 	void settingGet(AsyncWebServerRequest *request);
 	void triggerGet(AsyncWebServerRequest *request);
 
+	void unknownGet(AsyncWebServerRequest *request);
+
+
 	void actionchainPatch(AsyncWebServerRequest *request, JsonVariant &json);
 	void rcsocketPatch(AsyncWebServerRequest *request, JsonVariant &json);
 	void rulesetPatch(AsyncWebServerRequest *request, JsonVariant &json);
 	void sensorPatch(AsyncWebServerRequest *request, JsonVariant &json);
 	void settingPatch(AsyncWebServerRequest *request, JsonVariant &json);
 	void triggerPatch(AsyncWebServerRequest *request, JsonVariant &json);
+
 
 
 

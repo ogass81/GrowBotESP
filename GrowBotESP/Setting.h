@@ -48,23 +48,61 @@ extern RCSocketController *rcsocketcontroller;
 
 class Setting {
 public:
+	const char* active_config_file;
+	const char* default_config_file;
+	const char* backup_config_file;
+	const char* log_file;
 
-	static void reset();
+	const char* wifi_ssid;
+	const char* wifi_pw;
 
-	static void serializeJSON(char* json, size_t maxSize);
-	static void serializeJSON(JsonObject& data);
-	static bool deserializeJSON(JsonObject& data);
+	const char* ap_ssid;
+	const char* ap_pw;
 
-	static bool loadSettings(const char* filename);
-	static bool saveSettings(const char* filename);
-	static bool copyFile(const char* source, const char* destination);
+	const char* http_user;
+	const char* http_pw;
 
-	//Async File Access
-	static void saveSettings(void * parameter);
-	static void backupConfig(void * parameter);
+	const char* default_wifi_ssid;
+	const char* default_wifi_pw;
 
-	static void saveActiveConfig(void * parameter);
-	static void saveDefaultConfig(void * parameter);
+	const char* default_ap_ssid;
+	const char* default_ap_pw;
+
+	const char* default_http_user;
+	const char* default_http_pw;
+
+	
+	Setting(const char* active_config_file, const char* default_config_file, const char* backup_config_file, const char* log_file, const char* wifi_ssid, const char* wifi_pw, const char* ap_ssid, const char* ap_pw, const char* http_user, const char* http_password);
+
+	void reset();
+
+	void begin();
+
+	//Save Operations
+	bool saveActiveConfig();
+	bool saveDefaultConfig();
+	bool backupConfig();
+
+	//Async Wrapper Functions
+	static void asyncSaveActiveConfig(void*);
+	static void asyncSaveDefaultConfig(void*);
+	static void asyncBackupConfig(void*);
+	
+	bool loadActiveConfig();
+	bool loadDefaultConfig();
+	bool loadBackupConfig();
+
+	void serializeJSON(char* json, size_t maxSize);
+	void serializeJSON(JsonObject& data);
+	bool deserializeJSON(JsonObject& data);
+
+	//Base Methods
+	bool loadSettings(const char* filename);
+	bool saveSettings(const char* filename);
+
+	bool copyFile(const char* source, const char* destination);
+
+
 };
 
 

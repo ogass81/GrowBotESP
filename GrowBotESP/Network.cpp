@@ -238,34 +238,34 @@ void WebServer::checkConnection()
 
 			//Send information about Growbot and statics
 			if (uri[0] == "") {
-				Setting::serializeJSON(json, JSONCHAR_SIZE);
+				//Setting::serializeJSON(json, JSONCHAR_SIZE);
 				LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Constants Action: GET"), "", "");
 				client.print(createPostRequest(json));
 			}
 			else if (uri[0] == "setting") {
 				if (uri[1] == "") {
-					Setting::serializeJSON(json, JSONCHAR_SIZE);
+					//Setting::serializeJSON(json, JSONCHAR_SIZE);
 					LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Action Object Action: GET"), "", "");
 					client.print(createPostRequest(json));
 				}
 				else if (uri[1] == "default") {
-					Setting::loadSettings("/DEFAULTCONFIG.JSON");
+					//Setting::loadSettings("/DEFAULTCONFIG.JSON");
 					LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action: LOAD"), "Default Config", "");
-					Setting::serializeJSON(json, JSONCHAR_SIZE);
+					//Setting::serializeJSON(json, JSONCHAR_SIZE);
 					LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Action Object Action: GET"), "", "");
 					client.print(createPostRequest(json));
 				}
 				else if (uri[1] == "active") {
-					Setting::loadSettings("/_CURRENTCONFIG.JSON");
+					//Setting::loadSettings("/_CURRENTCONFIG.JSON");
 					LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action: LOAD"), "Active Config", "");
-					Setting::serializeJSON(json, JSONCHAR_SIZE);
+					//Setting::serializeJSON(json, JSONCHAR_SIZE);
 					LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Action Object Action: GET"), "", "");
 					client.print(createPostRequest(json));
 				}
 				else if (uri[1] == "reset") {
-					Setting::reset();
+					//Setting::reset();
 					LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action: RESET"), "", "");
-					Setting::serializeJSON(json, JSONCHAR_SIZE);
+					//Setting::serializeJSON(json, JSONCHAR_SIZE);
 					LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Action Object Action: GET"), "", "");
 					client.print(createPostRequest(json));
 				}
@@ -525,25 +525,25 @@ void WebServer::checkConnection()
 
 					if (uri[0] == "setting") {
 						if (uri[1] == "") {
-							success = Setting::deserializeJSON(node);
+							//success = Setting::deserializeJSON(node);
 							LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action: SET"), "", "");
 							client.print(createHtmlResponse("200 OK", "JSON received"));
 						}
 						else if (uri[1] == "default") {
-							success = Setting::deserializeJSON(node);
+							//success = Setting::deserializeJSON(node);
 							LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action: SET"), "", "");
 							client.print(createHtmlResponse("200 OK", "JSON received"));
 							LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action: SAVE to Default"), "", "");
 
-							xTaskCreate(Setting::saveDefaultConfig, "FileAccess", 16000, NULL, 1, NULL);
+							//xTaskCreate(Setting::saveDefaultConfig, "FileAccess", 16000, NULL, 1, NULL);
 						}
 						else if (uri[1] == "active") {
-							success = Setting::deserializeJSON(node);
+							//success = Setting::deserializeJSON(node);
 							LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action: SET"), "", "");
 							client.print(createHtmlResponse("200 OK", "JSON received"));
 							LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action: SAVE to Active"), "", "");
 														
-							xTaskCreate(Setting::saveActiveConfig,  "FileAccess", 16000, NULL,   1, NULL);
+							//xTaskCreate(Setting::saveActiveConfig,  "FileAccess", 16000, NULL,   1, NULL);
 						}
 						else {
 							LOGMSG(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI: UNKOWN"), "", "");

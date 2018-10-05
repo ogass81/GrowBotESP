@@ -4,8 +4,84 @@
 
 #include "Setting.h"
 
+Setting::Setting(const char * active_config_file, const char * default_config_file, const char * backup_config_file, const char * log_file, const char * wifi_ssid, const char * wifi_pw, const char * ap_ssid, const char * ap_pw, const char * http_user, const char * http_password)
+{
+	//Set Initial Values
+	this->active_config_file = active_config_file;
+	this->default_config_file = default_config_file;
+	this->backup_config_file = backup_config_file;
+	this->log_file = log_file;
+	this->wifi_ssid = wifi_ssid;
+	this->wifi_pw = wifi_pw;
+	this->ap_ssid = ap_ssid;
+	this->wifi_pw = wifi_pw;
+	this->ap_ssid = ap_ssid;
+	this->ap_pw = ap_pw;
+	this->http_user = http_user;
+	this->http_pw = http_password;
+
+	//Set Default Values
+	this->default_wifi_ssid = this->wifi_ssid;
+	this->default_wifi_pw = this->wifi_pw;
+	this->default_ap_ssid = this->ap_ssid;
+	this->default_ap_pw = this->ap_ssid;
+	this->default_http_user = this->http_user;
+	this->default_http_pw = this->http_pw;
+}
+
+void Setting::begin()
+{
+	if (DEBUG_RESET == false) {
+		if (loadActiveConfig() == false) {
+			LOGMSG("[Setup]", "WARNING: Did not load primary config file", "Hardreset", DEBUG_RESET, "");
+			String keys[] = { "" };
+			String values[] = { "" };
+			logengine.addLogEntry(WARNING, "Main", "Did not load primary config file", keys, values, 0);
+
+			if (loadBackupConfig() == false) {
+				LOGMSG("[Setup]", "WARNING: Did not load backup config file", "Hardreset", DEBUG_RESET, "");
+				String keys[] = { "" };
+				String values[] = { "" };
+				logengine.addLogEntry(WARNING, "Main", "Did not load backup config file", keys, values, 0);
+
+				if (loadDefaultConfig() == false) {
+					LOGMSG("[Setup]", "WARNING: Did not load default config file", "Hardreset", DEBUG_RESET, "");
+					String keys[] = { "" };
+					String values[] = { "" };
+					logengine.addLogEntry(WARNING, "Main", "Did not load default config file. Setting hard coded values", keys, values, 0);
+
+					Setting::reset();
+				}
+			}
+		}
+	}
+	else {
+		LOGMSG("[Setup]", "WARNING: Hard Reset Flag set. Setting hard coded values", "Hardreset", DEBUG_RESET, "");
+		String keys[] = { "" };
+		String values[] = { "" };
+		logengine.addLogEntry(WARNING, "Main", "Reset Flag set. Setting hard coded values", keys, values, 0);
+
+		Setting::reset();
+	}
+}
+
+
+
 void Setting::reset()
 {
+	//Set Network Default Values
+	this->wifi_ssid = this->default_wifi_ssid;
+	this->wifi_pw = this->default_wifi_pw;
+	
+	this->ap_ssid = this->default_ap_ssid;
+	this->ap_pw = this->default_ap_pw;
+
+	this->http_user = this->default_http_user;
+	this->http_pw = this->default_http_pw;
+
+
+	LOGMSG(F("[FileSystem]"), F("OK: Reset to Default Settings (SSID | Password | API_secret)"), String(ap_ssid), String(ap_pw), "");
+
 	//Initialize Trigger
 	for (int tcategory = 0; tcategory < TRIGGER_TYPES; tcategory++) {
 		for (int tset = 0; tset < TRIGGER_SETS; tset++) {
@@ -35,18 +111,9 @@ void Setting::reset()
 	//Reset Sockets
 	rcsocketcontroller->resetSettings();
 
-	//Default Values
-	wifi_ssid = "wgempire";
-	wifi_pw = "ert456sdf233sa!!!";
-
-	http_user = "admin";
-	http_password = "schnitzel";
-
-	LOGMSG(F("[FileSystem]"), F("OK: Factory Reset to Default Settings (SSID | Password | API_secret)"), String(wifi_ssid), String(wifi_pw), http_password);
-
-	String keys[] = { "SSID", "Password", "Http User", "Http Password" };
-	String values[] = { wifi_ssid, wifi_pw, http_user, http_password };
-	logengine.addLogEntry(INFO, "Setting", "Factory Reset to Default Settings", keys, values, 3);
+	String keys[] = { "Wifi SSID", "Wifi Password", "AP SSID", "AP Password", "Http User", "Http Password" };
+	String values[] = { wifi_ssid, wifi_pw, ap_ssid, ap_pw, http_user, http_pw };
+	logengine.addLogEntry(INFO, "Setting", "Reset to Default Settings", keys, values, 5);
 }
 
 void Setting::serializeJSON(char * json, size_t maxSize)
@@ -77,14 +144,20 @@ void Setting::serializeJSON(char * json, size_t maxSize)
 	//Variable Settings	
 	settings["wifi_SSID"] = wifi_ssid;
 	settings["wifi_pw"] = wifi_pw;
-	settings["http_user"] = http_user;
-	settings["http_password"] = http_password;
-	settings["time"] = sensor_cycles * SENS_FRQ_SEC - internalRTC.timezone_offset;
+	
+	settings["ap_SSID"] = ap_ssid;
+	settings["ap_pw"] = ap_pw;
 
+	settings["http_user"] = http_user;
+	settings["http_password"] = http_pw;
+
+	settings["time"] = sensor_cycles * SENS_FRQ_SEC - internalRTC.timezone_offset;
 	settings["timezone"] = internalRTC.timezone_offset;
+
 	settings["log_size"] = logengine.counter;
+
 	settings.printTo(json, maxSize);
-	LOGDEBUG(F("[Setting]"), F("serializeJSON()"), F("OK: Serialized Overall Settings"), String(settings.measureLength()), String(maxSize), "");
+	LOGDEBUG(F("[Setting]"), F("serializeJSON()"), F("OK: Serialized Settings"), String(settings.measureLength()), String(maxSize), "");
 }
 
 void Setting::serializeJSON(JsonObject & data)
@@ -112,11 +185,16 @@ void Setting::serializeJSON(JsonObject & data)
 	//Variable Settings	
 	data["wifi_SSID"] = wifi_ssid;
 	data["wifi_pw"] = wifi_pw;
-	data["http_user"] = http_user;
-	data["http_password"] = http_password;
-	data["time"] = sensor_cycles * SENS_FRQ_SEC - internalRTC.timezone_offset;
 
+	data["ap_SSID"] = ap_ssid;
+	data["ap_pw"] = ap_pw;
+
+	data["http_user"] = http_user;
+	data["http_password"] = http_pw;
+
+	data["time"] = sensor_cycles * SENS_FRQ_SEC - internalRTC.timezone_offset;
 	data["timezone"] = internalRTC.timezone_offset;
+
 	data["log_size"] = logengine.counter;
 
 	LOGDEBUG(F("[Setting]"), F("serializeJSON()"), F("OK: Serialized Overall Settings "), String(data.measureLength()), "", "");
@@ -138,28 +216,42 @@ bool Setting::deserializeJSON(JsonObject & data)
 
 		if (data["wifi_pw"].asString() != "") {
 			wifi_pw = data["wifi_pw"].asString();
-			LOGMSG(F("[Setting]"), F("OK: Wifi SSID loaded"), String(wifi_pw.substring(0, 3)) + "*****", "", "");
+			LOGMSG(F("[Setting]"), F("OK: Wifi SSID loaded"), String(wifi_pw), "", "");
 		}
 		else {
 			LOGMSG(F("[Setting]"), F("ERROR: No Wifi password loaded"), "", "", "");
 		}
+		if (data["ap_SSID"].asString() != "") {
+			wifi_ssid = data["ap_SSID"].asString();
+			LOGMSG(F("[Setting]"), F("OK: AP SSID loaded"), String(ap_ssid), "", "");
+		}
+		else {
+			LOGMSG(F("[Setting]"), F("ERROR: No AP SSID loaded"), "", "", "");
+		}
+
+		if (data["ap_pw"].asString() != "") {
+			wifi_pw = data["ap_pw"].asString();
+			LOGMSG(F("[Setting]"), F("OK: AP password loaded"), String(ap_pw), "", "");
+		}
+		else {
+			LOGMSG(F("[Setting]"), F("ERROR: No AP password loaded"), "", "", "");
+		}
 
 		if (data["http_user"].asString() != "") {
 			http_user = data["http_user"].as<const char*>();
-			LOGMSG(F("[Setting]"), F("OK: Loaded http user"), http_user, "", "");
+			LOGMSG(F("[Setting]"), F("OK: Loaded http user"), String(http_user), "", "");
 		}
 		else {
 			LOGMSG(F("[Setting]"), F("WARNING: No http user loaded"), "", "", "");
 		}
 
 		if (data["http_password"].asString() != "") {
-			http_password = data["http_password"].as<const char*>();
-			LOGMSG(F("[Setting]"), F("OK: Loaded http password"), http_password, "", "");
+			http_pw = data["http_password"].as<const char*>();
+			LOGMSG(F("[Setting]"), F("OK: Loaded http password"), String(http_pw), "", "");
 		}
 		else {
 			LOGMSG(F("[Setting]"), F("WARNING: No http password loaded"), "", "", "");
 		}
-
 
 		if (data["timezone"] != "") {
 			//Set RTC
@@ -189,55 +281,120 @@ bool Setting::deserializeJSON(JsonObject & data)
 	return data.success();
 }
 
-
-bool Setting::saveSettings(const char* filename)
+bool Setting::saveActiveConfig()
 {
-	char json[JSONCHAR_SIZE];
-	int bytes;
-	bool complete;
-	bool success = true;
+	LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Config to active config file"), "", "", "");
+	return saveSettings(active_config_file);
+}
+
+bool Setting::saveDefaultConfig()
+{
+	LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Config to default config file"), "", "", "");
+	return saveSettings(default_config_file);
+}
+
+
+bool Setting::backupConfig()
+{
+	LOGDEBUG2(F("[FileSystem]"), F("copyFile()"), F("OK: Ending Task"), "", "", "");
+	return copyFile(active_config_file, backup_config_file);
+}
+
+void Setting::asyncSaveActiveConfig(void * _this)
+{
+	vTaskDelay(10);
+	static_cast<Setting*>(_this)->backupConfig();
+	static_cast<Setting*>(_this)->saveActiveConfig();
+	vTaskDelete(NULL);
+}
+
+void Setting::asyncSaveDefaultConfig(void * _this)
+{
+	vTaskDelay(10);
+	static_cast<Setting*>(_this)->saveDefaultConfig();
+	vTaskDelete(NULL);
+}
+
+void Setting::asyncBackupConfig(void *_this)
+{
+	vTaskDelay(20);
+	static_cast<Setting*>(_this)->backupConfig();
+	vTaskDelete(NULL);
+}
+
+bool Setting::loadActiveConfig()
+{
+	return loadSettings(active_config_file);
+}
+
+bool Setting::loadDefaultConfig()
+{
+	return loadSettings(default_config_file);
+}
+
+bool Setting::loadBackupConfig()
+{
+	return loadSettings(backup_config_file);
+}
+
+bool Setting::saveSettings(const char*  filename)
+{
+	DynamicJsonBuffer jsonbuffer;
 
 	File file = SD.open(filename, FILE_WRITE);
 
 	if (file) {
 		//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("File Open"), "", "", "");
 		led[2]->turnOn();
+		
 		//Settings
-		Setting::serializeJSON(json, JSONCHAR_SIZE);
-		file.println(json);
-		LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Overall Settings"), "", "", "");
+		JsonObject& data = jsonbuffer.createObject();
+		serializeJSON(data);
+		data.printTo(file);
+		file.println();
+		LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Settings"), "", "", "");
 
 		for (uint8_t i = 0; i < TRIGGER_TYPES; i++) {
 			for (uint8_t j = 0; j < TRIGGER_SETS; j++) {
-				trigger[i][j]->serializeJSON(i, j, json, JSONCHAR_SIZE, DETAILS);
+				jsonbuffer.clear();
+				JsonObject& data = jsonbuffer.createObject();
+				trigger[i][j]->serializeJSON(data, DETAILS);
+				data.printTo(file);
+				file.println();
 				led[2]->switchState();
-				file.println(json);
-				//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Trigger"), F("Cat | Id"), String(i), String(j));
 			}
 		}
 		for (uint8_t i = 0; i < RULESETS_NUM; i++) {
-			rulesets[i]->serializeJSON(i, json, JSONCHAR_SIZE, DETAILS);
+			jsonbuffer.clear();
+			JsonObject& data = jsonbuffer.createObject();
+			rulesets[i]->serializeJSON(data, DETAILS);
+			data.printTo(file);
+			file.println();
 			led[2]->switchState();
-			file.println(json);
-			//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Rule"), F("Id"), String(i), "");
 		}
 		for (uint8_t i = 0; i < ACTIONCHAINS_NUM; i++) {
-			actionchains[i]->serializeJSON(i, json, JSONCHAR_SIZE, DETAILS);
+			jsonbuffer.clear();
+			JsonObject& data = jsonbuffer.createObject();
+			actionchains[i]->serializeJSON(data, DETAILS);
+			data.printTo(file);
+			file.println();
 			led[2]->switchState();
-			file.println(json);
-			//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Actionschain"), F("Id"), String(i), "");
 		}
 		for (uint8_t i = 0; i < SENS_NUM; i++) {
-			sensors[i]->serializeJSON(i, json, JSONCHAR_SIZE, DETAILS);
-			led[2]->switchState();
-			file.println(json);
-			//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Sensor"), F("Id"), String(i), "");
+			jsonbuffer.clear();
+			JsonObject& data = jsonbuffer.createObject();
+			sensors[i]->serializeJSON(data, DETAILS);
+			data.printTo(file);
+			file.println();
+			led[2]->switchState();			
 		}
 		for (uint8_t i = 0; i < RC_SOCKETS; i++) {
-			rcsocketcontroller->serializeJSON(i, json, JSONCHAR_SIZE, DETAILS);
+			jsonbuffer.clear();
+			JsonObject& data = jsonbuffer.createObject();
+			rcsocketcontroller->serializeJSON(data, DETAILS, i);
+			data.printTo(file);
+			file.println();
 			led[2]->switchState();
-			file.println(json);
-			//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Remote Socket"), F("Id"), String(i), "");
 		}
 		led[2]->turnOff();
 		file.close();
@@ -247,8 +404,6 @@ bool Setting::saveSettings(const char* filename)
 	else {
 		LOGMSG(F("[FileSystem]"), F("ERROR: Could not write to file:"), String(filename), "", "");
 	}
-	
-	return success;
 }
 
 
@@ -259,14 +414,13 @@ bool Setting::loadSettings(const char* filename)
 	int id = 0;
 	int j = 0;
 	bool success = true;
-	
+
 	File file = SD.open(filename, FILE_READ);
 
 	if (file) {
 		while (file.available()) {
 			//Buffer Needs to be here ...
 			DynamicJsonBuffer jsonBuffer;
-
 
 			json = file.readStringUntil('\n');
 
@@ -325,7 +479,7 @@ bool Setting::loadSettings(const char* filename)
 						success = false;
 					}
 				}
-		     	else if (node["obj"] == "RCSOCKET") {
+				else if (node["obj"] == "RCSOCKET") {
 					id = (int)node["id"];
 					if (id < RC_SOCKETS) {
 						success = rcsocketcontroller->deserializeJSON(id, node);
@@ -365,12 +519,12 @@ bool Setting::copyFile(const char* source, const char* destination)
 	File current_file = SD.open(source, FILE_READ);
 
 	if (current_file) {
-		LOGDEBUG2(F("[FileSystem]"), F("copyFile()"), F("OK: Source File open"), F("Filename"), String(source), "");
+		LOGDEBUG(F("[FileSystem]"), F("copyFile()"), F("OK: Source File open"), F("Filename"), String(source), "");
 
-		File backup_file = SD.open(source, FILE_WRITE);
+		File backup_file = SD.open(destination, FILE_WRITE);
 
 		if (backup_file) {
-			LOGDEBUG2(F("[FileSystem]"), F("copyFile()"), F("OK: Target File open"), F("Filename"), String(destination), "");
+			LOGDEBUG(F("[FileSystem]"), F("copyFile()"), F("OK: Target File open"), F("Filename"), String(destination), "");
 
 			led[2]->turnOn();
 			while ((current_file.read(buf, sizeof(buf))) > 0) {
@@ -396,252 +550,4 @@ bool Setting::copyFile(const char* source, const char* destination)
 	}
 
 	return success;
-}
-
-void Setting::saveSettings(void * parameter)
-{
-	LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Starting Tasks"), "", "", "");
-	char json[JSONCHAR_SIZE];
-	int bytes;
-	bool complete;
-	bool success = true;
-
-	String filename = *(String*)parameter;
-
-	File file = SD.open(filename, FILE_WRITE);
-
-	if (file) {
-		//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("File Open"), "", "", "");
-		led[2]->turnOn();
-		//Settings
-		Setting::serializeJSON(json, JSONCHAR_SIZE);
-		file.println(json);
-		LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Overall Settings"), "", "", "");
-
-		for (uint8_t i = 0; i < TRIGGER_TYPES; i++) {
-			for (uint8_t j = 0; j < TRIGGER_SETS; j++) {
-				trigger[i][j]->serializeJSON(i, j, json, JSONCHAR_SIZE, DETAILS);
-				led[2]->switchState();
-				file.println(json);
-				//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Trigger"), F("Cat | Id"), String(i), String(j));
-			}
-		}
-		for (uint8_t i = 0; i < RULESETS_NUM; i++) {
-			rulesets[i]->serializeJSON(i, json, JSONCHAR_SIZE, DETAILS);
-			led[2]->switchState();
-			file.println(json);
-			//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Rule"), F("Id"), String(i), "");
-		}
-		for (uint8_t i = 0; i < ACTIONCHAINS_NUM; i++) {
-			actionchains[i]->serializeJSON(i, json, JSONCHAR_SIZE, DETAILS);
-			led[2]->switchState();
-			file.println(json);
-			//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Actionschain"), F("Id"), String(i), "");
-		}
-		for (uint8_t i = 0; i < SENS_NUM; i++) {
-			sensors[i]->serializeJSON(i, json, JSONCHAR_SIZE, DETAILS);
-			led[2]->switchState();
-			file.println(json);
-			//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Sensor"), F("Id"), String(i), "");
-		}
-		for (uint8_t i = 0; i < RC_SOCKETS; i++) {
-			rcsocketcontroller->serializeJSON(i, json, JSONCHAR_SIZE, DETAILS);
-			led[2]->switchState();
-			file.println(json);
-			//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Remote Socket"), F("Id"), String(i), "");
-		}
-		led[2]->turnOff();
-		file.close();
-
-		LOGMSG(F("[FileSystem]"), F("OK: Saved Settings to file:"), String(filename), "", "");
-	}
-	else {
-		LOGMSG(F("[FileSystem]"), F("ERROR: Could not write to file:"), String(filename), "", "");
-	}
-
-	LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Énding Tasks"), "", "", "");
-	vTaskDelete(NULL);
-}
-
-void Setting::saveActiveConfig(void * parameter)
-{
-	LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Starting Tasks"), "", "", "");
-	char json[JSONCHAR_SIZE];
-	int bytes;
-	bool complete;
-	bool success = true;
-
-	String filename = "/_CURRENTCONFIG.JSON";
-
-	File file = SD.open(filename, FILE_WRITE);
-
-	if (file) {
-		//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("File Open"), "", "", "");
-		led[2]->turnOn();
-		//Settings
-		Setting::serializeJSON(json, JSONCHAR_SIZE);
-		file.println(json);
-		LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Overall Settings"), "", "", "");
-
-		for (uint8_t i = 0; i < TRIGGER_TYPES; i++) {
-			for (uint8_t j = 0; j < TRIGGER_SETS; j++) {
-				trigger[i][j]->serializeJSON(i, j, json, JSONCHAR_SIZE, DETAILS);
-				led[2]->switchState();
-				file.println(json);
-				//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Trigger"), F("Cat | Id"), String(i), String(j));
-			}
-		}
-		for (uint8_t i = 0; i < RULESETS_NUM; i++) {
-			rulesets[i]->serializeJSON(i, json, JSONCHAR_SIZE, DETAILS);
-			led[2]->switchState();
-			file.println(json);
-			//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Rule"), F("Id"), String(i), "");
-		}
-		for (uint8_t i = 0; i < ACTIONCHAINS_NUM; i++) {
-			actionchains[i]->serializeJSON(i, json, JSONCHAR_SIZE, DETAILS);
-			led[2]->switchState();
-			file.println(json);
-			//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Actionschain"), F("Id"), String(i), "");
-		}
-		for (uint8_t i = 0; i < SENS_NUM; i++) {
-			sensors[i]->serializeJSON(i, json, JSONCHAR_SIZE, DETAILS);
-			led[2]->switchState();
-			file.println(json);
-			//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Sensor"), F("Id"), String(i), "");
-		}
-		for (uint8_t i = 0; i < RC_SOCKETS; i++) {
-			rcsocketcontroller->serializeJSON(i, json, JSONCHAR_SIZE, DETAILS);
-			led[2]->switchState();
-			file.println(json);
-			//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Remote Socket"), F("Id"), String(i), "");
-		}
-		led[2]->turnOff();
-		file.close();
-
-		LOGMSG(F("[FileSystem]"), F("OK: Saved Settings to file:"), String(filename), "", "");
-	}
-	else {
-		LOGMSG(F("[FileSystem]"), F("ERROR: Could not write to file:"), String(filename), "", "");
-	}
-
-	LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Énding Tasks"), "", "", "");
-	vTaskDelete(NULL);
-}
-
-void Setting::saveDefaultConfig(void * parameter)
-{
-	LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Starting Tasks"), "", "", "");
-	char json[JSONCHAR_SIZE];
-	int bytes;
-	bool complete;
-	bool success = true;
-
-	String filename = "/DEFAULTCONFIG.JSON";
-
-	File file = SD.open(filename, FILE_WRITE);
-
-	if (file) {
-		//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("File Open"), "", "", "");
-		led[2]->turnOn();
-		//Settings
-		Setting::serializeJSON(json, JSONCHAR_SIZE);
-		file.println(json);
-		LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Overall Settings"), "", "", "");
-
-		for (uint8_t i = 0; i < TRIGGER_TYPES; i++) {
-			for (uint8_t j = 0; j < TRIGGER_SETS; j++) {
-				trigger[i][j]->serializeJSON(i, j, json, JSONCHAR_SIZE, DETAILS);
-				led[2]->switchState();
-				file.println(json);
-				//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Trigger"), F("Cat | Id"), String(i), String(j));
-			}
-		}
-		for (uint8_t i = 0; i < RULESETS_NUM; i++) {
-			rulesets[i]->serializeJSON(i, json, JSONCHAR_SIZE, DETAILS);
-			led[2]->switchState();
-			file.println(json);
-			//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Rule"), F("Id"), String(i), "");
-		}
-		for (uint8_t i = 0; i < ACTIONCHAINS_NUM; i++) {
-			actionchains[i]->serializeJSON(i, json, JSONCHAR_SIZE, DETAILS);
-			led[2]->switchState();
-			file.println(json);
-			//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Actionschain"), F("Id"), String(i), "");
-		}
-		for (uint8_t i = 0; i < SENS_NUM; i++) {
-			sensors[i]->serializeJSON(i, json, JSONCHAR_SIZE, DETAILS);
-			led[2]->switchState();
-			file.println(json);
-			//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Sensor"), F("Id"), String(i), "");
-		}
-		for (uint8_t i = 0; i < RC_SOCKETS; i++) {
-			rcsocketcontroller->serializeJSON(i, json, JSONCHAR_SIZE, DETAILS);
-			led[2]->switchState();
-			file.println(json);
-			//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Remote Socket"), F("Id"), String(i), "");
-		}
-		led[2]->turnOff();
-		file.close();
-
-		LOGMSG(F("[FileSystem]"), F("OK: Saved Settings to file:"), String(filename), "", "");
-	}
-	else {
-		LOGMSG(F("[FileSystem]"), F("ERROR: Could not write to file:"), String(filename), "", "");
-	}
-
-	LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Énding Tasks"), "", "", "");
-	vTaskDelete(NULL);
-}
-
-
-void Setting::backupConfig(void * parameter)
-{
-	LOGDEBUG2(F("[FileSystem]"), F("copyFile()"), F("OK: Starting Tasks"), "", "", "");
-
-	String source = "/_CURRENTCONFIG.JSON";
-	String destination = "/_CURRENTCONFIG.JSON.BAK";
-
-	size_t n;
-	uint8_t buf[64];
-
-	short i = 0;
-	String output;
-	bool success = true;
-
-
-	File current_file = SD.open(source, FILE_READ);
-
-	if (current_file) {
-		LOGDEBUG2(F("[FileSystem]"), F("copyFile()"), F("OK: Source File open"), F("Filename"), String(source), "");
-
-		File backup_file = SD.open(destination, FILE_WRITE);
-
-		if (backup_file) {
-			LOGDEBUG2(F("[FileSystem]"), F("copyFile()"), F("OK: Target File open"), F("Filename"), String(destination), "");
-
-			led[2]->turnOn();
-			while ((current_file.read(buf, sizeof(buf))) > 0) {
-				led[2]->switchState();
-				backup_file.write(buf, sizeof(buf));
-				i++;
-			}
-			led[2]->turnOff();
-
-			output = String(i * 64);
-			current_file.close();
-			backup_file.close();
-			LOGMSG(F("[FileSystem]"), F("OK: Copied settings to backup file"), String(destination), "Filesize", String(output));
-		}
-		else {
-			LOGMSG(F("[FileSystem]"), F("ERROR: Could not open destination file"), String(destination), "", "");
-			success = false;
-		}
-	}
-	else {
-		LOGMSG(F("[FileSystem]"), F("ERROR: Could not open target file"), String(source), "", "");
-		success = false;
-	}
-
-	LOGDEBUG2(F("[FileSystem]"), F("copyFile()"), F("OK: Ending Tasks"), "", "", "");
-	vTaskDelete(NULL);
 }

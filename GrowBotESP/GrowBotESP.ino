@@ -51,11 +51,6 @@ unsigned long next_sensor = 0;
 bool haltstate = false;
 long haltstate_start = 0;
 
-//Wifi and Auth
-String wifi_ssid;
-String wifi_pw;
-const char* http_user = "admin";
-const char* http_password = "schnitzel";
 
 //Status LED
 Led *led[3];
@@ -66,6 +61,9 @@ BME280I2C bme;
 //Ultrasonic Sensor
 Ultrasonic distance1(DIST1_TRIG, DIST1_ECHO);
 Ultrasonic distance2(DIST2_TRIG, DIST2_ECHO);
+
+//Settings
+Setting settings("/_CURRENTCONFIG.JSON", "/DEFAULTCONFIG.JSON.JSON", "/_CURRENTCONFIG.JSON.BAK", "/LOG.JSON", "wgempire", "ert456sdf233sa!!!", "growAI", "schnitzel", "admin", "");
 
 //RealTimeClock
 RealTimeClock internalRTC;
@@ -207,49 +205,13 @@ void setup() {
 		rulesets[k] = new RuleSet(k);
 	}
 
-	if (DEBUG_RESET == false) {
-		if (Setting::loadSettings("/_CURRENTCONFIG.JSON") == false) {
-			LOGMSG("[Setup]", "WARNING: Did not load primary config file", "Hardreset", DEBUG_RESET, "");
-			String keys[] = { "" };
-			String values[] = { "" };
-			logengine.addLogEntry(WARNING, "Main", "Did not load primary config file", keys, values, 0);
+	//Initialize Settings from File
+	settings.begin();
 
-			if (Setting::loadSettings("/_CURRENTCONFIG.JSON.BAK") == false) {
-				LOGMSG("[Setup]", "WARNING: Did not load backup config file", "Hardreset", DEBUG_RESET, "");
-				String keys[] = { "" };
-				String values[] = { "" };
-				logengine.addLogEntry(WARNING, "Main", "Did not load backup config file", keys, values, 0);
-
-				if (Setting::loadSettings("/DEFAULTCONFIG.JSON") == false) {
-					LOGMSG("[Setup]", "WARNING: Did not load default config file", "Hardreset", DEBUG_RESET, "");
-					String keys[] = { "" };
-					String values[] = { "" };
-					logengine.addLogEntry(WARNING, "Main", "Did not load default config file. Setting hard coded values", keys, values, 0);
-
-					Setting::reset();
-				}
-			}
-		}
-	}
-	else {
-		LOGMSG("[Setup]", "WARNING: Hard Reset Flag set. Setting hard coded values", "Hardreset", DEBUG_RESET, "");
-		String keys[] = { "" };
-		String values[] = { "" };
-		logengine.addLogEntry(WARNING, "Main", "Reset Flag set. Setting hard coded values", keys, values, 0);
-
-		Setting::reset();
-	}
 
 	//Wifi
-	//Convert SSID and PW to char[]
-	char ssid[wifi_ssid.length()+1];
-	wifi_ssid.toCharArray(ssid, wifi_ssid.length()+1);
-
-	char pw[wifi_pw.length()+1];
-	wifi_pw.toCharArray(pw, wifi_pw.length()+1);
-
-	WiFi.begin(ssid, pw);
-	LOGMSG("[Setup]", "Info: Attempting to connect to WPA SSID: ", String(wifi_ssid), "", "");
+	WiFi.begin(settings.wifi_ssid, settings.wifi_pw);
+	LOGMSG("[Setup]", "Info: Attempting to connect to WPA SSID: ", String(settings.wifi_ssid), "", "");
 
 	uint8_t failed = 0;
 	while (WiFi.status() != WL_CONNECTED) {
@@ -266,7 +228,7 @@ void setup() {
 	}
 
 	if (WiFi.status() == WL_CONNECTED) {
-		LOGMSG("[Setup]", "Connected to WPA SSID: ", String(wifi_ssid), "IP Address: ", String(WiFi.localIP()));
+		LOGMSG("[Setup]", "Connected to WPA SSID: ", String(settings.wifi_ssid), "IP Address: ", String(WiFi.localIP()));
 	}
 
 	//Start Webserver
@@ -331,26 +293,15 @@ void loop() {
 
 			}
 			
-			//Save Settings to SD Card
+			//Backup Settings and save Settings to SD Card
 			if ((sensor_cycles % (15 * SENS_VALUES_MIN)) == 0) {
 				
-				LOGMSG(F("[Loop]"), F("SaveActive"), "", "", "");
 				String keys[] = { "" };
 				String values[] = { "" };
 				logengine.addLogEntry(INFO, "Main", "Saved Configuration", keys, values, 0);
 
-				xTaskCreate(Setting::saveActiveConfig, "FileAccess", 16000, NULL, 1, NULL);
-			}
-
-			//Backup
-			if ((sensor_cycles % (30 * SENS_VALUES_MIN)) == 0) {
-				LOGMSG(F("[Loop]"), F("SaveActive"), "", "", "");
-				String keys[] = { "" };
-				String values[] = { "" };
-				logengine.addLogEntry(INFO, "Main", "Backup Configuration", keys, values, 0);
-
-				xTaskCreate(Setting::backupConfig, "FileAccess", 32000, NULL, 1, NULL);
-			}		
+				xTaskCreate(Setting::asyncSaveActiveConfig, "Save Config", 16384, &settings, 1, NULL);
+			}	
 		}
 
 		//Get Seconds from Clock
