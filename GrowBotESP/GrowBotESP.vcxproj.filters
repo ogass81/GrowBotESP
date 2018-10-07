@@ -67,6 +67,9 @@
     <Filter Include="src\_micro-api-readonly\libraries\ArduinoJson">
       <UniqueIdentifier>{1869a019-16ec-471d-9da8-2ad41d38a36a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\_micro-api-readonly\libraries\NTPClient-master">
+      <UniqueIdentifier>{2f6a98e4-d5f0-475f-a3e1-da5611438807}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="GrowBotESP.ino" />
@@ -123,6 +126,12 @@
     </None>
     <None Include="..\..\..\libraries\ArduinoJson\library.properties">
       <Filter>src\_micro-api-readonly\libraries\ArduinoJson</Filter>
+    </None>
+    <None Include="..\..\..\libraries\NTPClient-master\library.json">
+      <Filter>src\_micro-api-readonly\libraries\NTPClient-master</Filter>
+    </None>
+    <None Include="..\..\..\libraries\NTPClient-master\library.properties">
+      <Filter>src\_micro-api-readonly\libraries\NTPClient-master</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -666,6 +675,12 @@
     <ClInclude Include="..\..\..\libraries\ArduinoJson\third-party\catch\catch.hpp">
       <Filter>src\_micro-api-readonly\libraries\ArduinoJson</Filter>
     </ClInclude>
+    <ClInclude Include="WifiController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\libraries\NTPClient-master\NTPClient.h">
+      <Filter>src\_micro-api-readonly\libraries\NTPClient-master</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Action.cpp">
@@ -1073,6 +1088,12 @@
     <ClCompile Include="..\..\..\libraries\ArduinoJson\third-party\catch\catch.cpp">
       <Filter>src\_micro-api-readonly\libraries\ArduinoJson</Filter>
     </ClCompile>
+    <ClCompile Include="WifiController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libraries\NTPClient-master\NTPClient.cpp">
+      <Filter>src\_micro-api-readonly\libraries\NTPClient-master</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\..\libraries\Ultrasonic\keywords.txt">
@@ -1146,6 +1167,9 @@
     </Text>
     <Text Include="..\..\..\libraries\ArduinoJson\third-party\catch\CMakeLists.txt">
       <Filter>src\_micro-api-readonly\libraries\ArduinoJson</Filter>
+    </Text>
+    <Text Include="..\..\..\libraries\NTPClient-master\keywords.txt">
+      <Filter>src\_micro-api-readonly\libraries\NTPClient-master</Filter>
     </Text>
   </ItemGroup>
 </Project>

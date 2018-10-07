@@ -14,8 +14,6 @@ Setting::Setting(const char * active_config_file, const char * default_config_fi
 	this->wifi_ssid = wifi_ssid;
 	this->wifi_pw = wifi_pw;
 	this->ap_ssid = ap_ssid;
-	this->wifi_pw = wifi_pw;
-	this->ap_ssid = ap_ssid;
 	this->ap_pw = ap_pw;
 	this->http_user = http_user;
 	this->http_pw = http_password;
@@ -24,7 +22,7 @@ Setting::Setting(const char * active_config_file, const char * default_config_fi
 	this->default_wifi_ssid = this->wifi_ssid;
 	this->default_wifi_pw = this->wifi_pw;
 	this->default_ap_ssid = this->ap_ssid;
-	this->default_ap_pw = this->ap_ssid;
+	this->default_ap_pw = this->ap_pw;
 	this->default_http_user = this->http_user;
 	this->default_http_pw = this->http_pw;
 }

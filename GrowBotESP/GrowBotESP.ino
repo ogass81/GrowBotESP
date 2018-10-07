@@ -7,6 +7,7 @@
 
 
 ////Helper
+
 #include "Definitions.h"
 
 //Hardware Libaries
@@ -19,7 +20,10 @@
 #include <DHT.h>
 #include "RealTimeClock.h"
 #include "Led.h"
-#include <WiFi.h>
+#include "WifiController.h"
+#include <WiFiUdp.h>
+#include <NTPClient.h>
+
 
 //Core Features
 #include "Action.h"
@@ -63,7 +67,7 @@ Ultrasonic distance1(DIST1_TRIG, DIST1_ECHO);
 Ultrasonic distance2(DIST2_TRIG, DIST2_ECHO);
 
 //Settings
-Setting settings("/_CURRENTCONFIG.JSON", "/DEFAULTCONFIG.JSON.JSON", "/_CURRENTCONFIG.JSON.BAK", "/LOG.JSON", "wgempire", "ert456sdf233sa!!!", "growAI", "schnitzel", "admin", "");
+Setting settings("/_CURRENTCONFIG.JSON", "/DEFAULTCONFIG.JSON.JSON", "/_CURRENTCONFIG.JSON.BAK", "/LOG.JSON", "wgempire", "ert456sdf233sa!!!", "growAI", "1234qwert", "admin", "");
 
 //RealTimeClock
 RealTimeClock internalRTC;
@@ -72,10 +76,11 @@ RealTimeClock internalRTC;
 RCSocketController *rcsocketcontroller;
 
 //Wifi
-WebServer *webserver;
-WebTimeClient *ntpclient;
-
+//WebServer *webserver;
+WifiHandler wifihandler;
 Webhandler webhandler;
+WiFiUDP udp;
+NTPClient ntpclient(udp);
 
 //Modules
 //Sensors: Abstraction of all Sensors
@@ -210,31 +215,21 @@ void setup() {
 
 
 	//Wifi
-	WiFi.begin(settings.wifi_ssid, settings.wifi_pw);
-	LOGMSG("[Setup]", "Info: Attempting to connect to WPA SSID: ", String(settings.wifi_ssid), "", "");
-
-	uint8_t failed = 0;
-	while (WiFi.status() != WL_CONNECTED) {
-		delay(1000);
-		Serial.print(".");
-		failed++;
-
-		if (failed > WIFI_TIMEOUT) {
-			while (true) {
-				led[2]->switchState();
-				delay(500);
-			}
-		}
-	}
-
-	if (WiFi.status() == WL_CONNECTED) {
-		LOGMSG("[Setup]", "Connected to WPA SSID: ", String(settings.wifi_ssid), "IP Address: ", String(WiFi.localIP()));
-	}
-
+	wifihandler.begin();
+	
 	//Start Webserver
 	webhandler.begin();
 
+	long timestamp = 0;
+	while ((timestamp = wifihandler.returnNetworkTime()) == 0) {
+		LOGMSG("[Setup]", "Retrieving network time", "", "", "");
+		delay(1000);
+		led[0]->switchState();
+	}
+	internalRTC.updateTime(timestamp, true);
+	led[0]->turnOn();
 
+	/*
 	//Sync with Internet
 	ntpclient = new WebTimeClient();
 	long timestamp = ntpclient->getWebTime();
@@ -247,6 +242,7 @@ void setup() {
 
 		internalRTC.updateTime(timestamp, true);
 	}
+	*/
 }
 
 
