@@ -79,8 +79,8 @@ RCSocketController *rcsocketcontroller;
 //WebServer *webserver;
 WifiHandler wifihandler;
 Webhandler webhandler;
-WiFiUDP udp;
-NTPClient ntpclient(udp);
+//WiFiUDP udp;
+//NTPClient ntpclient(udp);
 
 //Modules
 //Sensors: Abstraction of all Sensors
@@ -112,11 +112,14 @@ void setup() {
 	led[0] = new Led(LED1, false);
 	led[1] = new Led(LED2, false);
 	led[2] = new Led(LED3, false);
-	
-	
+
+	LOGMSG("[Setup]", "Beginning Boot Sequence", "", "", "");
 	led[0]->turnOn();
 
 	//Initialize FileSystem / SD Card
+	LOGMSG("[Setup]", "Initializing SD Card", "", "", "");
+	//Hardware Fix for unstable SD init
+	pinMode(23, INPUT_PULLUP);
 	if (!SD.begin()) {
 		LOGMSG(F("[Setup]"), F("ERROR: Cannot initialize SD card"), "", "", "");
 	}
@@ -124,19 +127,8 @@ void setup() {
 		LOGMSG(F("[Setup]"), F("INFO: SD Card"), SD.cardType(), (long)SD.cardSize(), ""); 
 	}
 
-	//Status Led
-	led[0] = new Led(LED1, false);
-	led[1] = new Led(LED2, false);
-	led[2] = new Led(LED3, false);
-
-	//LogEngine
-	logengine.begin();
-
-	String keys[] = { "" };
-	String values[] = { "" };
-	logengine.addLogEntry(INFO, "Setup", "Starting Bot", keys, values, 0);
-
 	//Start Temp/Humidity Sensor
+	LOGMSG("[Setup]", "Initializing BME Sensor", "", "", "");
 	Wire.begin();
 
 	while (!bme.begin())
@@ -146,9 +138,11 @@ void setup() {
 	}
 
 	//433Mhz
+	LOGMSG("[Setup]", "Initializing 433 Mhz Controller", "", "", "");
 	rcsocketcontroller = new RCSocketController(TX_DATA_PIN, RX_DATA_PIN);
 
 	//Initialize Sensors
+	LOGMSG("[Setup]", "Initializing Sensors", "", "", "");
 	sensors[0] = new	BMETemperature(0, &bme, true, F("Temperature"), F("C"), -127, -50, 100);
 	sensors[1] = new 	BMEHumidity(1, &bme, true, F("Humidity"), F("%"), -127, 0, 100);
 	sensors[2] = new 	BMEPressure(2, &bme, true, F("Pressure"), F("kPa"), -127, 50, 150);
@@ -161,6 +155,7 @@ void setup() {
 
 
 	//Intialize Actions
+	LOGMSG("[Setup]", "Initializing Actions", "", "", "");
 	actions[0] = new NamedParameterizedSimpleAction<RCSocketController>(0, "Send", rcsocketcontroller, &RCSocketController::sendCode, &RCSocketController::getTitle, 0, true);
 	actions[1] = new NamedParameterizedSimpleAction<RCSocketController>(1, "Send", rcsocketcontroller, &RCSocketController::sendCode, &RCSocketController::getTitle, 1, true);
 	actions[2] = new NamedParameterizedSimpleAction<RCSocketController>(2, "Send", rcsocketcontroller, &RCSocketController::sendCode, &RCSocketController::getTitle, 2, true);
@@ -187,15 +182,14 @@ void setup() {
 
 
 	//Initialize ActionChains
+	LOGMSG("[Setup]", "Initializing Actionchains", "", "", "");
 	for (uint8_t i = 0; i < ACTIONCHAINS_NUM; i++) {
 		actionchains[i] = new ActionChain(i);
 	}
 
-	//Start Taskmanager
-	taskmanager = new TaskManager();
-
 
 	//Initialize Trigger
+	LOGMSG("[Setup]", "Initializing Triggers", "", "", "");
 	for (int tcategory = 0; tcategory < TRIGGER_TYPES; tcategory++) {
 		for (int tset = 0; tset < TRIGGER_SETS; tset++) {
 			if (tcategory == 0) trigger[tcategory][tset] = new TimeTrigger(tset, 0);
@@ -206,43 +200,77 @@ void setup() {
 	}
 
 	//Initialize Rulesets
+	LOGMSG("[Setup]", "Initializing Rulesets", "", "", "");
 	for (uint8_t k = 0; k < RULESETS_NUM; k++) {
 		rulesets[k] = new RuleSet(k);
 	}
 
 	//Initialize Settings from File
+	LOGMSG("[Setup]", "Loading Settings from SD Card", "", "", "");
 	settings.begin();
 
+	//Start Taskmanager
+	LOGMSG("[Setup]", "Initializing Task Manager", "", "", "");
+	taskmanager = new TaskManager();
 
 	//Wifi
+	LOGMSG("[Setup]", "Initializing Wifi", "", "", "");
 	wifihandler.begin();
-	
-	//Start Webserver
-	webhandler.begin();
 
-	long timestamp = 0;
-	while ((timestamp = wifihandler.returnNetworkTime()) == 0) {
-		LOGMSG("[Setup]", "Retrieving network time", "", "", "");
-		delay(1000);
-		led[0]->switchState();
+	uint8_t timeout = 0;
+	while (WiFi.status() != WL_CONNECTED) {
+		if (timeout > WIFI_TIMEOUT) {
+			for (uint8_t i = 0; i < WIFI_TIMEOUT; i++) {
+				led[0]->switchState();
+				led[1]->switchState();
+				led[2]->switchState();
+			}
+			//ESP.restart();
+		}
+		else {
+			delay(1000);
+			led[0]->switchState();
+			timeout++;
+		}
 	}
-	internalRTC.updateTime(timestamp, true);
 	led[0]->turnOn();
 
-	/*
-	//Sync with Internet
-	ntpclient = new WebTimeClient();
-	long timestamp = ntpclient->getWebTime();
+	//Start Webserver
+	LOGMSG("[Setup]", "Starting Webserver", "", "", "");
+	webhandler.begin();
 
-	if (timestamp > 0) {
-		String keys[] = { "" };
-		String values[] = { "" };
-		logengine.addLogEntry(INFO, "RealTimeClock", "Received Internet Time", keys, values, 0);
-		LOGDEBUG2("[RealTimeClock]", "syncSensorCycles()", "OK: Set new sensor cycle", String(sensor_cycles), "", "");
+	//NTP
+	LOGMSG("[Setup]", "Retrieving Network Time", "", "", "");
+	long timestamp = 0; 
+	timeout = 0;
 
-		internalRTC.updateTime(timestamp, true);
+
+	while(NTP) {
+		if (timeout > NTP_TIMEOUT) {
+			LOGMSG("[Setup]", "ERROR: Could not retrieve Network Time", "", "", "");
+			break;
+		}
+		else {
+			if ((timestamp = wifihandler.returnNetworkTime()) == 0) {
+				timeout++;
+				led[0]->switchState();
+			}
+			else {
+				internalRTC.updateTime(timestamp, true);
+				break;
+			}
+		}
 	}
-	*/
+	led[0]->turnOn();
+
+	//LogEngine
+	LOGMSG("[Setup]", "Initializing Log Engine", "", "", "");
+	logengine.begin();
+
+	LOGMSG("[Setup]", "Boot Sequence complete"	, "", "", "");
+	String keys[] = { "Time" };
+	String values[] = { String(RealTimeClock::printTime(sensor_cycles * SENS_FRQ_SEC)) };
+	logengine.addLogEntry(INFO, "Setup", "Bot started", keys, values, 1);
 }
 
 

@@ -13,6 +13,8 @@
 
 //Wifi
 #define WIFI_TIMEOUT 30
+#define NTP true
+#define NTP_TIMEOUT 30
 
 //FS1000A
 #define TX_DATA_PIN 17

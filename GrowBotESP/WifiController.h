@@ -15,21 +15,19 @@
 #include "Setting.h"
 
 extern Setting settings;
-extern WiFiUDP udp;
-extern NTPClient ntpclient;
+//extern WiFiUDP udp;
+//extern NTPClient ntpclient;
 
 class WifiHandler : WiFiClass {
 public:
 	volatile bool wifi_connected = false;
-
+	WiFiUDP *udp;
+	NTPClient *ntpclient;
 
 	WifiHandler();
 	
 	void begin();
 	long returnNetworkTime();
-
-	void wifiOnConnect();
-	void wifiOnDisconnect();
 
 	void WiFiEvent(WiFiEvent_t event);
 
