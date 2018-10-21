@@ -48,31 +48,31 @@ extern RCSocketController *rcsocketcontroller;
 
 class Setting {
 public:
-	const char* active_config_file;
-	const char* default_config_file;
-	const char* backup_config_file;
-	const char* log_file;
+	String active_config_file;
+	String default_config_file;
+	String backup_config_file;
+	String log_file;
 
-	const char* wifi_ssid;
-	const char* wifi_pw;
 
-	const char* ap_ssid;
-	const char* ap_pw;
 
-	const char* http_user;
-	const char* http_pw;
+	String wifi_ssid;
+	String wifi_pw;
+	String ap_ssid;
+	String ap_pw;
+	String http_user;
+	String http_pw;
 
-	const char* default_wifi_ssid;
-	const char* default_wifi_pw;
+	String default_wifi_ssid;
+	String default_wifi_pw;
 
-	const char* default_ap_ssid;
-	const char* default_ap_pw;
+	String default_ap_ssid;
+	String default_ap_pw;
 
-	const char* default_http_user;
-	const char* default_http_pw;
+	String default_http_user;
+	String default_http_pw;
 
 	
-	Setting(const char* active_config_file, const char* default_config_file, const char* backup_config_file, const char* log_file, const char* wifi_ssid, const char* wifi_pw, const char* ap_ssid, const char* ap_pw, const char* http_user, const char* http_password);
+	Setting(String active_config_file, String default_config_file, String backup_config_file, String log_file, String wifi_ssid, String wifi_pw, String ap_ssid, String ap_pw, String http_user, String http_password);
 
 	void reset();
 

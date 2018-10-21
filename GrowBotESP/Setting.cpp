@@ -4,7 +4,7 @@
 
 #include "Setting.h"
 
-Setting::Setting(const char * active_config_file, const char * default_config_file, const char * backup_config_file, const char * log_file, const char * wifi_ssid, const char * wifi_pw, const char * ap_ssid, const char * ap_pw, const char * http_user, const char * http_password)
+Setting::Setting(String active_config_file, String default_config_file, String backup_config_file, String log_file, String wifi_ssid, String wifi_pw, String ap_ssid, String ap_pw, String http_user, String http_password)
 {
 	//Set Initial Values
 	this->active_config_file = active_config_file;
@@ -212,7 +212,7 @@ bool Setting::deserializeJSON(JsonObject & data)
 			LOGMSG(F("[Setting]"), F("ERROR: No Wifi SSID loaded"), "", "", "");
 		}
 
-		if (data["wifi_pw"].asString() != "") {
+		if (data["wifi_pw"].success()) {
 			wifi_pw = data["wifi_pw"].asString();
 			LOGMSG(F("[Setting]"), F("OK: Wifi SSID loaded"), String(wifi_pw), "", "");
 		}
@@ -220,7 +220,7 @@ bool Setting::deserializeJSON(JsonObject & data)
 			LOGMSG(F("[Setting]"), F("ERROR: No Wifi password loaded"), "", "", "");
 		}
 		if (data["ap_SSID"].asString() != "") {
-			wifi_ssid = data["ap_SSID"].asString();
+			ap_ssid = data["ap_SSID"].asString();
 			LOGMSG(F("[Setting]"), F("OK: AP SSID loaded"), String(ap_ssid), "", "");
 		}
 		else {
@@ -228,7 +228,7 @@ bool Setting::deserializeJSON(JsonObject & data)
 		}
 
 		if (data["ap_pw"].asString() != "") {
-			wifi_pw = data["ap_pw"].asString();
+			ap_pw = data["ap_pw"].asString();
 			LOGMSG(F("[Setting]"), F("OK: AP password loaded"), String(ap_pw), "", "");
 		}
 		else {
@@ -236,16 +236,16 @@ bool Setting::deserializeJSON(JsonObject & data)
 		}
 
 		if (data["http_user"].asString() != "") {
-			http_user = data["http_user"].as<const char*>();
+			http_user = data["http_user"].asString();
 			LOGMSG(F("[Setting]"), F("OK: Loaded http user"), String(http_user), "", "");
 		}
 		else {
 			LOGMSG(F("[Setting]"), F("WARNING: No http user loaded"), "", "", "");
 		}
-
-		if (data["http_password"].asString() != "") {
-			http_pw = data["http_password"].as<const char*>();
-			LOGMSG(F("[Setting]"), F("OK: Loaded http password"), String(http_pw), "", "");
+		
+		if (data["http_password"].success()) {
+			http_pw = data["http_password"].asString();
+			LOGMSG(F("[Setting]"), F("OK: Loaded http password"), "#", String(http_pw), "#");
 		}
 		else {
 			LOGMSG(F("[Setting]"), F("WARNING: No http password loaded"), "", "", "");
@@ -282,20 +282,20 @@ bool Setting::deserializeJSON(JsonObject & data)
 bool Setting::saveActiveConfig()
 {
 	LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Config to active config file"), "", "", "");
-	return saveSettings(active_config_file);
+	return saveSettings(active_config_file.c_str());
 }
 
 bool Setting::saveDefaultConfig()
 {
 	LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Config to default config file"), "", "", "");
-	return saveSettings(default_config_file);
+	return saveSettings(default_config_file.c_str());
 }
 
 
 bool Setting::backupConfig()
 {
 	LOGDEBUG2(F("[FileSystem]"), F("copyFile()"), F("OK: Ending Task"), "", "", "");
-	return copyFile(active_config_file, backup_config_file);
+	return copyFile(active_config_file.c_str(), backup_config_file.c_str());
 }
 
 void Setting::asyncSaveActiveConfig(void * _this)
@@ -322,17 +322,17 @@ void Setting::asyncBackupConfig(void *_this)
 
 bool Setting::loadActiveConfig()
 {
-	return loadSettings(active_config_file);
+	return loadSettings(active_config_file.c_str());
 }
 
 bool Setting::loadDefaultConfig()
 {
-	return loadSettings(default_config_file);
+	return loadSettings(default_config_file.c_str());
 }
 
 bool Setting::loadBackupConfig()
 {
-	return loadSettings(backup_config_file);
+	return loadSettings(backup_config_file.c_str());
 }
 
 bool Setting::saveSettings(const char*  filename)

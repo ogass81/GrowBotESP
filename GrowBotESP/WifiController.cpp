@@ -13,8 +13,8 @@ void WifiHandler::begin()
 	WiFi.disconnect(true);
 	WiFi.onEvent(std::bind(&WifiHandler::WiFiEvent, this, std::placeholders::_1));
 	WiFi.mode(WIFI_MODE_APSTA);
-	WiFi.softAP(settings.ap_ssid, settings.ap_pw);
-	WiFi.begin(settings.wifi_ssid, settings.wifi_pw);
+	WiFi.softAP(settings.ap_ssid.c_str(), settings.ap_pw.c_str());
+	WiFi.begin(settings.wifi_ssid.c_str(), settings.wifi_pw.c_str());
 	
 	udp = new WiFiUDP();
 	ntpclient = new NTPClient(*udp);
@@ -35,14 +35,14 @@ void WifiHandler::WiFiEvent(WiFiEvent_t event)
 
 	case SYSTEM_EVENT_AP_START:
 		//can set ap hostname here
-		WiFi.softAPsetHostname(settings.ap_ssid);
+		WiFi.softAPsetHostname(settings.ap_ssid.c_str());
 		LOGMSG(F("[WifiHandler]"), "WifiEvent(SYSTEM_EVENT_AP_START)", "IP", WiFi.softAPIP(), "");
 		//enable ap ipv6 here
 		WiFi.softAPenableIpV6();
 		break;
 	case SYSTEM_EVENT_STA_START:
 		//set sta hostname here
-		WiFi.setHostname(settings.ap_ssid);
+		WiFi.setHostname(settings.ap_ssid.c_str());
 		LOGMSG(F("[WifiHandler]"), "WifiEvent(SYSTEM_EVENT_STA_START)", "SSID", settings.ap_ssid, "");
 		break;
 	case SYSTEM_EVENT_STA_CONNECTED:
@@ -63,7 +63,7 @@ void WifiHandler::WiFiEvent(WiFiEvent_t event)
 		LOGMSG(F("[WifiHandler]"), "WifiEvent(SYSTEM_EVENT_STA_GOT_IP)", "Disconnected with Local Wifi", "Reconnecting ...", "");
 		wifi_connected = false;
 		delay(5000);
-		WiFi.begin(settings.wifi_ssid, settings.wifi_pw);
+		WiFi.begin(settings.wifi_ssid.c_str(), settings.wifi_pw.c_str());
 		break;
 	default:
 		break;

@@ -47,7 +47,7 @@ void Webhandler::begin()
 
 void Webhandler::loginGet(AsyncWebServerRequest * request)
 {
-	if (!request->authenticate(settings.http_user, settings.http_pw))
+	if (!request->authenticate(settings.http_user.c_str(), settings.http_pw.c_str()))
 		return request->requestAuthentication();
 
 	AsyncJsonResponse * response = new AsyncJsonResponse();
@@ -69,7 +69,7 @@ void Webhandler::actionGet(AsyncWebServerRequest * request)
 	url.toCharArray(temp, url.length() + 1);
 	breakupURL(uri, temp);
 
-	if (!request->authenticate(settings.http_user, settings.http_pw))
+	if (!request->authenticate(settings.http_user.c_str(), settings.http_pw.c_str()))
 		return request->requestAuthentication();
 
 	if (uri[1] == "") {
@@ -122,7 +122,7 @@ void Webhandler::actionchainGet(AsyncWebServerRequest * request)
 	url.toCharArray(temp, url.length() + 1);
 	breakupURL(uri, temp);
 
-	if (!request->authenticate(settings.http_user, settings.http_pw))
+	if (!request->authenticate(settings.http_user.c_str(), settings.http_pw.c_str()))
 		return request->requestAuthentication();
 
 	if (uri[1] == "") {
@@ -166,7 +166,7 @@ void Webhandler::logGet(AsyncWebServerRequest * request)
 	url.toCharArray(temp, url.length() + 1);
 	breakupURL(uri, temp);
 
-	if (!request->authenticate(settings.http_user, settings.http_pw))
+	if (!request->authenticate(settings.http_user.c_str(), settings.http_pw.c_str()))
 		return request->requestAuthentication();
 
 	if (uri[1] == "") {
@@ -227,7 +227,7 @@ void Webhandler::rcsocketGet(AsyncWebServerRequest * request)
 	url.toCharArray(temp, url.length() + 1);
 	breakupURL(uri, temp);
 
-	if (!request->authenticate(settings.http_user, settings.http_pw))
+	if (!request->authenticate(settings.http_user.c_str(), settings.http_pw.c_str()))
 		return request->requestAuthentication();
 
 	if (uri[1] == "") {
@@ -291,7 +291,7 @@ void Webhandler::rulesetGet(AsyncWebServerRequest * request)
 	url.toCharArray(temp, url.length() + 1);
 	breakupURL(uri, temp);
 
-	if (!request->authenticate(settings.http_user, settings.http_pw))
+	if (!request->authenticate(settings.http_user.c_str(), settings.http_pw.c_str()))
 		return request->requestAuthentication();
 
 	if (uri[1] == "") {
@@ -336,8 +336,8 @@ void Webhandler::sensorGet(AsyncWebServerRequest * request)
 	url.toCharArray(temp, url.length() + 1);
 	breakupURL(uri, temp);
 
-	if (!request->authenticate(settings.http_user, settings.http_pw))
-		return request->requestAuthentication();
+	if (!request->authenticate(settings.http_user.c_str(), settings.http_pw.c_str()))
+		return request->requestAuthentication();;
 
 	if (uri[1] == "") {
 		AsyncJsonResponse * response = new AsyncJsonResponse();
@@ -483,7 +483,7 @@ void Webhandler::settingGet(AsyncWebServerRequest * request)
 	url.toCharArray(temp, url.length() + 1);
 	breakupURL(uri, temp);
 
-	if (!request->authenticate(settings.http_user, settings.http_pw))
+	if (!request->authenticate(settings.http_user.c_str(), settings.http_pw.c_str()))
 		return request->requestAuthentication();
 
 	if (uri[1] == "") {
@@ -547,7 +547,7 @@ void Webhandler::triggerGet(AsyncWebServerRequest * request)
 	url.toCharArray(temp, url.length() + 1);
 	breakupURL(uri, temp);
 
-	if (!request->authenticate(settings.http_user, settings.http_pw))
+	if (!request->authenticate(settings.http_user.c_str(), settings.http_pw.c_str()))
 		return request->requestAuthentication();
 
 	if (uri[1] == "") {
@@ -656,7 +656,7 @@ void Webhandler::actionchainPatch(AsyncWebServerRequest * request, JsonVariant &
 	url.toCharArray(temp, url.length() + 1);
 	breakupURL(uri, temp);
 
-	if (!request->authenticate(settings.http_user, settings.http_pw))
+	if (!request->authenticate(settings.http_user.c_str(), settings.http_pw.c_str()))
 		return request->requestAuthentication();
 	
 	if (uri[1] != "" && uri[1].toInt() < ACTIONS_NUM) {
@@ -679,7 +679,7 @@ void Webhandler::rcsocketPatch(AsyncWebServerRequest * request, JsonVariant & js
 	url.toCharArray(temp, url.length() + 1);
 	breakupURL(uri, temp);
 
-	if (!request->authenticate(settings.http_user, settings.http_pw))
+	if (!request->authenticate(settings.http_user.c_str(), settings.http_pw.c_str()))
 		return request->requestAuthentication();
 
 	if (uri[1] != "" && uri[1].toInt() < RC_SOCKETS) {
@@ -703,7 +703,7 @@ void Webhandler::rulesetPatch(AsyncWebServerRequest * request, JsonVariant & jso
 	url.toCharArray(temp, url.length() + 1);
 	breakupURL(uri, temp);
 
-	if (!request->authenticate(settings.http_user, settings.http_pw))
+	if (!request->authenticate(settings.http_user.c_str(), settings.http_pw.c_str()))
 		return request->requestAuthentication();
 
 	if (uri[1] != "" && uri[1].toInt() < RULESETS_NUM) {
@@ -727,11 +727,12 @@ void Webhandler::sensorPatch(AsyncWebServerRequest * request, JsonVariant & json
 	url.toCharArray(temp, url.length() + 1);
 	breakupURL(uri, temp);
 
-	if (!request->authenticate(settings.http_user, settings.http_pw))
+	if (!request->authenticate(settings.http_user.c_str(), settings.http_pw.c_str()))
 		return request->requestAuthentication();
 
 	if (uri[1] != "" && uri[1].toInt() < SENS_NUM) {
 		sensors[uri[1].toInt()]->deserializeJSON(json);
+		request->send(200);
 		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Remote Sensor Action: SET"), String(uri[1]), "");
 	}
 	else {
@@ -749,7 +750,7 @@ void Webhandler::settingPatch(AsyncWebServerRequest * request, JsonVariant & jso
 	url.toCharArray(temp, url.length() + 1);
 	breakupURL(uri, temp);
 
-	if (!request->authenticate(settings.http_user, settings.http_pw))
+	if (!request->authenticate(settings.http_user.c_str(), settings.http_pw.c_str()))
 		return request->requestAuthentication();
 
 	if (uri[1] == "") {
@@ -786,7 +787,7 @@ void Webhandler::triggerPatch(AsyncWebServerRequest * request, JsonVariant & jso
 	url.toCharArray(temp, url.length() + 1);
 	breakupURL(uri, temp);
 
-	if (!request->authenticate(settings.http_user, settings.http_pw))
+	if (!request->authenticate(settings.http_user.c_str(), settings.http_pw.c_str()))
 		return request->requestAuthentication();
 
 	if (uri[2] != "" && uri[2].toInt() < TRIGGER_SETS) {

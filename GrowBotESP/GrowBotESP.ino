@@ -8,6 +8,8 @@
 
 ////Helper
 #include "Definitions.h"
+#include "soc/soc.h"
+#include "soc/rtc_cntl_reg.h"
 
 //Hardware Libaries
 #include <Ultrasonic.h>
@@ -100,6 +102,7 @@ LogEngine logengine("/log.json");
 
 void setup() {
 	// initialize serial for debugging
+	WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector   
 	Serial.begin(115200);
 
 	delay(3000);
