@@ -153,9 +153,6 @@
     <ClInclude Include="LogEngine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Network.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RCSocketController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -163,9 +160,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Ruleset.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Sensor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Setting.h">
@@ -681,6 +675,9 @@
     <ClInclude Include="..\..\..\libraries\NTPClient-master\NTPClient.h">
       <Filter>src\_micro-api-readonly\libraries\NTPClient-master</Filter>
     </ClInclude>
+    <ClInclude Include="AdvancedSensor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Action.cpp">
@@ -698,9 +695,6 @@
     <ClCompile Include="LogEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Network.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="RCSocketController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -708,9 +702,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Ruleset.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Sensor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Setting.cpp">
@@ -1093,6 +1084,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\libraries\NTPClient-master\NTPClient.cpp">
       <Filter>src\_micro-api-readonly\libraries\NTPClient-master</Filter>
+    </ClCompile>
+    <ClCompile Include="AdvancedSensor.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

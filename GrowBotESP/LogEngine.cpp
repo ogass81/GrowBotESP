@@ -119,15 +119,6 @@ void LogEngine::addLogEntry(LogTypes type, String origin, String message, String
 	this->counter++;
 }
 
-void LogEngine::serializeJSON(char * json, size_t maxSize, int end, int count)
-{
-	saveToFile();
-
-	if (count == 0) count = LOGBUFFER_SIZE;
-	
-	readLinesFromFile(counter, end, count, json, JSONCHAR_SIZE);
-}
-
 void LogEngine::serializeJSON(JsonObject & data, DynamicJsonBuffer& buffer, int end, int count)
 {
 	saveToFile();
@@ -220,52 +211,6 @@ bool LogEngine::appendLinesToFile(String data[], uint8_t size)
 		success = false;
 	}
 	return success;
-}
-
-void LogEngine::readLinesFromFile(int counter, int end, int count, char * json, int size)
-{
-	File file = SD.open(filename, FILE_READ);
-
-	DynamicJsonBuffer jsonBuffer;
-	JsonObject& container = jsonBuffer.createObject();
-	container["num"] = counter;
-	JsonArray& list = container.createNestedArray("list");
-
-	int start = 0;
-	int line_ptr = 0;
-	bool success = true;
-
-	if (end <= 0) {
-		end = counter;
-	}
-
-	start = end - count;
-	if (start < 0) start = 0;
-
-	if (file) {
-
-		while (file.available()) {
-			//Buffer Needs to be here ...
-			String line = file.readStringUntil('\n');
-
-			if (line_ptr < end) {
-				if (line_ptr >= start) {
-					JsonObject& entry = jsonBuffer.parseObject(line);
-					list.add(entry);
-				}
-			}
-			else break;
-			line_ptr++;
-		}
-		file.close();
-		LOGDEBUG2(F("FileSystem"), F("readLinesFromFile()"), F("OK: Loading Logentries from File"), String(start), String(end), String(list.size()));
-	}
-	else {
-		LOGMSG(F("[FileSystem]"), F("ERROR: Could not read from file"), String(filename), "", "");
-		success = false;
-	}
-
-	container.printTo(json, size);
 }
 
 int LogEngine::fileLength()

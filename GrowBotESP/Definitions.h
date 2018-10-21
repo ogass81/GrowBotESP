@@ -24,11 +24,9 @@
 #define RC_REPEAT 5
 
 //Arduino JSON
-#define ARDUINOJSON_ENABLE_PROGMEM 1
-#define JSONCHAR_SIZE 7500
 #define JSONBUFFER_SIZE 1000
-#define JSONBUFFER_SMALL 750
-#define JSONBUFFER_BIG 1500
+#define JSONCHAR_SIZE 3000
+
 
 //Distance
 #define DIST1_TRIG 33
@@ -36,9 +34,6 @@
 
 #define DIST2_TRIG 27
 #define DIST2_ECHO 26
-
-//Network
-#define PACKAGE_SIZE 1024
 
 //Settings
 #define DEBUG_RESET true
@@ -50,11 +45,12 @@
 #define MILLIS_SEC 1000
 
 //Log
-#define SENS_VALUES_MIN (60 / SENS_FRQ_SEC) //every 5 sec
-#define SENS_VALUES_HOUR 60 //every Minute
-#define SENS_VALUES_DAY 96 // every 15 Minutes
-#define SENS_VALUES_MONTH 56// every 12 Hours
-#define SENS_VALUES_YEAR 52 // every week
+#define NUM_MONTH 4
+#define SENS_VALUES_MIN (60 / SENS_FRQ_SEC)
+#define SENS_VALUES_HOUR 60  //every 60 seconds for one hour
+#define SENS_VALUES_DAY 24 * 12 // every 5 mintutes for one day
+#define SENS_VALUES_MONTH (12 * 28 * NUM_MONTH ) // every hour for six month
+
 
 //Sensors
 #define SENS_NUM 9
@@ -97,12 +93,12 @@
 enum RelOp { SMALLER, EQUAL, GREATER, NOTEQUAL };
 enum BoolOp { AND, OR, NOT };
 enum Interval { REALTIME, TENSEC, TWENTYSEC, THIRTYSEC, ONEMIN, TWOMIN, FIVEMIN, QUARTER, HALF, ONE, TWO, THREE, FOUR, SIX, TWELVE, DAILY, BIDAILY, WEEKLY, BIWEEKLY};
-enum Scope { LIST, HEADER, DETAILS, AVG, DATE_MINUTE, DATE_HOUR, DATE_DAY, DATE_MONTH, DATE_YEAR, DATE_ALL};
+enum Scope { LIST, HEADER, DETAILS, AVG, DATE_MIN, DATE_HOUR, DATE_DAY, DATE_MONTH, DATE_ALL};
 enum TriggerTypes { TIME, SENSOR };
 enum LogTypes { INFO, DEBUG, ERROR, WARNING, ACTION};
 enum SensorTypes { TEMPERATURE, HUMIDITY, PRESSURE, DISTANCE, SOILMOISTURE, HEIGHT, OTHER };
 
-#define LOGLEVEL 4
+#define LOGLEVEL 5
 
 #define LOGMSG(classname, msg, par1, par2, par3)   if(LOGLEVEL >1) { Serial.print(classname); Serial.print(" "); Serial.print(msg); Serial.print(" "); Serial.print(par1); Serial.print(" "); Serial.print(par2); Serial.print(" "); Serial.println(par3); }
 #define LOGMSG2(classname, msg, par1, par2, par3, par4)   if(LOGLEVEL >2) { Serial.print(classname); Serial.print(" "); Serial.print(msg); Serial.print(" "); Serial.print(par1); Serial.print(" "); Serial.print(par2); Serial.print(" "); Serial.print(par3);  }

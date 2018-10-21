@@ -300,7 +300,7 @@ bool Setting::backupConfig()
 
 void Setting::asyncSaveActiveConfig(void * _this)
 {
-	vTaskDelay(10);
+	vTaskDelay(50);
 	static_cast<Setting*>(_this)->backupConfig();
 	static_cast<Setting*>(_this)->saveActiveConfig();
 	vTaskDelete(NULL);
@@ -308,14 +308,14 @@ void Setting::asyncSaveActiveConfig(void * _this)
 
 void Setting::asyncSaveDefaultConfig(void * _this)
 {
-	vTaskDelay(10);
+	vTaskDelay(50);
 	static_cast<Setting*>(_this)->saveDefaultConfig();
 	vTaskDelete(NULL);
 }
 
 void Setting::asyncBackupConfig(void *_this)
 {
-	vTaskDelay(20);
+	vTaskDelay(50);
 	static_cast<Setting*>(_this)->backupConfig();
 	vTaskDelete(NULL);
 }
@@ -353,6 +353,7 @@ bool Setting::saveSettings(const char*  filename)
 		LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Settings"), "", "", "");
 
 		for (uint8_t i = 0; i < TRIGGER_TYPES; i++) {
+			LOGDEBUG2(F("[Setting]"), F("saveSettings()"), F("Free HEAP before Trigger"), String(ESP.getFreeHeap()), "", "");
 			for (uint8_t j = 0; j < TRIGGER_SETS; j++) {
 				jsonbuffer.clear();
 				JsonObject& data = jsonbuffer.createObject();
@@ -363,6 +364,7 @@ bool Setting::saveSettings(const char*  filename)
 			}
 		}
 		for (uint8_t i = 0; i < RULESETS_NUM; i++) {
+			LOGDEBUG2(F("[Setting]"), F("saveSettings()"), F("Free HEAP before Ruleset"), String(ESP.getFreeHeap()), "", "");
 			jsonbuffer.clear();
 			JsonObject& data = jsonbuffer.createObject();
 			rulesets[i]->serializeJSON(data, DETAILS);
@@ -371,6 +373,7 @@ bool Setting::saveSettings(const char*  filename)
 			led[2]->switchState();
 		}
 		for (uint8_t i = 0; i < ACTIONCHAINS_NUM; i++) {
+			LOGDEBUG2(F("[Setting]"), F("saveSettings()"), F("Free HEAP before Actionchain"), String(ESP.getFreeHeap()), "", "");
 			jsonbuffer.clear();
 			JsonObject& data = jsonbuffer.createObject();
 			actionchains[i]->serializeJSON(data, DETAILS);
@@ -379,6 +382,7 @@ bool Setting::saveSettings(const char*  filename)
 			led[2]->switchState();
 		}
 		for (uint8_t i = 0; i < SENS_NUM; i++) {
+			LOGDEBUG2(F("[Setting]"), F("saveSettings()"), F("Free HEAP before Sensors"), String(ESP.getFreeHeap()), "", "");
 			jsonbuffer.clear();
 			JsonObject& data = jsonbuffer.createObject();
 			sensors[i]->serializeJSON(data, DETAILS);
@@ -387,6 +391,7 @@ bool Setting::saveSettings(const char*  filename)
 			led[2]->switchState();			
 		}
 		for (uint8_t i = 0; i < RC_SOCKETS; i++) {
+			LOGDEBUG2(F("[Setting]"), F("saveSettings()"), F("Free HEAP before RC Sockets"), String(ESP.getFreeHeap()), "", "");
 			jsonbuffer.clear();
 			JsonObject& data = jsonbuffer.createObject();
 			rcsocketcontroller->serializeJSON(data, DETAILS, i);
@@ -394,10 +399,11 @@ bool Setting::saveSettings(const char*  filename)
 			file.println();
 			led[2]->switchState();
 		}
+		jsonbuffer.clear();
 		led[2]->turnOff();
 		file.close();
 
-		LOGMSG(F("[FileSystem]"), F("OK: Saved Settings to file:"), String(filename), "", "");
+		LOGMSG(F("[FileSystem]"), F("OK: Saved Settings to file:"), String(filename), "Free Heap", String(ESP.getFreeHeap()));
 	}
 	else {
 		LOGMSG(F("[FileSystem]"), F("ERROR: Could not write to file:"), String(filename), "", "");

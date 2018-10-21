@@ -20,7 +20,7 @@
 #include "LogEngine.h"
 
 //Control Objects
-#include "Sensor.h"
+#include "AdvancedSensor.h"
 #include "Trigger.h"
 #include "Ruleset.h"
 #include "ActionChain.h"
@@ -40,7 +40,7 @@ extern RealTimeClock internalRTC;
 extern LogEngine logengine;
 
 //Control Objects Globals
-extern Sensor *sensors[SENS_NUM];
+extern SensorInterface *sensors[SENS_NUM];
 extern Trigger *trigger[TRIGGER_TYPES][TRIGGER_SETS];
 extern RuleSet *rulesets[RULESETS_NUM];
 extern ActionChain *actionchains[ACTIONCHAINS_NUM];

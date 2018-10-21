@@ -391,16 +391,16 @@ void Webhandler::sensorGet(AsyncWebServerRequest * request)
 
 			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action: GET"), String(uri[1]), F("Mode: AVG"));
 		}
-		else if (uri[2] == "date_minute") {
+		else if (uri[2] == "date_min") {
 			AsyncJsonResponse * response = new AsyncJsonResponse();
 			response->addHeader("Server", "GrowAI");
 
 			JsonObject& root = response->getRoot();
-			sensors[uri[1].toInt()]->serializeJSON(root, DATE_MINUTE);
+			sensors[uri[1].toInt()]->serializeJSON(root, DATE_MIN);
 			response->setLength();
 			request->send(response);
 
-			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action: GET"), String(uri[1]), F("Mode: MINUTE"));
+			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action: GET"), String(uri[1]), F("Mode: MIN"));
 		}
 		else if (uri[2] == "date_hour") {
 			AsyncJsonResponse * response = new AsyncJsonResponse();
@@ -434,17 +434,6 @@ void Webhandler::sensorGet(AsyncWebServerRequest * request)
 			request->send(response);
 
 			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action: GET"), String(uri[1]), F("Mode: MONTH"));
-		}
-		else if (uri[2] == "date_year") {
-			AsyncJsonResponse * response = new AsyncJsonResponse();
-			response->addHeader("Server", "GrowAI");
-
-			JsonObject& root = response->getRoot();
-			sensors[uri[1].toInt()]->serializeJSON(root, DATE_YEAR);
-			response->setLength();
-			request->send(response);
-
-			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action: GET"), String(uri[1]), F("Mode: YEAR"));
 		}
 		else if (uri[2] == "date_all") {
 			AsyncJsonResponse * response = new AsyncJsonResponse();

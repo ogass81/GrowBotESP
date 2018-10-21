@@ -419,7 +419,7 @@ int TimeTrigger::checkStateInterval(long sensor_start, uint8_t length)
 }
 
 
-SensorTrigger::SensorTrigger(int id, uint8_t cat, Sensor *ptr)
+SensorTrigger::SensorTrigger(int id, uint8_t cat, SensorInterface *ptr)
 	: Trigger()
 {
 	this->id = id;

@@ -7,7 +7,6 @@
 
 
 ////Helper
-
 #include "Definitions.h"
 
 //Hardware Libaries
@@ -21,24 +20,21 @@
 #include "RealTimeClock.h"
 #include "Led.h"
 #include "WifiController.h"
-#include <WiFiUdp.h>
-#include <NTPClient.h>
 
 
 //Core Features
 #include "Action.h"
 #include "LogEngine.h"
 #include "TaskManager.h"
-#include "Network.h"
 #include "Setting.h"
 #include "WebHandler.h"
 
 //Controller Objects
-#include "Sensor.h"
 #include "Trigger.h"
 #include "ActionChain.h"
 #include "Ruleset.h"
 #include "RCSocketController.h"
+#include "AdvancedSensor.h"
 
 
 //Tact Generator
@@ -84,7 +80,7 @@ Webhandler webhandler;
 
 //Modules
 //Sensors: Abstraction of all Sensors
-Sensor *sensors[SENS_NUM]; 
+SensorInterface *sensors[SENS_NUM];
 
 //Actions: Abstraction of all Actors 
 Action *actions[ACTIONS_NUM];
@@ -143,16 +139,16 @@ void setup() {
 
 	//Initialize Sensors
 	LOGMSG("[Setup]", "Initializing Sensors", "", "", "");
-	sensors[0] = new	BMETemperature(0, &bme, true, F("Temperature"), F("C"), -127, -50, 100);
-	sensors[1] = new 	BMEHumidity(1, &bme, true, F("Humidity"), F("%"), -127, 0, 100);
-	sensors[2] = new 	BMEPressure(2, &bme, true, F("Pressure"), F("kPa"), -127, 50, 150);
-	sensors[3] = new 	CapacityMoistureSensor<short>(3, IN_MOS_1, 12, 10, ADC_11db, true, F("Soil 1"), F("%"), -1, 0, 1000, 150, 600);
-	sensors[4] = new 	CapacityMoistureSensor<short>(4, IN_MOS_2, 12, 10, ADC_11db, true, F("Soil 2"), F("%"), -1, 0, 1000, 150, 600);
-	sensors[5] = new 	CapacityMoistureSensor<short>(5, IN_MOS_3, 12, 10, ADC_11db, true, F("Soil 3"), F("%"), -1, 0, 1000, 150, 600);
-	sensors[6] = new 	CapacityMoistureSensor<short>(6, IN_MOS_4, 12, 10, ADC_11db, true, F("Soil 4"), F("%"), -1, 0, 1000, 150, 600);
+	sensors[0] = new	BMETemperature(0, &bme, true, F("Temperature"), F("C"), -127.0, -50, 100);
+	sensors[1] = new 	BMEHumidity(1, &bme, true, F("Humidity"), F("%"), -1, 0, 100);
+	sensors[2] = new 	BMEPressure(2, &bme, true, F("Pressure"), F("kPa"), -1.0, 95.0, 105.0);
+	sensors[3] = new 	CapacityMoistureSensor(3, IN_MOS_1, 12, 10, ADC_11db, true, F("Soil 1"), F("%"), -1, 0, 1000);
+	sensors[4] = new 	CapacityMoistureSensor(4, IN_MOS_2, 12, 10, ADC_11db, true, F("Soil 2"), F("%"), -1, 0, 1000);
+	sensors[5] = new 	CapacityMoistureSensor(5, IN_MOS_3, 12, 10, ADC_11db, true, F("Soil 3"), F("%"), -1, 0, 1000);
+	sensors[6] = new 	CapacityMoistureSensor(6, IN_MOS_4, 12, 10, ADC_11db, true, F("Soil 4"), F("%"), -1, 0, 1000);
 	sensors[7] = new 	DistanceLampSensor(7, &distance2, true, F("Distance Lamp"), F("cm"), -1, 0, 400);
 	sensors[8] = new 	HeightSensor(8, &distance1, &distance2, true, F("Height Sensor"), F("cm"), -1, 0, 400);
-
+	
 
 	//Intialize Actions
 	LOGMSG("[Setup]", "Initializing Actions", "", "", "");
@@ -253,6 +249,7 @@ void setup() {
 		else {
 			if ((timestamp = wifihandler.returnNetworkTime()) == 0) {
 				timeout++;
+				delay(1000);
 				led[0]->switchState();
 			}
 			else {
@@ -267,9 +264,9 @@ void setup() {
 	LOGMSG("[Setup]", "Initializing Log Engine", "", "", "");
 	logengine.begin();
 
-	LOGMSG("[Setup]", "Boot Sequence complete"	, "", "", "");
-	String keys[] = { "Time" };
-	String values[] = { String(RealTimeClock::printTime(sensor_cycles * SENS_FRQ_SEC)) };
+	LOGMSG("[Setup]", "Boot Sequence complete"	, String(RealTimeClock::printTime(sensor_cycles * SENS_FRQ_SEC)), String(ESP.getFreeHeap()), "");
+	String keys[] = { "Time", "Free Heap" };
+	String values[] = { String(RealTimeClock::printTime(sensor_cycles * SENS_FRQ_SEC)), String(ESP.getFreeHeap()) };
 	logengine.addLogEntry(INFO, "Setup", "Bot started", keys, values, 1);
 }
 
@@ -298,12 +295,12 @@ void loop() {
 		//Sensor
 		if (cpu_current >= next_sensor) {
 			//Cycles
-			next_sensor = 5 * MILLIS_SEC - (cpu_current - next_sensor) + cpu_current;
+			next_sensor = 1 * MILLIS_SEC - (cpu_current - next_sensor) + cpu_current;
 
 			sensor_cycles++;
 
 			led[0]->switchState();
-			LOGMSG(F("[Loop]"), F("INFO: Sensor Cycle"), String(sensor_cycles), String(RealTimeClock::printTime(sensor_cycles * SENS_FRQ_SEC)), "");
+			LOGMSG(F("[Loop]"), F("INFO: Sensor Cycle"), String(sensor_cycles), String(RealTimeClock::printTime(sensor_cycles * SENS_FRQ_SEC)), String(ESP.getFreeHeap()));
 			//LOGDEBUG4(F("Millis Cycle"), String(sensor_cycles * SENS_FRQ_SEC), F("RTC Cycle"), String(internalRTC.getEpochTime()), F("Millis Clock"), String(RealTimeClock::printTime(sensor_cycles * SENS_FRQ_SEC)), F("RTC Clock"), String(RealTimeClock::printTime(internalRTC.getEpochTime())));
 
 			//Update Sensors
@@ -318,7 +315,7 @@ void loop() {
 			}
 			
 			//Backup Settings and save Settings to SD Card
-			if ((sensor_cycles % (15 * SENS_VALUES_MIN)) == 0) {
+			if ((sensor_cycles % (5 * SENS_VALUES_MIN)) == 0) {
 				
 				String keys[] = { "" };
 				String values[] = { "" };
@@ -333,7 +330,7 @@ void loop() {
 		//Task Manager
 		if (cpu_current >= next_task) {
 			//Cycles
-			next_task = 1 * MILLIS_SEC - (cpu_current - next_task) + cpu_current;
+			next_task = TASK_FRQ_SEC * MILLIS_SEC - (cpu_current - next_task) + cpu_current;
 			
 			//Do
 			taskmanager->execute();

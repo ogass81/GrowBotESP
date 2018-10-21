@@ -14,7 +14,7 @@
 #include <AsyncJson.h>
 
 #include "RealTimeClock.h"
-#include "Sensor.h"
+#include "AdvancedSensor.h"
 #include "Trigger.h"
 #include "Ruleset.h"
 #include "Action.h"
@@ -27,7 +27,7 @@
 extern const char* http_user;
 extern const char* http_password;
 
-extern Sensor *sensors[SENS_NUM];
+extern SensorInterface *sensors[SENS_NUM];
 extern Trigger *trigger[TRIGGER_TYPES][TRIGGER_SETS];
 extern RuleSet *rulesets[RULESETS_NUM];
 extern Action *actions[ACTIONS_NUM];
@@ -64,10 +64,6 @@ public:
 	void sensorPatch(AsyncWebServerRequest *request, JsonVariant &json);
 	void settingPatch(AsyncWebServerRequest *request, JsonVariant &json);
 	void triggerPatch(AsyncWebServerRequest *request, JsonVariant &json);
-
-
-
-
 
 
 	void breakupURL(String uri[REST_URI_DEPTH], char * url);

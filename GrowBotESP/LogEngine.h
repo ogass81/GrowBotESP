@@ -62,14 +62,12 @@ public:
 	void begin();
 	int counter;
 	void addLogEntry(LogTypes type, String origin, String message, String keys[], String values[], uint8_t size);
-	void serializeJSON(char* json, size_t maxSize, int end, int count);
 	void serializeJSON(JsonObject& data, DynamicJsonBuffer& buffer, int end, int count);
 	void reset();
 private:
 	void saveToFile();
 
 	bool appendLinesToFile(String data[], uint8_t size);
-	void readLinesFromFile(int counter, int start, int end, char * json, int size);
 	int fileLength();
 	bool resetFile();
 };

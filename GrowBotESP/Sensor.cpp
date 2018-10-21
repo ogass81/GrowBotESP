@@ -3,6 +3,7 @@
 // 
 
 #include "Sensor.h"
+#include "AdvancedSensor.h"
 int Sensor::getAvgInt(Interval interval)
 {
 	return 0;
@@ -18,10 +19,6 @@ bool Sensor::compareWithValue(RelOp relop, Interval interval, int value, int8_t 
 	return false;
 }
 
-String Sensor::getTitle()
-{
-	return String();
-}
 
 String Sensor::getValue()
 {
@@ -51,13 +48,6 @@ void Sensor::setLowerThreshold()
 {
 }
 
-void Sensor::update()
-{
-}
-
-void Sensor::reset()
-{
-}
 
 void Sensor::serializeJSON(uint8_t id, char * json, size_t maxSize, Scope scope)
 {

@@ -11,14 +11,14 @@
 #include "Definitions.h"
 #include <ArduinoJson.h>
 #include "RealTimeClock.h"
-#include "Sensor.h"
+#include "AdvancedSensor.h"
 #include "LogEngine.h"
 extern LogEngine logengine;
 
 //Globals
 extern String debug;
 extern RealTimeClock internalRTC;
-extern Sensor *sensors[SENS_NUM];
+extern SensorInterface *sensors[SENS_NUM];
 extern long sensor_cycles;
 
 class Trigger {
@@ -83,10 +83,10 @@ private:
 //Specialization of Trigger with predefined methods for generic sensors
 class SensorTrigger : public Trigger {
 public:
-	Sensor *sens_ptr;
+	SensorInterface *sens_ptr;
 
 	//Ref to Sensor Object
-	SensorTrigger(int id, uint8_t cat, Sensor *ptr);
+	SensorTrigger(int id, uint8_t cat, SensorInterface *ptr);
 
 	bool checkState();
 
