@@ -68,7 +68,7 @@ Ultrasonic distance2(DIST2_TRIG, DIST2_ECHO);
 Setting settings("/_CURRENTCONFIG.JSON", "/DEFAULTCONFIG.JSON.JSON", "/_CURRENTCONFIG.JSON.BAK", "/LOG.JSON", "wgempire", "ert456sdf233sa!!!", "growAI", "1234qwert", "admin", "");
 
 //RealTimeClock
-RealTimeClock internalRTC;
+RealTimeClock internalRTC(2018, 10, 1, 7200);
 
 //433Mhz
 RCSocketController *rcsocketcontroller;
@@ -298,7 +298,7 @@ void loop() {
 		//Sensor
 		if (cpu_current >= next_sensor) {
 			//Cycles
-			next_sensor = 1 * MILLIS_SEC - (cpu_current - next_sensor) + cpu_current;
+			next_sensor = SENS_FRQ_SEC * MILLIS_SEC - (cpu_current - next_sensor) + cpu_current;
 
 			sensor_cycles++;
 
@@ -318,7 +318,7 @@ void loop() {
 			}
 			
 			//Backup Settings and save Settings to SD Card
-			if ((sensor_cycles % (5 * SENS_VALUES_MIN)) == 0) {
+			if ((sensor_cycles % (15 * SENS_VALUES_MIN)) == 0) {
 				
 				String keys[] = { "" };
 				String values[] = { "" };

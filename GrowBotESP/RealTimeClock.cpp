@@ -4,14 +4,15 @@
 
 #include "RealTimeClock.h"
 
-RealTimeClock::RealTimeClock()
+RealTimeClock::RealTimeClock(int year, int month, int day, int timezone_offset)
 {
 	source = "RTC";
 	timezone_offset = 0;
 
-	defaulttime.Year = 2018 - 1970;
-	defaulttime.Month = 1;
-	defaulttime.Day = 1;
+
+	defaulttime.Year = year - 1970;
+	defaulttime.Month = month;
+	defaulttime.Day = day;
 	defaulttime.Hour = 0;
 	defaulttime.Minute = 0;
 }

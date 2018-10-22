@@ -25,7 +25,7 @@ public:
 
 	time_t haltstate_begin;
 
-	RealTimeClock();
+	RealTimeClock(int year, int month, int day, int timezone_offset);
 
 	void updateTime(tmElements_t timeset, bool adjust);
 	void updateTime(time_t timestamp, bool adjust);

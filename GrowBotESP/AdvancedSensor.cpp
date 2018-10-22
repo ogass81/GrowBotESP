@@ -121,10 +121,10 @@ AdvancedSensor<ReturnType>::AdvancedSensor(uint8_t id, String title, String unit
 template<class ReturnType>
 void AdvancedSensor<ReturnType>::reset()
 {
-	this->lower_threshold = 0;
-	this->upper_threshold = 0;
+	//this->lower_threshold = 0;
+	//this->upper_threshold = 0;
 
-	this->hour_ptr = SENS_VALUES_MIN;
+	this->min_ptr = SENS_VALUES_MIN;
 	this->hour_ptr = SENS_VALUES_HOUR;
 	this->day_ptr = SENS_VALUES_DAY;
 	this->month_ptr = SENS_VALUES_MONTH;
@@ -436,7 +436,7 @@ void AdvancedSensor<ReturnType>::update()
 
 		element_count = SENS_VALUES_MIN * 60 / SENS_VALUES_HOUR;
 		hour_values[hour_ptr] = (ReturnType)round(average(min_ptr, element_count, min_values, SENS_VALUES_MIN));
-		LOGDEBUG(F("[AdvancedSensor]"), F("update()"), F("OK: Saved new Value in Hour Array"), String(getTitle()), String(min_ptr), String(min_values[min_ptr]));
+		LOGDEBUG(F("[AdvancedSensor]"), F("update()"), F("OK: Saved new Value in Hour Array"), String(getTitle()), String(hour_ptr), String(min_values[min_ptr]));
 	}
 	
 	//Day -> calculate average every SENS_VALUES_HOUR * 24 / SENS_VALUES_DAY  -> Example: 1 Minute (12 entries in Hour array)
@@ -479,7 +479,7 @@ void AdvancedSensor<float>::update()
 
 		element_count = SENS_VALUES_MIN * 60 / SENS_VALUES_HOUR;
 		hour_values[hour_ptr] = average(min_ptr, element_count, min_values, SENS_VALUES_MIN);
-		LOGDEBUG(F("[AdvancedSensor]"), F("update()"), F("OK: Saved new Value in Hour Array"), String(getTitle()), String(min_ptr), String(min_values[min_ptr]));
+		LOGDEBUG(F("[AdvancedSensor]"), F("update()"), F("OK: Saved new Value in Hour Array"), String(getTitle()), String(hour_ptr), String(min_values[min_ptr]));
 	}
 
 	//Day -> calculate average every SENS_VALUES_HOUR * 24 / SENS_VALUES_DAY  -> Example: 1 Minute (12 entries in Hour array)

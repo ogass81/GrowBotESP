@@ -9,7 +9,7 @@
 	#include "WProgram.h"
 #endif
 
-#define GROWBOT_FIRMWARE 2
+#define GROWBOT_FIRMWARE 3
 
 //Wifi
 #define WIFI_TIMEOUT 30
@@ -36,7 +36,7 @@
 #define DIST2_ECHO 26
 
 //Settings
-#define DEBUG_RESET true
+#define DEBUG_RESET false
 
 //Tact
 #define TASK_FRQ_SEC 1
@@ -48,8 +48,8 @@
 #define NUM_MONTH 4
 #define SENS_VALUES_MIN (60 / SENS_FRQ_SEC)
 #define SENS_VALUES_HOUR 60  //every 60 seconds for one hour
-#define SENS_VALUES_DAY 24 * 12 // every 5 mintutes for one day
-#define SENS_VALUES_MONTH (12 * 28 * NUM_MONTH ) // every hour for six month
+#define SENS_VALUES_DAY 288 // every 5 mintutes for one day
+#define SENS_VALUES_MONTH (336 * NUM_MONTH ) // every hour for six month
 
 
 //Sensors
@@ -98,7 +98,7 @@ enum TriggerTypes { TIME, SENSOR };
 enum LogTypes { INFO, DEBUG, ERROR, WARNING, ACTION};
 enum SensorTypes { TEMPERATURE, HUMIDITY, PRESSURE, DISTANCE, SOILMOISTURE, HEIGHT, OTHER };
 
-#define LOGLEVEL 5
+#define LOGLEVEL 4
 
 #define LOGMSG(classname, msg, par1, par2, par3)   if(LOGLEVEL >1) { Serial.print(classname); Serial.print(" "); Serial.print(msg); Serial.print(" "); Serial.print(par1); Serial.print(" "); Serial.print(par2); Serial.print(" "); Serial.println(par3); }
 #define LOGMSG2(classname, msg, par1, par2, par3, par4)   if(LOGLEVEL >2) { Serial.print(classname); Serial.print(" "); Serial.print(msg); Serial.print(" "); Serial.print(par1); Serial.print(" "); Serial.print(par2); Serial.print(" "); Serial.print(par3);  }
