@@ -17,8 +17,8 @@
 #define NTP_TIMEOUT 30
 
 //FS1000A
-#define TX_DATA_PIN 17
-#define RX_DATA_PIN 16
+#define TX_DATA_PIN 16
+#define RX_DATA_PIN 17
 #define RC_SOCKETS 8
 #define RC_SIGNALS 5
 #define RC_REPEAT 5

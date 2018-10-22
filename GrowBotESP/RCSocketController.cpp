@@ -167,10 +167,10 @@ bool RCSocketCodeSet::deserializeJSON(JsonObject &data)
 		if (data["act"] != "") active = data["act"];
 		if (data["rep"] != "") repeat = data["rep"];
 
-		for (uint8_t j = 0; j < RC_SIGNALS; j++) if (data["value"][j] != "") nReceivedValue[j] = data["value"][j];
-		for (uint8_t j = 0; j < RC_SIGNALS; j++) if (data["delay"][j] != "") nReceivedDelay[j] = data["delay"][j];
-		for (uint8_t j = 0; j < RC_SIGNALS; j++) if (data["length"][j] != "") nReceivedBitlength[j] = data["length"][j];
-		for (uint8_t j = 0; j < RC_SIGNALS; j++) if (data["proto"][j] != "") nReceivedProtocol[j] = data["proto"][j];
+		for (uint8_t j = 0; j < RC_SIGNALS; j++) if (data["val"][j] != "") nReceivedValue[j] = data["val"][j];
+		for (uint8_t j = 0; j < RC_SIGNALS; j++) if (data["del"][j] != "") nReceivedDelay[j] = data["del"][j];
+		for (uint8_t j = 0; j < RC_SIGNALS; j++) if (data["len"][j] != "") nReceivedBitlength[j] = data["len"][j];
+		for (uint8_t j = 0; j < RC_SIGNALS; j++) if (data["pro"][j] != "") nReceivedProtocol[j] = data["pro"][j];
 		LOGDEBUG2(F("[Sensor]"), F("deserializeJSON()"), F("OK: Sub-routine deserialized codeset"), String(data["id"].asString()), "", "");
 	}
 	else {
@@ -435,13 +435,12 @@ void RCSocketController::serializeJSON(JsonObject & data, Scope scope, uint8_t s
 		for (uint8_t i = 0; i < RC_SOCKETS; i++) {
 			JsonObject& socket = list.createNestedObject();
 			socketcode[i]->serializeJSON(socket, scope);
-			list.add(socket);
 		}
 	}
 	else {
 		socketcode[set]->serializeJSON(data, scope);
 	}
-	LOGDEBUG2(F("[RCSocketController]"), F("serializeJSON()"), F("OK: Serialized remote sockets"), String(data.measureLength()), "", "");
+	LOGDEBUG2(F("[RCSocketController]"), F("serializeJSON()"), F("OK: Serialized remote sockets"), String(set), String(data.measureLength()), "");
 }
 
 bool RCSocketController::deserializeJSON(uint8_t set, JsonObject & data)

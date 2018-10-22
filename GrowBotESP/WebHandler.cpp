@@ -230,7 +230,7 @@ void Webhandler::rcsocketGet(AsyncWebServerRequest * request)
 	if (!request->authenticate(settings.http_user.c_str(), settings.http_pw.c_str()))
 		return request->requestAuthentication();
 
-	if (uri[1] == "") {
+	if (uri[1] == "" || uri[1].toInt() >= RC_SOCKETS) {
 		AsyncJsonResponse * response = new AsyncJsonResponse();
 		response->addHeader("Server", "GrowAI");
 
@@ -253,7 +253,7 @@ void Webhandler::rcsocketGet(AsyncWebServerRequest * request)
 
 			DynamicJsonBuffer& buffer = response->getBuffer();
 
-			rcsocketcontroller->serializeJSON(root, DETAILS, uri[2].toInt());
+			rcsocketcontroller->serializeJSON(root, DETAILS, uri[1].toInt());
 
 			response->setLength();
 			request->send(response);
