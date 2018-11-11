@@ -151,51 +151,70 @@ void setup() {
 	sensors[6] = new 	CapacityMoistureSensor(6, IN_MOS_4, 12, 10, ADC_11db, true, F("Soil 4"), F("%"), -1, 0, 1000);
 	sensors[7] = new 	DistanceLampSensor(7, &distance2, true, F("Distance Lamp"), F("cm"), -1, 0, 400);
 	sensors[8] = new 	HeightSensor(8, &distance1, &distance2, true, F("Height Sensor"), F("cm"), -1, 0, 400);
-	
-
-	//Intialize Actions
-	LOGMSG("[Setup]", "Initializing Actions", "", "", "");
-	actions[0] = new NamedParameterizedSimpleAction<RCSocketController>(0, "Send", rcsocketcontroller, &RCSocketController::sendCode, &RCSocketController::getTitle, 0, true);
-	actions[1] = new NamedParameterizedSimpleAction<RCSocketController>(1, "Send", rcsocketcontroller, &RCSocketController::sendCode, &RCSocketController::getTitle, 1, true);
-	actions[2] = new NamedParameterizedSimpleAction<RCSocketController>(2, "Send", rcsocketcontroller, &RCSocketController::sendCode, &RCSocketController::getTitle, 2, true);
-	actions[3] = new NamedParameterizedSimpleAction<RCSocketController>(3, "Send", rcsocketcontroller, &RCSocketController::sendCode, &RCSocketController::getTitle, 3, true);
-	actions[4] = new NamedParameterizedSimpleAction<RCSocketController>(4, "Send", rcsocketcontroller, &RCSocketController::sendCode, &RCSocketController::getTitle, 4, true);
-	actions[5] = new NamedParameterizedSimpleAction<RCSocketController>(5, "Send", rcsocketcontroller, &RCSocketController::sendCode, &RCSocketController::getTitle, 5, true);
-	actions[6] = new NamedParameterizedSimpleAction<RCSocketController>(6, "Send", rcsocketcontroller, &RCSocketController::sendCode, &RCSocketController::getTitle, 6, true);
-	actions[7] = new NamedParameterizedSimpleAction<RCSocketController>(7, "Send", rcsocketcontroller, &RCSocketController::sendCode, &RCSocketController::getTitle, 7, true);
-
-  
-	//Define Opposite Action / Antagonist
-	//RC1
-	actions[0]->setAntagonist("Group 1", actions[1]);
-	actions[1]->setAntagonist("Group 1", actions[0]);
-	//RC2
-	actions[2]->setAntagonist("Group 2", actions[3]);
-	actions[3]->setAntagonist("Group 2", actions[2]);
-	//RC3
-	actions[4]->setAntagonist("Group 3", actions[5]);
-	actions[5]->setAntagonist("Group 3", actions[4]);
-	//RC4
-	actions[6]->setAntagonist("Group 4", actions[7]);
-	actions[7]->setAntagonist("Group 4", actions[6]);
-
-
-	//Initialize ActionChains
-	LOGMSG("[Setup]", "Initializing Actionchains", "", "", "");
-	for (uint8_t i = 0; i < ACTIONCHAINS_NUM; i++) {
-		actionchains[i] = new ActionChain(i);
-	}
-
 
 	//Initialize Trigger
 	LOGMSG("[Setup]", "Initializing Triggers", "", "", "");
 	for (int tcategory = 0; tcategory < TRIGGER_TYPES; tcategory++) {
 		for (int tset = 0; tset < TRIGGER_SETS; tset++) {
-			if (tcategory == 0) trigger[tcategory][tset] = new TimeTrigger(tset, 0);
-			else {
+			switch (tcategory) {
+			case 0:
+				trigger[tcategory][tset] = new TimeTrigger(tset, 0);
+				break;
+			case 1: case 2: case 3: case 4: case 5: case 6: case 7: case 8: case 9:
 				trigger[tcategory][tset] = new SensorTrigger(tset, tcategory, sensors[tcategory - 1]);
+				break;
+			case 10:
+				trigger[tcategory][tset] = new Counter(tset, tcategory);
+				break;
+			case 11:
+				trigger[tcategory][tset] = new Switch(tset, tcategory);
+				break;
 			}
 		}
+	}	
+
+	//Intialize Actions
+	LOGMSG("[Setup]", "Initializing Actions", ACTIONS_NUM, "", "");
+
+	uint8_t i = 0;
+	//Create Actions to control Remote Sockets
+	for (uint8_t j = 0; j < RC_SOCKETS; j++) {
+		actions[i] = new NamedParameterizedSimpleAction<RCSocketController>(i, "Send", rcsocketcontroller, &RCSocketController::sendCode, &RCSocketController::getTitle, j, true);
+		i++;
+	}
+		
+	//Set antagonist actions
+	uint8_t group = 1;
+	for (uint8_t j = 0; j < RC_SOCKETS; j++) {
+		if (j % 2 == 0) {
+			actions[j]->setAntagonist("Group " + String(group), actions[j + 1]);
+		}
+		else {
+			actions[j]->setAntagonist("Group " + String(group), actions[j - 1]);
+			group++;
+		}
+	}
+	
+	//Create Actions to controller Counter Triggers
+	for (uint8_t k = 0; k < TRIGGER_SETS; k++) {
+		actions[i] = new ParameterizedSimpleAction<Trigger>(i, "Increase Counter " + String(k), trigger[10][k], &Trigger::setState, 1, true);
+		i++;
+		actions[i] = new ParameterizedSimpleAction<Trigger>(i, "Reset Counter " + String(k), trigger[10][k], &Trigger::setState, 0, true);
+		i++;
+		}
+	
+	//Create Actions to controller Switch Triggers
+	for (uint8_t k = 0; k < TRIGGER_SETS; k++) {
+		actions[i] = new ParameterizedSimpleAction<Trigger>(i, "Turn on Switch " + String(k), trigger[11][k], &Trigger::setState, 1, true);
+		i++;
+		actions[i] = new ParameterizedSimpleAction<Trigger>(i, "Turn off Switch " + String(k), trigger[11][k], &Trigger::setState, 0, true);
+		i++;
+	}
+	
+	//Initialize ActionChains
+	LOGMSG("[Setup]", "Initializing Actionchains", "", "", "");
+	for (uint8_t i = 0; i < ACTIONCHAINS_NUM; i++) {
+		actionchains[i] = new ActionChain(i);
 	}
 
 	//Initialize Rulesets

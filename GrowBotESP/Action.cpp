@@ -38,6 +38,7 @@ SimpleAction<ActionType>::SimpleAction(uint8_t id, String title, ActionType * ac
 	this->group_title = "";
 	this->actionObject = actionObj;
 	this->callback = cFunct;
+	this->antaObject = NULL;
 	this->visible = visible;
 }
 
@@ -114,6 +115,7 @@ ParameterizedSimpleAction<ActionType>::ParameterizedSimpleAction(uint8_t id, Str
 	this->actionObject = actionObj;
 	this->callback = cFunct;
 	this->visible = visible;
+	this->antaObject = NULL;
 	this->parameter = par;
 }
 
@@ -263,4 +265,5 @@ String NamedParameterizedSimpleAction<ActionType>::getTitle()
 //All Types of Templates used:
 template class SimpleAction<RCSocketController>;
 template class ParameterizedSimpleAction<RCSocketController>;
+template class ParameterizedSimpleAction<Trigger>;
 template class NamedParameterizedSimpleAction<RCSocketController>;

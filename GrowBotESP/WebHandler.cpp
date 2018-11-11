@@ -111,6 +111,7 @@ void Webhandler::actionGet(AsyncWebServerRequest * request)
 			request->send(404);
 		}
 	}
+	else request->send(404);
 }
 
 void Webhandler::actionchainGet(AsyncWebServerRequest * request)

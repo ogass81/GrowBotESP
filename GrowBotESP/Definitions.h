@@ -57,14 +57,14 @@
 
 //Rules Enginge
 //Trigger Categories and number for each category
-#define TRIGGER_TYPES 10
+#define TRIGGER_TYPES 12
 #define TRIGGER_SETS 8
 
 //Number of Rulesssets
 #define RULESETS_NUM 32
 
 //Number of Actions
-#define ACTIONS_NUM 8
+#define ACTIONS_NUM RC_SOCKETS + (TRIGGER_SETS * 4)
 #define ACTIONCHAINS_NUM 16
 #define ACTIONCHAIN_LENGTH 4
 
@@ -94,7 +94,7 @@ enum RelOp { SMALLER, EQUAL, GREATER, NOTEQUAL };
 enum BoolOp { AND, OR, NOT };
 enum Interval { REALTIME, TENSEC, TWENTYSEC, THIRTYSEC, ONEMIN, TWOMIN, FIVEMIN, QUARTER, HALF, ONE, TWO, THREE, FOUR, SIX, TWELVE, DAILY, BIDAILY, WEEKLY, BIWEEKLY};
 enum Scope { LIST, HEADER, DETAILS, AVG, DATE_MIN, DATE_HOUR, DATE_DAY, DATE_MONTH, DATE_ALL};
-enum TriggerTypes { TIME, SENSOR };
+enum TriggerTypes { TIME, SENSOR, COUNTER, SWITCH };
 enum LogTypes { INFO, DEBUG, ERROR, WARNING, ACTION};
 enum SensorTypes { TEMPERATURE, HUMIDITY, PRESSURE, DISTANCE, SOILMOISTURE, HEIGHT, OTHER };
 

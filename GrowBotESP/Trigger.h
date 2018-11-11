@@ -40,7 +40,7 @@ public:
 	//Sensor and Thresholds
 	//Threshold
 	RelOp relop;
-	short threshold;
+	int threshold;
 	short tolerance; //Percent
 
 	//Trigger repeat interval or trigger time windows for average
@@ -51,6 +51,7 @@ public:
 
 	//Check State
 	virtual bool checkState();
+	virtual void setState(int);
 
 	//UI Output
 	String getTitle();
@@ -70,6 +71,7 @@ class TimeTrigger : public Trigger {
 public:
 	TimeTrigger(int id, uint8_t cat);
 	bool checkState();
+	void setState(int);
 
 	void serializeJSON(uint8_t cat, uint8_t id, char* json, size_t maxSize, Scope scope);
 	void serializeJSON(JsonObject& data, Scope scope);
@@ -89,6 +91,42 @@ public:
 	SensorTrigger(int id, uint8_t cat, SensorInterface *ptr);
 
 	bool checkState();
+	void setState(int);
+
+	void serializeJSON(uint8_t cat, uint8_t id, char* json, size_t maxSize, Scope scope);
+	void serializeJSON(JsonObject& data, Scope scope);
+	bool deserializeJSON(JsonObject& data);
+
+	void reset();
+};
+
+//Specialization of Trigger with predefined methods for generic sensors
+class Counter : public Trigger {
+public:
+	int count;
+
+	//Ref to Sensor Object
+	Counter(int id, uint8_t cat);
+
+	bool checkState();
+	void setState(int);
+
+	void serializeJSON(uint8_t cat, uint8_t id, char* json, size_t maxSize, Scope scope);
+	void serializeJSON(JsonObject& data, Scope scope);
+	bool deserializeJSON(JsonObject& data);
+
+	void reset();
+};
+
+class Switch : public Trigger {
+public:
+	bool state;
+
+	//Ref to Sensor Object
+	Switch(int id, uint8_t cat);
+
+	bool checkState();
+	void setState(int);
 
 	void serializeJSON(uint8_t cat, uint8_t id, char* json, size_t maxSize, Scope scope);
 	void serializeJSON(JsonObject& data, Scope scope);

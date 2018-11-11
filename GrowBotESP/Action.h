@@ -17,6 +17,7 @@ extern LogEngine logengine;
 
 //Controller Object
 #include "RCSocketController.h"
+#include "Trigger.h"
 
 //Abstract Class for Actions
 class Action {
