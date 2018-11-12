@@ -593,9 +593,18 @@ void TriggerCategory::serializeJSON(Trigger * trigger[TRIGGER_TYPES][TRIGGER_SET
 					if (trigger[i][0]->type == 0) {
 						item["tit"] = "Timer";
 					}
-					else {
+					else if (trigger[i][0]->type == 1) {
+						
 						item["tit"] = "Comparator";
 					}
+					else if (trigger[i][0]->type == 2) {
+						
+							item["tit"] = "Counter";
+						}
+					else if (trigger[i][0]->type == 3) {
+						
+							item["tit"] = "Switch";
+						}
 					item["src"] = trigger[i][0]->getSource();
 					categories.add(item);
 				}
@@ -754,6 +763,8 @@ void Counter::reset()
 	title = "Counter ";
 	title += String(id);
 
+	source = "Internal Value";
+
 	active = false;
 	fired = false;
 
@@ -812,7 +823,7 @@ void Switch::serializeJSON(JsonObject & data, Scope scope)
 		data["intv"] = static_cast<int>(interval);
 		data["relop"] = static_cast<int>(relop);
 		data["val"] = threshold;
-		data["sate"] = state;
+		data["state"] = state;
 		data["tol"] = tolerance;
 	}
 
@@ -878,6 +889,8 @@ void Switch::reset()
 {
 	title = "Switch ";
 	title += String(id);
+
+	source = "Internal Value";
 
 	active = false;
 	fired = false;

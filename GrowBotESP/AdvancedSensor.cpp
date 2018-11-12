@@ -708,7 +708,7 @@ bool AdvancedSensor<ReturnType>::deserializeJSON(JsonObject & data)
 		if (data["min_ptr"] != "") min_ptr = data["min_ptr"];
 		if (data["h_ptr"] != "") hour_ptr = data["h_ptr"];
 		if (data["d_ptr"] != "") day_ptr = data["d_ptr"];
-		if (data["m_0ptr"] != "") month_ptr = data["m_ptr"];
+		if (data["m_ptr"] != "") month_ptr = data["m_ptr"];
 
 		for (int j = 0; j < SENS_VALUES_MIN; j++) if (data["min_vals"][j] != "") min_values[j] = fromNAN(data["min_vals"][j]);
 		for (int j = 0; j < SENS_VALUES_HOUR; j++) if (data["h_vals"][j] != "") hour_values[j] = fromNAN(data["h_vals"][j]);

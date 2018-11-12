@@ -19,7 +19,7 @@ void Webhandler::begin()
 	classWebServer.on("/sensor", HTTP_GET, std::bind(&Webhandler::sensorGet, this, std::placeholders::_1));
 	classWebServer.on("/setting", HTTP_GET, std::bind(&Webhandler::settingGet, this, std::placeholders::_1));
 	classWebServer.on("/trigger", HTTP_GET, std::bind(&Webhandler::triggerGet, this, std::placeholders::_1));
-	
+
 	AsyncCallbackJsonWebHandler* handler;
 
 	handler = new AsyncCallbackJsonWebHandler("/actionchain", std::bind(&Webhandler::actionchainPatch, this, std::placeholders::_1, std::placeholders::_2));
@@ -567,8 +567,14 @@ void Webhandler::triggerGet(AsyncWebServerRequest * request)
 				if (trigger[i][0]->type == 0) {
 					item["tit"] = "Timer";
 				}
-				else {
+				else if (trigger[i][0]->type == 1) {
 					item["tit"] = "Comparator";
+				}
+				else if (trigger[i][0]->type == 2) {
+					item["tit"] = "Counter";
+				}
+				else if (trigger[i][0]->type == 3) {
+					item["tit"] = "Switch";
 				}
 				item["src"] = trigger[i][0]->getSource();
 			}
@@ -659,7 +665,7 @@ void Webhandler::actionchainPatch(AsyncWebServerRequest * request, JsonVariant &
 
 	if (!request->authenticate(settings.http_user.c_str(), settings.http_pw.c_str()))
 		return request->requestAuthentication();
-	
+
 	if (uri[1] != "" && uri[1].toInt() < ACTIONS_NUM) {
 		actionchains[uri[1].toInt()]->deserializeJSON(json);
 		request->send(200);
