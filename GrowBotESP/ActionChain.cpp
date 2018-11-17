@@ -122,7 +122,8 @@ bool ActionChain::deserializeJSON(JsonObject & data)
 
 void ActionChain::execute()
 {
-	taskmanager->addActions(this);
+	if(active == true) taskmanager->addActions(this);
+	else LOGDEBUG2(F("[ActionChain]"), F("execute()"), F("ERRO: Actionchain not active"), "", "", "");
 }
 
 String ActionChain::getTitle()

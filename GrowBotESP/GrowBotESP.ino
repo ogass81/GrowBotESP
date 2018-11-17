@@ -197,18 +197,29 @@ void setup() {
 	
 	//Create Actions to controller Counter Triggers
 	for (uint8_t k = 0; k < TRIGGER_SETS; k++) {
-		actions[i] = new ParameterizedSimpleAction<Trigger>(i, "Increase Counter " + String(k), trigger[10][k], &Trigger::setState, 1, true);
+		actions[i] = new NamedParameterizedSimpleAction<Trigger>(i, "Increase Counter " + String(k), trigger[10][k], &Trigger::setState, &Trigger::getTitle, 1, false);
 		i++;
-		actions[i] = new ParameterizedSimpleAction<Trigger>(i, "Reset Counter " + String(k), trigger[10][k], &Trigger::setState, 0, true);
+		actions[i] = new NamedParameterizedSimpleAction<Trigger>(i, "Reset Counter " + String(k), trigger[10][k], &Trigger::setState, &Trigger::getTitle, 0, false);
 		i++;
 		}
 	
 	//Create Actions to controller Switch Triggers
 	for (uint8_t k = 0; k < TRIGGER_SETS; k++) {
-		actions[i] = new ParameterizedSimpleAction<Trigger>(i, "Turn on Switch " + String(k), trigger[11][k], &Trigger::setState, 1, true);
+		actions[i] = new NamedParameterizedSimpleAction<Trigger>(i, "Turn on Switch " + String(k), trigger[11][k], &Trigger::setState, &Trigger::getTitle, 1, false);
 		i++;
-		actions[i] = new ParameterizedSimpleAction<Trigger>(i, "Turn off Switch " + String(k), trigger[11][k], &Trigger::setState, 0, true);
+		actions[i] = new NamedParameterizedSimpleAction<Trigger>(i, "Turn off Switch " + String(k), trigger[11][k], &Trigger::setState, &Trigger::getTitle, 0, false);
 		i++;
+	}
+
+	//Set antagonist actions
+	for (uint8_t j = (i - (TRIGGER_SETS * 2)); j < i; j++) {
+		if (j % 2 == 0) {
+			actions[j]->setAntagonist("Group " + String(group), actions[j + 1]);
+		}
+		else {
+			actions[j]->setAntagonist("Group " + String(group), actions[j - 1]);
+			group++;
+		}
 	}
 	
 	//Initialize ActionChains
@@ -252,6 +263,8 @@ void setup() {
 		}
 	}
 	led[0]->turnOn();
+	
+	delay(15000);
 
 	//Start Webserver
 	LOGMSG("[Setup]", "Starting Webserver", "", "", "");
@@ -261,8 +274,7 @@ void setup() {
 	LOGMSG("[Setup]", "Retrieving Network Time", "", "", "");
 	long timestamp = 0; 
 	timeout = 0;
-
-
+		
 	while(NTP) {
 		if (timeout > NTP_TIMEOUT) {
 			LOGMSG("[Setup]", "ERROR: Could not retrieve Network Time", "", "", "");
@@ -275,7 +287,7 @@ void setup() {
 				led[0]->switchState();
 			}
 			else {
-				internalRTC.updateTime(timestamp, true);
+				if(timestamp > 1514764800) internalRTC.updateTime(timestamp, true);
 				break;
 			}
 		}

@@ -19,6 +19,7 @@ void Webhandler::begin()
 	classWebServer.on("/sensor", HTTP_GET, std::bind(&Webhandler::sensorGet, this, std::placeholders::_1));
 	classWebServer.on("/setting", HTTP_GET, std::bind(&Webhandler::settingGet, this, std::placeholders::_1));
 	classWebServer.on("/trigger", HTTP_GET, std::bind(&Webhandler::triggerGet, this, std::placeholders::_1));
+	classWebServer.on("/restart", HTTP_GET, std::bind(&Webhandler::restart, this, std::placeholders::_1));
 
 	AsyncCallbackJsonWebHandler* handler;
 
@@ -87,6 +88,23 @@ void Webhandler::actionGet(AsyncWebServerRequest * request)
 		response->setLength();
 		request->send(response);
 	}
+	else if (uri[1] == "visible") {
+		AsyncJsonResponse * response = new AsyncJsonResponse();
+		response->addHeader("Server", "GrowAI");
+
+		JsonObject& root = response->getRoot();
+		root["obj"] = "ACTION";
+
+		JsonArray&	list = root.createNestedArray("list");
+		for (uint8_t i = 0; i < ACTIONS_NUM; i++) {
+			if (actions[i]->visible == true) {
+				JsonObject& element = list.createNestedObject();
+				actions[i]->serializeJSON(element, LIST);
+			}
+		}
+		response->setLength();
+		request->send(response);
+	}
 	else if (uri[1] != "" && uri[1].toInt() < ACTIONS_NUM) {
 		if (uri[2] == "") {
 			AsyncJsonResponse * response = new AsyncJsonResponse();
@@ -94,16 +112,14 @@ void Webhandler::actionGet(AsyncWebServerRequest * request)
 
 			JsonObject& root = response->getRoot();
 			actions[uri[1].toInt()]->serializeJSON(root, DETAILS);
-			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Action Object Action: GET"), String(uri[1]), "");
+			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Action: GET"), String(uri[1]), "");
 
 			response->setLength();
 			request->send(response);
 		}
 		else if (uri[2] == "execute") {
 			actions[uri[1].toInt()]->execute();
-			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Action Object Action: EXECUTE"), String(uri[1]), "");
-			//actions[uri[1].toInt()]->serializeJSON(uri[1].toInt(), json, JSONCHAR_SIZE, DETAILS);
-			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Action Object Action: GET"), String(uri[1]), "");
+			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Action: EXECUTE"), String(uri[1]), "");
 			request->send(200);
 		}
 		else {
@@ -141,16 +157,41 @@ void Webhandler::actionchainGet(AsyncWebServerRequest * request)
 		response->setLength();
 		request->send(response);
 	}
-	else if (uri[1] != "" && uri[1].toInt() < ACTIONCHAINS_NUM) {
+	else if (uri[1] == "active") {
 		AsyncJsonResponse * response = new AsyncJsonResponse();
 		response->addHeader("Server", "GrowAI");
 
 		JsonObject& root = response->getRoot();
-		actionchains[uri[1].toInt()]->serializeJSON(root, DETAILS);
-		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Action Object Action: GET"), String(uri[1]), "");
+		root["obj"] = "ACTIONCHAIN";
 
+		JsonArray&	list = root.createNestedArray("list");
+		for (uint8_t i = 0; i < ACTIONCHAINS_NUM; i++) {
+			if (actionchains[i]->active == true) {
+				JsonObject& element = list.createNestedObject();
+				actionchains[i]->serializeJSON(element, LIST);
+			}
+		}
 		response->setLength();
 		request->send(response);
+	}
+	else if (uri[1] != "" && uri[1].toInt() < ACTIONCHAINS_NUM) {
+			if (uri[2] == "") {
+				AsyncJsonResponse * response = new AsyncJsonResponse();
+				response->addHeader("Server", "GrowAI");
+
+				JsonObject& root = response->getRoot();
+				actionchains[uri[1].toInt()]->serializeJSON(root, DETAILS);
+				LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Action Object Action: GET"), String(uri[1]), "");
+
+				response->setLength();
+				request->send(response);
+		}
+
+		else if (uri[2] == "execute") {
+			actionchains[uri[1].toInt()]->execute();
+			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sequence: EXECUTE"), String(uri[1]), "");
+			request->send(200);
+		}
 	}
 	else {
 		LOGMSG(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI: UNKOWN"), "", "");
@@ -306,6 +347,23 @@ void Webhandler::rulesetGet(AsyncWebServerRequest * request)
 		for (uint8_t i = 0; i < RULESETS_NUM; i++) {
 			JsonObject& element = list.createNestedObject();
 			rulesets[i]->serializeJSON(element, LIST);
+		}
+		response->setLength();
+		request->send(response);
+	}
+	else if (uri[1] == "active") {
+		AsyncJsonResponse * response = new AsyncJsonResponse();
+		response->addHeader("Server", "GrowAI");
+
+		JsonObject& root = response->getRoot();
+		root["obj"] = "RULESET";
+
+		JsonArray&	list = root.createNestedArray("list");
+		for (uint8_t i = 0; i < RULESETS_NUM; i++) {
+			if (rulesets[i]->active == true) {
+				JsonObject& element = list.createNestedObject();
+				rulesets[i]->serializeJSON(element, LIST);
+			}
 		}
 		response->setLength();
 		request->send(response);
@@ -472,7 +530,6 @@ void Webhandler::sensorGet(AsyncWebServerRequest * request)
 		LOGMSG(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI: UNKOWN"), "", "");
 		request->send(404);
 	}
-
 }
 
 void Webhandler::settingGet(AsyncWebServerRequest * request)
@@ -608,6 +665,32 @@ void Webhandler::triggerGet(AsyncWebServerRequest * request)
 
 		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Trigger Action: GET Categories & Trigger"), String(uri[1]), String(uri[2]));
 	}
+	else if (uri[1] == "active") {
+		AsyncJsonResponse * response = new AsyncJsonResponse();
+		response->addHeader("Server", "GrowAI");
+
+		JsonObject& root = response->getRoot();
+		root["obj"] = "TCAT";
+
+		JsonArray&	list = root.createNestedArray("list");
+		for (uint8_t i = 0; i < TRIGGER_TYPES; i++) {
+			JsonObject& cat = list.createNestedObject();
+			cat["src"] = trigger[i][0]->getSource();
+			cat["typ"] = static_cast<int>(trigger[i][0]->type);
+			JsonArray& trig = cat.createNestedArray("trig");
+			for (uint8_t j = 0; j < TRIGGER_SETS; j++) {
+				if (trigger[i][j]->active == true) {
+					JsonObject& item = trig.createNestedObject();
+					item["tit"] = trigger[i][j]->getTitle();
+					item["act"] = trigger[i][j]->active;
+				}
+			}
+		}
+		response->setLength();
+		request->send(response);
+
+		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Trigger Action: GET Categories & Trigger"), String(uri[1]), String(uri[2]));
+	}
 	else if (uri[1] != "" && uri[1].toInt() < TRIGGER_TYPES) {
 		if (uri[2] == "") {
 			AsyncJsonResponse * response = new AsyncJsonResponse();
@@ -647,6 +730,16 @@ void Webhandler::triggerGet(AsyncWebServerRequest * request)
 		request->send(404);
 		LOGMSG(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI: UNKOWN"), "", "");
 	}
+}
+
+void Webhandler::restart(AsyncWebServerRequest * request)
+{
+	settings.saveActiveConfig();
+	LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action: SAVE to Active"), "", "");
+	request->send(200);
+	LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Restart"), "", "");
+	delay(5000);
+	ESP.restart();
 }
 
 void Webhandler::unknownGet(AsyncWebServerRequest * request)

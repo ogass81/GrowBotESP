@@ -55,6 +55,7 @@ public:
 
 	//UI Output
 	String getTitle();
+	String getTitle(int parameter);
 	String getSource();
 
 	//Settings
@@ -79,7 +80,7 @@ public:
 
 	void reset();
 private:
-	int checkStateInterval(long sensor_start, uint8_t length);
+	int checkStateInterval(long sensor_start, long length);
 };
 
 //Specialization of Trigger with predefined methods for generic sensors

@@ -66,6 +66,7 @@ public:
 
 	ParameterizedSimpleAction(uint8_t id, String title, ActionType *actionObj, void (ActionType::*cFunct)(int), int par, bool visible = false);
 
+
 	//Serialize
 	void serializeJSON(uint8_t id, char* json, size_t maxSize, Scope scope);
 	void serializeJSON(JsonObject& data, Scope scope);

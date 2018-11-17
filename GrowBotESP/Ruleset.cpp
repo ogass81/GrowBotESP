@@ -101,6 +101,7 @@ void RuleSet::serializeJSON(uint8_t id, char * json, size_t maxSize, Scope scope
 		rules["tcat3_ptr"] = triggercat3_ptr;
 		rules["tset3_ptr"] = triggerset3_ptr;
 		rules["chain_ptr"] = chain_ptr;
+		rules["state"] = checkState();
 
 		JsonArray& boolop = rules.createNestedArray("bool");
 		boolop.add(static_cast<int>(assignedBoolOp[0]));

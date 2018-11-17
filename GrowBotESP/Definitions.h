@@ -9,7 +9,7 @@
 	#include "WProgram.h"
 #endif
 
-#define GROWBOT_FIRMWARE 3
+#define GROWBOT_FIRMWARE 4
 
 //Wifi
 #define WIFI_TIMEOUT 30
@@ -19,7 +19,7 @@
 //FS1000A
 #define TX_DATA_PIN 16
 #define RX_DATA_PIN 17
-#define RC_SOCKETS 8
+#define RC_SOCKETS 14
 #define RC_SIGNALS 5
 #define RC_REPEAT 5
 
@@ -58,15 +58,15 @@
 //Rules Enginge
 //Trigger Categories and number for each category
 #define TRIGGER_TYPES 12
-#define TRIGGER_SETS 8
+#define TRIGGER_SETS 10
 
 //Number of Rulesssets
 #define RULESETS_NUM 32
 
 //Number of Actions
 #define ACTIONS_NUM RC_SOCKETS + (TRIGGER_SETS * 4)
-#define ACTIONCHAINS_NUM 16
-#define ACTIONCHAIN_LENGTH 4
+#define ACTIONCHAINS_NUM 32
+#define ACTIONCHAIN_LENGTH 8
 
 //Task Manager
 #define TASK_QUEUE_LENGTH 120 //MAX 255!!!
@@ -85,7 +85,7 @@
 #define LED3 25
 
 //LogEngine
-#define LOGBUFFER_SIZE 5
+#define LOGBUFFER_SIZE 10
 
 //REST API 
 #define REST_URI_DEPTH 4
@@ -93,12 +93,12 @@
 enum RelOp { SMALLER, EQUAL, GREATER, NOTEQUAL };
 enum BoolOp { AND, OR, NOT };
 enum Interval { REALTIME, TENSEC, TWENTYSEC, THIRTYSEC, ONEMIN, TWOMIN, FIVEMIN, QUARTER, HALF, ONE, TWO, THREE, FOUR, SIX, TWELVE, DAILY, BIDAILY, WEEKLY, BIWEEKLY};
-enum Scope { LIST, HEADER, DETAILS, AVG, DATE_MIN, DATE_HOUR, DATE_DAY, DATE_MONTH, DATE_ALL};
+enum Scope { LIST, HEADER, DETAILS, AVG, DATE_MIN, DATE_HOUR, DATE_DAY, DATE_MONTH, DATE_ALL, ACTIVE};
 enum TriggerTypes { TIME, SENSOR, COUNTER, SWITCH };
 enum LogTypes { INFO, DEBUG, ERROR, WARNING, ACTION};
 enum SensorTypes { TEMPERATURE, HUMIDITY, PRESSURE, DISTANCE, SOILMOISTURE, HEIGHT, OTHER };
 
-#define LOGLEVEL 4
+#define LOGLEVEL 5
 
 #define LOGMSG(classname, msg, par1, par2, par3)   if(LOGLEVEL >1) { Serial.print(classname); Serial.print(" "); Serial.print(msg); Serial.print(" "); Serial.print(par1); Serial.print(" "); Serial.print(par2); Serial.print(" "); Serial.println(par3); }
 #define LOGMSG2(classname, msg, par1, par2, par3, par4)   if(LOGLEVEL >2) { Serial.print(classname); Serial.print(" "); Serial.print(msg); Serial.print(" "); Serial.print(par1); Serial.print(" "); Serial.print(par2); Serial.print(" "); Serial.print(par3);  }

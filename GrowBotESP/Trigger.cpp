@@ -24,6 +24,11 @@ String Trigger::getTitle()
 	return String(title);
 }
 
+String Trigger::getTitle(int parameter)
+{
+	return String(getTitle());
+}
+
 String Trigger::getSource()
 {
 	return String(source);
@@ -219,9 +224,13 @@ bool TimeTrigger::checkState()
 					state = true;
 				}
 				else if (remainder <=1) {
-					if (fired != true) state = true;
-					else fired = false;
+					if (fired != true) {
+						state = true;
+						fired = true;
+					}
 				}
+				else fired = false;
+
 				break;
 			case TWENTYSEC:
 				remainder = checkStateInterval(sensor_start, 20);
@@ -230,9 +239,13 @@ bool TimeTrigger::checkState()
 					state = true;
 				}
 				else if (remainder <= 1) {
-					if (fired != true) state = true;
-					else fired = false;
+					if (fired != true) {
+						state = true;
+						fired = true;
+					}
 				}
+				else fired = false;
+
 				break;
 			case THIRTYSEC:
 				remainder = checkStateInterval(sensor_start, 30);
@@ -241,9 +254,13 @@ bool TimeTrigger::checkState()
 					state = true;
 				}
 				else if (remainder <= 2) {
-					if (fired != true) state = true;
-					else fired = false;
+					if (fired != true) {
+						state = true;
+						fired = true;
+					}
 				}
+				else fired = false;
+
 				break;
 			case ONEMIN:
 				remainder = checkStateInterval(sensor_start, 60);
@@ -252,9 +269,13 @@ bool TimeTrigger::checkState()
 					state = true;
 				}
 				else if (remainder <= 4) {
-					if (fired != true) state = true;
-					else fired = false;
+					if (fired != true) {
+						state = true;
+						fired = true;
+					}
 				}
+				else fired = false;
+
 				break;
 			case TWOMIN:
 				remainder = checkStateInterval(sensor_start, 120);
@@ -263,9 +284,13 @@ bool TimeTrigger::checkState()
 					state = true;
 				}
 				else if (remainder <= 8) {
-					if (fired != true) state = true;
-					else fired = false;
+					if (fired != true) {
+						state = true;
+						fired = true;
+					}
 				}
+				else fired = false;
+
 				break;
 			case FIVEMIN:
 				remainder = checkStateInterval(sensor_start, 300);
@@ -274,9 +299,13 @@ bool TimeTrigger::checkState()
 					state = true;
 				}
 				else if (remainder <= 20) {
-					if (fired != true) state = true;
-					else fired = false;
+					if (fired != true) {
+						state = true;
+						fired = true;
+					}
 				}
+				else fired = false;
+
 				break;
 			case QUARTER:
 				remainder = checkStateInterval(sensor_start, 900);
@@ -285,9 +314,13 @@ bool TimeTrigger::checkState()
 					state = true;
 				}
 				else if (remainder <= 60) {
-					if (fired != true) state = true;
-					else fired = false;
+					if (fired != true) {
+						state = true;
+						fired = true;
+					}
 				}
+				else fired = false;
+
 				break;
 			case HALF:
 				remainder = checkStateInterval(sensor_start, 1800);
@@ -296,9 +329,13 @@ bool TimeTrigger::checkState()
 					state = true;
 				}
 				else if (remainder <= 120) {
-					if (fired != true) state = true;
-					else fired = false;
+					if (fired != true) {
+						state = true;
+						fired = true;
+					}
 				}
+				else fired = false;
+
 				break;
 			case ONE:
 				remainder = checkStateInterval(sensor_start, 3600);
@@ -307,9 +344,13 @@ bool TimeTrigger::checkState()
 					state = true;
 				}
 				else if (remainder <= 240) {
-					if (fired != true) state = true;
-					else fired = false;
+					if (fired != true) {
+						state = true;
+						fired = true;
+					}
 				}
+				else fired = false;
+
 				break;
 			case TWO:
 				remainder = checkStateInterval(sensor_start, 7200);
@@ -318,9 +359,13 @@ bool TimeTrigger::checkState()
 					state = true;
 				}
 				else if (remainder <= 480) {
-					if (fired != true) state = true;
-					else fired = false;
+					if (fired != true) {
+						state = true;
+						fired = true;
+					}
 				}
+				else fired = false;
+
 				break;
 			case THREE:
 				remainder = checkStateInterval(sensor_start, 10800);
@@ -329,9 +374,13 @@ bool TimeTrigger::checkState()
 					state = true;
 				}
 				else if (remainder <= 720) {
-					if (fired != true) state = true;
-					else fired = false;
+					if (fired != true) {
+						state = true;
+						fired = true;
+					}
 				}
+				else fired = false;
+
 				break;
 			case FOUR:
 				remainder = checkStateInterval(sensor_start, 14400);
@@ -340,9 +389,13 @@ bool TimeTrigger::checkState()
 					state = true;
 				}
 				else if (remainder <= 960) {
-					if (fired != true) state = true;
-					else fired = false;
+					if (fired != true) {
+						state = true;
+						fired = true;
+					}
 				}
+				else fired = false;
+
 				break;
 			case SIX:
 				remainder = checkStateInterval(sensor_start, 21600);
@@ -351,9 +404,13 @@ bool TimeTrigger::checkState()
 					state = true;
 				}
 				else if (remainder <= 1440) {
-					if (fired != true) state = true;
-					else fired = false;
+					if (fired != true) {
+						state = true;
+						fired = true;
+					}
 				}
+				else fired = false;
+
 				break;
 			case TWELVE:
 				remainder = checkStateInterval(sensor_start, 43200);
@@ -362,9 +419,13 @@ bool TimeTrigger::checkState()
 					state = true;
 				}
 				else if (remainder <= 2880) {
-					if (fired != true) state = true;
-					else fired = false;
+					if (fired != true) {
+						state = true;
+						fired = true;
+					}
 				}
+				else fired = false;
+
 				break;
 			case DAILY:
 				remainder = checkStateInterval(sensor_start, 86400);
@@ -373,9 +434,13 @@ bool TimeTrigger::checkState()
 					state = true;
 				}
 				else if (remainder <= 5760) {
-					if (fired != true) state = true;
-					else fired = false;
+					if (fired != true) {
+						state = true;
+						fired = true;
+					}
 				}
+				else fired = false;
+
 				break;
 			case BIDAILY:
 				remainder = checkStateInterval(sensor_start, 172800);
@@ -384,9 +449,13 @@ bool TimeTrigger::checkState()
 					state = true;
 				}
 				else if (remainder <= 11520) {
-					if (fired != true) state = true;
-					else fired = false;
+					if (fired != true) {
+						state = true;
+						fired = true;
+					}
 				}
+				else fired = false;
+
 				break;
 			case WEEKLY:
 				remainder = checkStateInterval(sensor_start, 604800);
@@ -395,9 +464,13 @@ bool TimeTrigger::checkState()
 					state = true;
 				}
 				else if (remainder <= 86400) {
-					if (fired != true) state = true;
-					else fired = false;
+					if (fired != true) {
+						state = true;
+						fired = true;
+					}
 				}
+				else fired = false;
+
 				break;
 			case BIWEEKLY:
 				remainder = checkStateInterval(sensor_start, 1209600);
@@ -406,9 +479,13 @@ bool TimeTrigger::checkState()
 					state = true;
 				}
 				else if (remainder <= 86400) {
-					if (fired != true) state = true;
-					else fired = false;
+					if (fired != true) {
+						state = true;
+						fired = true;
+					}
 				}
+				else fired = false;
+
 				break;
 			}
 		}
@@ -420,7 +497,7 @@ void TimeTrigger::setState(int)
 {
 }
 
-int TimeTrigger::checkStateInterval(long sensor_start, uint8_t length)
+int TimeTrigger::checkStateInterval(long sensor_start, long length)
 {
 	return 	((sensor_cycles - sensor_start) % (length / SENS_FRQ_SEC));
 }
@@ -475,6 +552,7 @@ if (scope == DETAILS) {
 	trigger["relop"] = static_cast<int>(relop);
 	trigger["val"] = threshold;
 	trigger["tol"] = tolerance;
+	trigger["state"] = checkState();
 }
 
 trigger.printTo(json, maxSize);

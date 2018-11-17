@@ -54,6 +54,7 @@ public:
 	void sensorGet(AsyncWebServerRequest *request);
 	void settingGet(AsyncWebServerRequest *request);
 	void triggerGet(AsyncWebServerRequest *request);
+	void restart(AsyncWebServerRequest *request);
 
 	void unknownGet(AsyncWebServerRequest *request);
 

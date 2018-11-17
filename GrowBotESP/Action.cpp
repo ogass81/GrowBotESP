@@ -91,9 +91,9 @@ void SimpleAction<ActionType>::execute()
 			LOGDEBUG(F("[Action]"), F("execute()"), F("OK: Execute Action"), getTitle(), "", "");
 			(actionObject->*callback)();
 
-			String keys[] = { "Action" };
-			String values[] = { getTitle() };
-			logengine.addLogEntry(ACTION, "Action", "OK: Execute Action", keys, values, 1);
+			String keys[] = {};
+			String values[] = {};
+			logengine.addLogEntry(ACTION, "Action", "OK: Execute Action " + String(getTitle()), keys, values, 0);
 		}
 		else LOGDEBUG(F("[Action]"), F("execute()"), F("ERROR: Callback missing"), getTitle(), "", "");
 	}
@@ -171,18 +171,14 @@ void ParameterizedSimpleAction<ActionType>::execute()
 		if (callback != NULL) {
 			if (parameter >= 0) {
 				LOGDEBUG(F("[Action]"), F("execute()"), F("OK: Execute Action"), getTitle(), "", "");
-				String keys[] = { "Action" };
-				String values[] = { getTitle() };
-				logengine.addLogEntry(ACTION, "Action", "OK: Execute Action", keys, values, 1);
+				String keys[] = {};
+				String values[] = {};
+				logengine.addLogEntry(ACTION, "Action", "OK: Execute Action " + String(getTitle()), keys, values, 0);
 
 				(actionObject->*callback)(parameter);
 			}
 			else {
 				LOGDEBUG(F("[Action]"), F("execute()"), F("ERROR: Argument missing"), getTitle(), "", "");
-
-				String keys[] = { "Action" };
-				String values[] = { title };
-				logengine.addLogEntry(ACTION, "Action", "ERROR: Argument missing", keys, values, 1);
 			}
 		}
 		else LOGDEBUG(F("[Action]"), F("execute()"), F("ERROR: Callback missing"), getTitle(), "", "");
@@ -266,4 +262,5 @@ String NamedParameterizedSimpleAction<ActionType>::getTitle()
 template class SimpleAction<RCSocketController>;
 template class ParameterizedSimpleAction<RCSocketController>;
 template class ParameterizedSimpleAction<Trigger>;
+template class NamedParameterizedSimpleAction<Trigger>;
 template class NamedParameterizedSimpleAction<RCSocketController>;
