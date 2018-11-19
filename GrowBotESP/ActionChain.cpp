@@ -30,12 +30,12 @@ void ActionChain::serializeJSON(uint8_t id, char * json, size_t maxSize, Scope s
 	JsonObject& actions = jsonBuffer.createObject();
 
 	if (scope == LIST || scope == DETAILS) {
+		actions["id"] = id;
 		actions["tit"] = title;
 		actions["act"] = active;
 	}
 
 	if (scope == DETAILS) {
-		actions["id"] = id;
 		actions["obj"] = "ACTIONCHAIN";
 
 		JsonArray& ptr = actions.createNestedArray("actptr");

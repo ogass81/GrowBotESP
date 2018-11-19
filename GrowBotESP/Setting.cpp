@@ -107,7 +107,7 @@ void Setting::reset()
 	}
 
 	//Reset Sockets
-	rcsocketcontroller->resetSettings();
+	//rcsocketcontroller->resetSettings();
 
 	String keys[] = { "Wifi SSID", "Wifi Password", "AP SSID", "AP Password", "Http User", "Http Password" };
 	String values[] = { wifi_ssid, wifi_pw, ap_ssid, ap_pw, http_user, http_pw };
@@ -169,6 +169,9 @@ void Setting::serializeJSON(JsonObject & data)
 	data["actionschains_num"] = ACTIONCHAINS_NUM;
 	data["actionschains_length"] = ACTIONCHAIN_LENGTH;
 	data["rulesets_num"] = RULESETS_NUM;
+	data["rulesets_trig"] = RULESETS_TRIGGER;
+	data["rulesets_act"] = RULESETS_ACTIONS;
+		
 	data["trigger_sets"] = TRIGGER_SETS;
 	data["trigger_types"] = TRIGGER_TYPES;
 	data["sensor_num"] = SENS_NUM;

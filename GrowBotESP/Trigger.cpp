@@ -39,10 +39,6 @@ void Trigger::reset()
 	
 }
 
-void Trigger::serializeJSON(uint8_t cat, uint8_t id, char * json, size_t maxSize, Scope scope)
-{
-}
-
 void Trigger::serializeJSON(JsonObject & data, Scope scope)
 {
 }
@@ -102,6 +98,7 @@ void TimeTrigger::serializeJSON(JsonObject & data, Scope scope)
 		data["val"] = threshold;
 		data["intv"] = static_cast<int>(interval);
 		data["tol"] = tolerance;
+		data["state"] = checkState();
 	}
 
 	LOGDEBUG2(F("[Trigger]"), F("serializeJSON()"), F("OK: Serialized Members for Trigger"), String(data.measureLength()), "" , "");
@@ -529,35 +526,6 @@ void SensorTrigger::setState(int)
 {
 }
 
-void SensorTrigger::serializeJSON(uint8_t cat, uint8_t id, char * json, size_t maxSize, Scope scope)
-{
-	StaticJsonBuffer<JSONBUFFER_SIZE> jsonBuffer;
-
-	JsonObject& trigger = jsonBuffer.createObject();
-
-if (scope == LIST || scope == DETAILS) {
-	trigger["tit"] = title;
-	trigger["act"] = active;
-	trigger["src"] = source;
-	trigger["typ"] = static_cast<int>(type);
-}
-
-if (scope == DETAILS) {
-	trigger["obj"] = "TRIGGER";
-	trigger["cat"] = cat;
-	trigger["id"] = id;
-	trigger["start_time"] = start_time;
-	trigger["end_time"] = end_time;
-	trigger["intv"] = static_cast<int>(interval);
-	trigger["relop"] = static_cast<int>(relop);
-	trigger["val"] = threshold;
-	trigger["tol"] = tolerance;
-	trigger["state"] = checkState();
-}
-
-trigger.printTo(json, maxSize);
-LOGDEBUG2(F("[Trigger]"), F("serializeJSON()"), F("OK: Serialized Members for Trigger"), String(getTitle()), String(trigger.measureLength()), String(maxSize));
-}
 
 void SensorTrigger::serializeJSON(JsonObject & data, Scope scope)
 {
@@ -578,6 +546,7 @@ void SensorTrigger::serializeJSON(JsonObject & data, Scope scope)
 		data["relop"] = static_cast<int>(relop);
 		data["val"] = threshold;
 		data["tol"] = tolerance;
+		data["state"] = checkState();
 	}
 
 	LOGDEBUG2(F("[Trigger]"), F("serializeJSON()"), F("OK: Serialized Members for Trigger"), String(data.measureLength()), "", "");
@@ -654,61 +623,6 @@ void SensorTrigger::reset()
 	tolerance = 0;
 }
 
-void TriggerCategory::serializeJSON(Trigger * trigger[TRIGGER_TYPES][TRIGGER_SETS], char * json, size_t maxSize, Scope scope)
-{
-	DynamicJsonBuffer jsonBuffer;
-
-	JsonObject& container = jsonBuffer.createObject();
-	container["obj"] = "TCAT";
-	JsonArray& categories = container.createNestedArray("list");
-
-		if (scope == LIST) {
-			for (uint8_t i = 0; i < TRIGGER_TYPES; i++) {
-				if (trigger[i][0] != NULL) {
-					JsonObject& item = jsonBuffer.createObject();
-					item["typ"] = static_cast<int>(trigger[i][0]->type);
-
-					if (trigger[i][0]->type == 0) {
-						item["tit"] = "Timer";
-					}
-					else if (trigger[i][0]->type == 1) {
-						
-						item["tit"] = "Comparator";
-					}
-					else if (trigger[i][0]->type == 2) {
-						
-							item["tit"] = "Counter";
-						}
-					else if (trigger[i][0]->type == 3) {
-						
-							item["tit"] = "Switch";
-						}
-					item["src"] = trigger[i][0]->getSource();
-					categories.add(item);
-				}
-			}
-		}
-		else {
-			for (uint8_t i = 0; i < TRIGGER_TYPES; i++) {
-				JsonObject& cat = jsonBuffer.createObject();
-				cat["src"] = trigger[i][0]->getSource();
-				cat["typ"] = static_cast<int>(trigger[i][0]->type);
-				JsonArray& trig = cat.createNestedArray("trig");
-				for (uint8_t j = 0; j < TRIGGER_SETS; j++) {
-					JsonObject& item = jsonBuffer.createObject();
-					item["tit"] = trigger[i][j]->getTitle();
-					item["act"] = trigger[i][j]->active;
-					trig.add(item);
-				}
-				categories.add(cat);
-			}
-		}
-	
-	container.printTo(json, maxSize);
-	LOGDEBUG2(F("[Trigger]"), F("serializeJSON()"), F("OK: Serialized Trigger Categories"), "", "", "");
-}
-
-
 Counter::Counter(int id, uint8_t cat)
 {
 	this->id = id;
@@ -751,11 +665,6 @@ void Counter::setState(int parameter)
 	else count = 0;
 }
 
-void Counter::serializeJSON(uint8_t cat, uint8_t id, char * json, size_t maxSize, Scope scope)
-{
-
-}
-
 void Counter::serializeJSON(JsonObject & data, Scope scope)
 {
 	if (scope == LIST || scope == DETAILS) {
@@ -776,6 +685,7 @@ void Counter::serializeJSON(JsonObject & data, Scope scope)
 		data["val"] = threshold;
 		data["count"] = count;
 		data["tol"] = tolerance;
+		data["state"] = checkState();
 	}
 
 	LOGDEBUG2(F("[Trigger]"), F("serializeJSON()"), F("OK: Serialized Members for Trigger"), String(data.measureLength()), "", "");
@@ -877,10 +787,6 @@ void Switch::setState(int parameter)
 
 	if (parameter == 1) state = true;
 	else state = false;
-}
-
-void Switch::serializeJSON(uint8_t cat, uint8_t id, char * json, size_t maxSize, Scope scope)
-{
 }
 
 void Switch::serializeJSON(JsonObject & data, Scope scope)

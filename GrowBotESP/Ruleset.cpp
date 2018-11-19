@@ -21,29 +21,32 @@ bool RuleSet::checkState()
 	uint8_t i = 0;
 
 	if (active == true) {
-		while (assignedTrigger[i] != NULL) {
+		while (i < RULESETS_TRIGGER && assignedTrigger[i] != NULL) {   
 			if (i == 0) {
 				state = assignedTrigger[i]->checkState();
-				LOGDEBUG(F("[Ruleset]"), F("checkstate()"), F("OK: First Trigger"), String(assignedTrigger[i]->getTitle()), String(state), "");
+				LOGDEBUG(F("[Ruleset]"), F("checkstate()"), F("Trigger "),  String(i), String(assignedTrigger[i]->getTitle()), String(state));
 			}
 			else {
 				if (assignedTrigger[i - 1] != NULL) {
-
+					
 					switch (assignedBoolOp[i - 1]) {
 
 					case AND:
-						state = state && assignedTrigger[i]->checkState();
-						LOGDEBUG(F("[Ruleset]"), F("checkstate()"), F("OK: AND Next Trigger"), String(assignedTrigger[i]->getTitle()), String(state), "");
+					
+						state = (state && assignedTrigger[i]->checkState());
+						LOGDEBUG(F("[Ruleset]"), F("checkstate()"), F("AND Trigger "), String(i), String(assignedTrigger[i]->getTitle()), String(state));
 						break;
 
 					case OR:
-						state = state || assignedTrigger[i]->checkState();
-						LOGDEBUG(F("[Ruleset]"), F("checkstate()"), F("OK: OR Next Trigger"), String(assignedTrigger[i]->getTitle()), String(state), "");
+					
+						state = (state || assignedTrigger[i]->checkState());
+						LOGDEBUG(F("[Ruleset]"), F("checkstate()"), F("OR Trigger "), String(i), String(assignedTrigger[i]->getTitle()), String(state));
 						break;
 
 					case NOT:
-						state = state && !assignedTrigger[i]->checkState();
-						LOGDEBUG(F("[Ruleset]"), F("checkstate()"), F("OK: NOT Next Trigger"), String(assignedTrigger[i]->getTitle()), String(state), "");
+					
+						state = (state && !assignedTrigger[i]->checkState());
+						LOGDEBUG(F("[Ruleset]"), F("checkstate()"), F("NOT Trigger "), String(i), String(assignedTrigger[i]->getTitle()), String(state));
 						break;
 					}
 				}
@@ -68,48 +71,20 @@ void RuleSet::reset()
 	assignedBoolOp[0] = AND;
 	assignedBoolOp[1] = AND;
 
-	assignedChain = NULL;
-
-	triggercat1_ptr = TRIGGER_TYPES;
-	triggercat2_ptr = TRIGGER_TYPES;
-	triggercat3_ptr = TRIGGER_TYPES;
-	triggerset1_ptr = TRIGGER_SETS;
-	triggerset2_ptr = TRIGGER_SETS;
-	triggerset3_ptr = TRIGGER_SETS;
-
-	chain_ptr = ACTIONCHAINS_NUM;
-}
-
-void RuleSet::serializeJSON(uint8_t id, char * json, size_t maxSize, Scope scope)
-{
-	StaticJsonBuffer<JSONBUFFER_SIZE> jsonBuffer;
-
-	JsonObject& rules = jsonBuffer.createObject();
-
-	if (scope == LIST || scope == DETAILS) {
-		rules["tit"] = title;
-		rules["act"] = active;
+	for (uint8_t i = 0; i < RULESETS_TRIGGER; i++) {
+		triggerPtr[i][0] = TRIGGER_TYPES;
+		triggerPtr[i][1] = TRIGGER_SETS;
+		assignedTrigger[i] = NULL;
 	}
 
-	if (scope == DETAILS) {
-		rules["id"] = id;
-		rules["obj"] = "RULESET";
-		rules["tcat1_ptr"] = triggercat1_ptr;
-		rules["tset1_ptr"] = triggerset1_ptr;
-		rules["tcat2_ptr"] = triggercat2_ptr;
-		rules["tset2_ptr"] = triggerset2_ptr;
-		rules["tcat3_ptr"] = triggercat3_ptr;
-		rules["tset3_ptr"] = triggerset3_ptr;
-		rules["chain_ptr"] = chain_ptr;
-		rules["state"] = checkState();
-
-		JsonArray& boolop = rules.createNestedArray("bool");
-		boolop.add(static_cast<int>(assignedBoolOp[0]));
-		boolop.add(static_cast<int>(assignedBoolOp[1]));
+	for (uint8_t i = 0; i < RULESETS_TRIGGER-1; i++) {
+		assignedBoolOp[i] = AND;
 	}
 
-	rules.printTo(json, maxSize);
-	LOGDEBUG2(F("[Ruleset]"), F("serializeJSON()"), F("OK: Serialized Members for Ruleset"), String(id), String(rules.measureLength()), String(maxSize));
+	for (uint8_t i = 0; i < RULESETS_ACTIONS; i++) {
+		actionChainPtr[i] = ACTIONCHAINS_NUM;
+		assignedChain[i] = NULL;
+	}
 }
 
 void RuleSet::serializeJSON(JsonObject & data, Scope scope)
@@ -117,22 +92,30 @@ void RuleSet::serializeJSON(JsonObject & data, Scope scope)
 	if (scope == LIST || scope == DETAILS) {
 		data["tit"] = title;
 		data["act"] = active;
+		data["state"] = checkState();
 	}
 
 	if (scope == DETAILS) {
 		data["id"] = id;
 		data["obj"] = "RULESET";
-		data["tcat1_ptr"] = triggercat1_ptr;
-		data["tset1_ptr"] = triggerset1_ptr;
-		data["tcat2_ptr"] = triggercat2_ptr;
-		data["tset2_ptr"] = triggerset2_ptr;
-		data["tcat3_ptr"] = triggercat3_ptr;
-		data["tset3_ptr"] = triggerset3_ptr;
-		data["chain_ptr"] = chain_ptr;
+		
+		JsonArray& trigger = data.createNestedArray("trigger");
 
-		JsonArray& boolop = data.createNestedArray("bool");
-		boolop.add(static_cast<int>(assignedBoolOp[0]));
-		boolop.add(static_cast<int>(assignedBoolOp[1]));
+		for (uint8_t i = 0; i < RULESETS_TRIGGER; i++) {
+			JsonObject& set = trigger.createNestedObject();
+			set["cat"] = triggerPtr[i][0];
+			set["id"] = triggerPtr[i][1];
+		}
+
+		JsonArray& boolop = data.createNestedArray("boolop");
+		for (uint8_t i = 0; i < RULESETS_TRIGGER - 1; i++) {
+			boolop.add(static_cast<int>(assignedBoolOp[i]));
+		}
+	
+		JsonArray& actionchain = data.createNestedArray("actionchain");
+		for (uint8_t i = 0; i < RULESETS_ACTIONS; i++) {
+			actionchain.add(actionChainPtr[i]);
+		}
 	}
 
 	LOGDEBUG2(F("[Ruleset]"), F("serializeJSON()"), F("OK: Serialized Members for Ruleset"), String(data.measureLength()), "", "");
@@ -143,44 +126,56 @@ bool RuleSet::deserializeJSON(JsonObject & data)
 	if (data.success() == true) {
 		if (data["tit"] != "") title = data["tit"].asString();
 		if (data["act"] != "") active = data["act"];
-		if (data["tset1_ptr"] != "") triggerset1_ptr = data["tset1_ptr"];
-		if (data["tcat1_ptr"] != "") triggercat1_ptr = data["tcat1_ptr"];
-		if (data["tset2_ptr"] != "") triggerset2_ptr = data["tset2_ptr"];
-		if (data["tcat2_ptr"] != "") triggercat2_ptr = data["tcat2_ptr"];
-		if (data["tset3_ptr"] != "") triggerset3_ptr = data["tset3_ptr"];
-		if (data["tcat3_ptr"] != "") triggercat3_ptr = data["tcat3_ptr"];
-		if (data["chain_ptr"] != "") chain_ptr = data["chain_ptr"];
-		
-		//Assigning Pointers
-		
-		if (data["bool"][0] != "") {
-			if (data["bool"][0] == 0) assignedBoolOp[0] = AND;
-			else if (data["bool"][0] == 1) assignedBoolOp[0] = OR;
-			else if (data["bool"][0] == 2) assignedBoolOp[0] = NOT;
+
+
+		for (uint8_t j = 0; j < RULESETS_TRIGGER; j++) {
+			if (data["trigger"][j]["cat"] != "" && data["trigger"][j]["id"] != "" && data["trigger"][j]["cat"] < TRIGGER_TYPES && data["trigger"][j]["id"] < TRIGGER_SETS) {
+				triggerPtr[j][0] = data["trigger"][j]["cat"];
+				triggerPtr[j][1] = data["trigger"][j]["id"];
+				assignedTrigger[j] = trigger[triggerPtr[j][0]][triggerPtr[j][1]];
+			}
 			else {
-				assignedBoolOp[0] = OR;
-				active = false;
+				triggerPtr[j][0] = TRIGGER_TYPES;
+				triggerPtr[j][1] = TRIGGER_SETS;
+				assignedTrigger[j] = NULL;
 			}
 		}
 
-		if (data["bool"][1] != "") {
-			if (data["bool"][1] == 0) assignedBoolOp[1] = AND;
-			else if (data["bool"][1] == 1) assignedBoolOp[1] = OR;
-			else if (data["bool"][1] == 2) assignedBoolOp[1] = NOT;
+		for (uint8_t j = 0; j < RULESETS_TRIGGER-1; j++) {
+			if (data["boolop"][j] != "") {
+				switch ((int)data["boolop"][j]) {
+					case 0:
+						assignedBoolOp[j] = AND;
+					break;
+
+					case 1:
+						assignedBoolOp[j] = OR;
+						break;
+
+					case 2:
+						assignedBoolOp[j] = NOT;
+						break;
+
+					default:
+						assignedBoolOp[j] = AND;
+						active = false;
+						break;
+				}
+			}
 			else {
-				assignedBoolOp[1] = OR;
-				active = false;
+				assignedBoolOp[j] = AND;
 			}
 		}
-
-		if (triggerset1_ptr != TRIGGER_SETS && triggercat1_ptr != TRIGGER_TYPES) assignedTrigger[0] = trigger[triggercat1_ptr][triggerset1_ptr];
-		else assignedTrigger[0] = NULL;
-		if (triggerset2_ptr != TRIGGER_SETS && triggercat2_ptr != TRIGGER_TYPES) assignedTrigger[1] = trigger[triggercat2_ptr][triggerset2_ptr];
-		else assignedTrigger[1] = NULL;
-		if (triggerset3_ptr != TRIGGER_SETS && triggercat3_ptr != TRIGGER_TYPES) assignedTrigger[2] = trigger[triggercat3_ptr][triggerset3_ptr];
-		else assignedTrigger[2] = NULL;
-		if (chain_ptr != ACTIONCHAINS_NUM) assignedChain = actionchains[chain_ptr];
-		else assignedChain = NULL;
+		for (uint8_t j = 0; j < RULESETS_ACTIONS; j++) {
+			if (data["actionchain"][j] != "" && data["actionchain"][j] < ACTIONCHAINS_NUM) {
+				actionChainPtr[j] = data["actionchain"][j];
+				assignedChain[j] = actionchains[actionChainPtr[j]];
+			}
+			else {
+				actionChainPtr[j] = ACTIONCHAINS_NUM;
+				assignedChain[j] = NULL;
+			}
+		}
 
 		LOGDEBUG2(F("[Ruleset]"), F("deserializeJSON()"), F("OK: Deserialized members for Ruleset"), data["id"].asString(), F("Datasize"), String(data.size()));
 	}
@@ -193,8 +188,10 @@ bool RuleSet::deserializeJSON(JsonObject & data)
 void RuleSet::execute()
 {
 	if (checkState() == true) {
-		if(assignedChain != NULL) {
-			assignedChain->execute();
+		for (uint8_t i = 0; i < RULESETS_ACTIONS; i++) {
+			if (assignedChain[i] != NULL) {
+				assignedChain[i]->execute();
+			}
 		}
 	}
 }

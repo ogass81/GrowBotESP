@@ -62,7 +62,6 @@ public:
 	virtual void reset();
 
 	//Serialization
-	virtual void serializeJSON(uint8_t cat, uint8_t id, char* json, size_t maxSize, Scope scope);
 	virtual void serializeJSON(JsonObject& data, Scope scope);
 	virtual bool deserializeJSON(JsonObject& data);
 };
@@ -94,7 +93,6 @@ public:
 	bool checkState();
 	void setState(int);
 
-	void serializeJSON(uint8_t cat, uint8_t id, char* json, size_t maxSize, Scope scope);
 	void serializeJSON(JsonObject& data, Scope scope);
 	bool deserializeJSON(JsonObject& data);
 
@@ -112,7 +110,6 @@ public:
 	bool checkState();
 	void setState(int);
 
-	void serializeJSON(uint8_t cat, uint8_t id, char* json, size_t maxSize, Scope scope);
 	void serializeJSON(JsonObject& data, Scope scope);
 	bool deserializeJSON(JsonObject& data);
 
@@ -129,17 +126,10 @@ public:
 	bool checkState();
 	void setState(int);
 
-	void serializeJSON(uint8_t cat, uint8_t id, char* json, size_t maxSize, Scope scope);
 	void serializeJSON(JsonObject& data, Scope scope);
 	bool deserializeJSON(JsonObject& data);
 
 	void reset();
-};
-
-//Trigger is a pair of sensor values and thresholds linked by a boolean operator -> can be TRUE or FALSE, repeatly checked
-class TriggerCategory {
-public:
-	static void serializeJSON(Trigger *trigger[TRIGGER_TYPES][TRIGGER_SETS], char* json, size_t maxSize, Scope scope);
 };
 #endif
 

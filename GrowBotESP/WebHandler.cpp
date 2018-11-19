@@ -88,23 +88,6 @@ void Webhandler::actionGet(AsyncWebServerRequest * request)
 		response->setLength();
 		request->send(response);
 	}
-	else if (uri[1] == "visible") {
-		AsyncJsonResponse * response = new AsyncJsonResponse();
-		response->addHeader("Server", "GrowAI");
-
-		JsonObject& root = response->getRoot();
-		root["obj"] = "ACTION";
-
-		JsonArray&	list = root.createNestedArray("list");
-		for (uint8_t i = 0; i < ACTIONS_NUM; i++) {
-			if (actions[i]->visible == true) {
-				JsonObject& element = list.createNestedObject();
-				actions[i]->serializeJSON(element, LIST);
-			}
-		}
-		response->setLength();
-		request->send(response);
-	}
 	else if (uri[1] != "" && uri[1].toInt() < ACTIONS_NUM) {
 		if (uri[2] == "") {
 			AsyncJsonResponse * response = new AsyncJsonResponse();
@@ -153,23 +136,6 @@ void Webhandler::actionchainGet(AsyncWebServerRequest * request)
 		for (uint8_t i = 0; i < ACTIONCHAINS_NUM; i++) {
 			JsonObject& element = list.createNestedObject();
 			actionchains[i]->serializeJSON(element, LIST);
-		}
-		response->setLength();
-		request->send(response);
-	}
-	else if (uri[1] == "active") {
-		AsyncJsonResponse * response = new AsyncJsonResponse();
-		response->addHeader("Server", "GrowAI");
-
-		JsonObject& root = response->getRoot();
-		root["obj"] = "ACTIONCHAIN";
-
-		JsonArray&	list = root.createNestedArray("list");
-		for (uint8_t i = 0; i < ACTIONCHAINS_NUM; i++) {
-			if (actionchains[i]->active == true) {
-				JsonObject& element = list.createNestedObject();
-				actionchains[i]->serializeJSON(element, LIST);
-			}
 		}
 		response->setLength();
 		request->send(response);
@@ -347,23 +313,6 @@ void Webhandler::rulesetGet(AsyncWebServerRequest * request)
 		for (uint8_t i = 0; i < RULESETS_NUM; i++) {
 			JsonObject& element = list.createNestedObject();
 			rulesets[i]->serializeJSON(element, LIST);
-		}
-		response->setLength();
-		request->send(response);
-	}
-	else if (uri[1] == "active") {
-		AsyncJsonResponse * response = new AsyncJsonResponse();
-		response->addHeader("Server", "GrowAI");
-
-		JsonObject& root = response->getRoot();
-		root["obj"] = "RULESET";
-
-		JsonArray&	list = root.createNestedArray("list");
-		for (uint8_t i = 0; i < RULESETS_NUM; i++) {
-			if (rulesets[i]->active == true) {
-				JsonObject& element = list.createNestedObject();
-				rulesets[i]->serializeJSON(element, LIST);
-			}
 		}
 		response->setLength();
 		request->send(response);
@@ -658,32 +607,6 @@ void Webhandler::triggerGet(AsyncWebServerRequest * request)
 				JsonObject& item = trig.createNestedObject();
 				item["tit"] = trigger[i][j]->getTitle();
 				item["act"] = trigger[i][j]->active;
-			}
-		}
-		response->setLength();
-		request->send(response);
-
-		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Trigger Action: GET Categories & Trigger"), String(uri[1]), String(uri[2]));
-	}
-	else if (uri[1] == "active") {
-		AsyncJsonResponse * response = new AsyncJsonResponse();
-		response->addHeader("Server", "GrowAI");
-
-		JsonObject& root = response->getRoot();
-		root["obj"] = "TCAT";
-
-		JsonArray&	list = root.createNestedArray("list");
-		for (uint8_t i = 0; i < TRIGGER_TYPES; i++) {
-			JsonObject& cat = list.createNestedObject();
-			cat["src"] = trigger[i][0]->getSource();
-			cat["typ"] = static_cast<int>(trigger[i][0]->type);
-			JsonArray& trig = cat.createNestedArray("trig");
-			for (uint8_t j = 0; j < TRIGGER_SETS; j++) {
-				if (trigger[i][j]->active == true) {
-					JsonObject& item = trig.createNestedObject();
-					item["tit"] = trigger[i][j]->getTitle();
-					item["act"] = trigger[i][j]->active;
-				}
 			}
 		}
 		response->setLength();

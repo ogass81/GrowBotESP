@@ -27,13 +27,12 @@ public:
 	bool active = false;
 
 	//Pointer Values for Serialization
-	uint8_t triggercat1_ptr, triggercat2_ptr, triggercat3_ptr;
-	uint8_t triggerset1_ptr, triggerset2_ptr, triggerset3_ptr;
-	uint8_t chain_ptr;
+	uint8_t triggerPtr[RULESETS_TRIGGER][2];
+	uint8_t actionChainPtr[RULESETS_ACTIONS];
 
-	Trigger *assignedTrigger[3];
-	BoolOp assignedBoolOp[2];
-	ActionChain *assignedChain;
+	Trigger *assignedTrigger[RULESETS_TRIGGER];
+	ActionChain *assignedChain[RULESETS_ACTIONS];
+	BoolOp assignedBoolOp[RULESETS_TRIGGER - 1];
 
 	RuleSet(uint8_t id);
 
@@ -48,7 +47,6 @@ public:
 	void reset();
 
 	//Serialize
-	void serializeJSON(uint8_t id, char* json, size_t maxSize, Scope scope);
 	void serializeJSON(JsonObject& data, Scope scope);
 	bool deserializeJSON(JsonObject& data);
 

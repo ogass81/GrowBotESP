@@ -62,10 +62,12 @@
 
 //Number of Rulesssets
 #define RULESETS_NUM 32
+#define RULESETS_TRIGGER 4
+#define RULESETS_ACTIONS 2
 
 //Number of Actions
 #define ACTIONS_NUM RC_SOCKETS + (TRIGGER_SETS * 4)
-#define ACTIONCHAINS_NUM 32
+#define ACTIONCHAINS_NUM 24
 #define ACTIONCHAIN_LENGTH 8
 
 //Task Manager

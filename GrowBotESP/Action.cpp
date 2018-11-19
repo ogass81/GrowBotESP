@@ -148,7 +148,6 @@ template<class ActionType>
 void ParameterizedSimpleAction<ActionType>::serializeJSON(JsonObject & data, Scope scope)
 {
 	if (scope == LIST || scope == DETAILS) {
-
 		data["tit"] = title;
 		data["grp"] = group_title;
 		if (antaObject != NULL) data["anta"] = antaObject->getTitle();
