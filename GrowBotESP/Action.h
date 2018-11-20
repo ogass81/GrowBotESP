@@ -50,7 +50,6 @@ public:
 	SimpleAction(uint8_t id, String title, ActionType *actionObj, void (ActionType::*cFunct)(), bool visible = false);
 
 	//Serialize
-	void serializeJSON(uint8_t id, char* json, size_t maxSize, Scope scope);
 	void serializeJSON(JsonObject& data, Scope scope);
 
 	void execute();
@@ -58,17 +57,16 @@ public:
 };
 
 template <class ActionType>
-class ParameterizedSimpleAction : public Action {
+class ParameterizedAction : public Action {
 public:
 	ActionType *actionObject = NULL;
 	void (ActionType::*callback)(int);
 	int parameter;
 
-	ParameterizedSimpleAction(uint8_t id, String title, ActionType *actionObj, void (ActionType::*cFunct)(int), int par, bool visible = false);
+	ParameterizedAction(uint8_t id, String title, ActionType *actionObj, void (ActionType::*cFunct)(int), int par, bool visible = false);
 
 
 	//Serialize
-	void serializeJSON(uint8_t id, char* json, size_t maxSize, Scope scope);
 	void serializeJSON(JsonObject& data, Scope scope);
 
 	void execute();
@@ -76,14 +74,13 @@ public:
 };
 
 template <class ActionType>
-class NamedParameterizedSimpleAction : public ParameterizedSimpleAction<ActionType> {
+class NamedParameterizedAction : public ParameterizedAction<ActionType> {
 public:
 	String (ActionType::*getForeignTitle)(int);
 
-	NamedParameterizedSimpleAction(uint8_t id, String title, ActionType *actionObj, void (ActionType::*cFunct)(int), String (ActionType::*getTitle)(int), int par, bool visible = false);
+	NamedParameterizedAction(uint8_t id, String title, ActionType *actionObj, void (ActionType::*cFunct)(int), String (ActionType::*getTitle)(int), int par, bool visible = false);
 
 	//Overwrite
-	void serializeJSON(uint8_t id, char* json, size_t maxSize, Scope scope);
 	void serializeJSON(JsonObject& data, Scope scope);
 	String getTitle();
 };

@@ -179,7 +179,7 @@ void setup() {
 	uint8_t i = 0;
 	//Create Actions to control Remote Sockets
 	for (uint8_t j = 0; j < RC_SOCKETS; j++) {
-		actions[i] = new NamedParameterizedSimpleAction<RCSocketController>(i, "Send", rcsocketcontroller, &RCSocketController::sendCode, &RCSocketController::getTitle, j, true);
+		actions[i] = new NamedParameterizedAction<RCSocketController>(i, "Send", rcsocketcontroller, &RCSocketController::sendCode, &RCSocketController::getTitle, j, true);
 		i++;
 	}
 		
@@ -197,17 +197,17 @@ void setup() {
 	
 	//Create Actions to controller Counter Triggers
 	for (uint8_t k = 0; k < TRIGGER_SETS; k++) {
-		actions[i] = new NamedParameterizedSimpleAction<Trigger>(i, "Increase Counter " + String(k), trigger[10][k], &Trigger::setState, &Trigger::getTitle, 1, false);
+		actions[i] = new NamedParameterizedAction<Trigger>(i, "Increase Counter " + String(k), trigger[10][k], &Trigger::setState, &Trigger::getTitle, 1, false);
 		i++;
-		actions[i] = new NamedParameterizedSimpleAction<Trigger>(i, "Reset Counter " + String(k), trigger[10][k], &Trigger::setState, &Trigger::getTitle, 0, false);
+		actions[i] = new NamedParameterizedAction<Trigger>(i, "Reset Counter " + String(k), trigger[10][k], &Trigger::setState, &Trigger::getTitle, 0, false);
 		i++;
 		}
 	
 	//Create Actions to controller Switch Triggers
 	for (uint8_t k = 0; k < TRIGGER_SETS; k++) {
-		actions[i] = new NamedParameterizedSimpleAction<Trigger>(i, "Turn on Switch " + String(k), trigger[11][k], &Trigger::setState, &Trigger::getTitle, 1, false);
+		actions[i] = new NamedParameterizedAction<Trigger>(i, "Turn on Switch " + String(k), trigger[11][k], &Trigger::setState, &Trigger::getTitle, 1, false);
 		i++;
-		actions[i] = new NamedParameterizedSimpleAction<Trigger>(i, "Turn off Switch " + String(k), trigger[11][k], &Trigger::setState, &Trigger::getTitle, 0, false);
+		actions[i] = new NamedParameterizedAction<Trigger>(i, "Turn off Switch " + String(k), trigger[11][k], &Trigger::setState, &Trigger::getTitle, 0, false);
 		i++;
 	}
 

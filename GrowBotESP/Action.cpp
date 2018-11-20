@@ -24,9 +24,10 @@ String Action::getTitle()
 
 void Action::setAntagonist(String group_title, Action * aObject)
 {
-	LOGDEBUG2(F("[Action]"), F("setAntagonist()"), F("OK: Setting Antagonist Object in Baseclass"), "", "", "");
 	this->group_title = group_title;
 	this->antaObject = aObject;
+
+	LOGDEBUG3(F("[Action]"), F("setAntagonist()"), F("OK: Set Antagonist Object in BASECLASS"), String(this->getTitle()), F("Antagonist"), String(this->antaObject->getTitle()));
 }
 
 
@@ -40,29 +41,8 @@ SimpleAction<ActionType>::SimpleAction(uint8_t id, String title, ActionType * ac
 	this->callback = cFunct;
 	this->antaObject = NULL;
 	this->visible = visible;
-}
 
-template<class ActionType>
-void SimpleAction<ActionType>::serializeJSON(uint8_t id, char * json, size_t maxSize, Scope scope)
-{
-	StaticJsonBuffer<500> jsonBuffer;
-
-	JsonObject& actions = jsonBuffer.createObject();
-
-	if (scope == LIST || scope == DETAILS) {
-		actions["tit"] = title;
-		actions["grp"] = group_title;
-		if(antaObject != NULL) actions["opp"] = antaObject->title;
-		actions["vis"] = visible;
-	}
-	
-	if (scope == DETAILS) {
-		actions["id"] = id;
-		actions["obj"] = "ACTION";
-	}
-
-	actions.printTo(json, maxSize);
-	LOGDEBUG2(F("[SimpleAction]"), F("serializeJSON()"), F("OK: Serialized Action"), String(id), String(actions.measureLength()), String(maxSize));
+	LOGDEBUG3(F("[SimpleAction]"), F("SimpleAction()"), F("OK: Created Simple Action"), String(this->title), "", "");
 }
 
 template<class ActionType>
@@ -71,7 +51,8 @@ void SimpleAction<ActionType>::serializeJSON(JsonObject & data, Scope scope)
 	if (scope == LIST || scope == DETAILS) {
 		data["tit"] = title;
 		data["grp"] = group_title;
-		if (antaObject != NULL) data["opp"] = antaObject->title;
+		if (antaObject != NULL) data["anta"] = antaObject->getTitle();
+		else data["anta"] = F("none");
 		data["vis"] = visible;
 	}
 
@@ -80,7 +61,7 @@ void SimpleAction<ActionType>::serializeJSON(JsonObject & data, Scope scope)
 		data["obj"] = "ACTION";
 	}
 
-	LOGDEBUG2(F("[SimpleAction]"), F("serializeJSON()"), F("OK: Serialized Action"), String(data.measureLength()), "", "");
+	LOGDEBUG2(F("[SimpleAction]"), F("serializeJSON()"), F("OK: Serialized members"), String(this->title), String(data.measureLength()), static_cast<int>(scope));
 }
 
 template<class ActionType>
@@ -88,16 +69,16 @@ void SimpleAction<ActionType>::execute()
 {
 	if (actionObject != NULL) {
 		if(callback != NULL) {
-			LOGDEBUG(F("[Action]"), F("execute()"), F("OK: Execute Action"), getTitle(), "", "");
 			(actionObject->*callback)();
+			LOGDEBUG(F("[SimpleAction]"), F("execute()"), F("OK: Executed Action"), getTitle(), "", "");
 
 			String keys[] = {};
 			String values[] = {};
 			logengine.addLogEntry(ACTION, "Action", "OK: Execute Action " + String(getTitle()), keys, values, 0);
 		}
-		else LOGDEBUG(F("[Action]"), F("execute()"), F("ERROR: Callback missing"), getTitle(), "", "");
+		else LOGDEBUG(F("[SimpleAction]"), F("execute()"), F("ERROR: Callback missing"), getTitle(), "", "");
 	}
-	else LOGDEBUG(F("[Action]"), F("execute()"), F("ERROR: Action Object missing"), getTitle(), "", "");
+	else LOGDEBUG(F("[SimpleAction]"), F("execute()"), F("ERROR: Action Object missing"), getTitle(), "", "");
 }
 
 template<class ActionType>
@@ -107,7 +88,7 @@ String SimpleAction<ActionType>::getTitle()
 }
 
 template<class ActionType>
-ParameterizedSimpleAction<ActionType>::ParameterizedSimpleAction(uint8_t id, String title, ActionType * actionObj, void(ActionType::*cFunct)(int), int par, bool visible)
+ParameterizedAction<ActionType>::ParameterizedAction(uint8_t id, String title, ActionType * actionObj, void(ActionType::*cFunct)(int), int par, bool visible)
 {
 	this->id = id;
 	this->title = title;
@@ -117,40 +98,18 @@ ParameterizedSimpleAction<ActionType>::ParameterizedSimpleAction(uint8_t id, Str
 	this->visible = visible;
 	this->antaObject = NULL;
 	this->parameter = par;
+
+	LOGDEBUG3(F("[ParameterizedAction]"), F("SimpleAction()"), F("OK: Created ParameterizedAction"), String(this->title), F("Parameter"), String(par));
 }
 
 template<class ActionType>
-void ParameterizedSimpleAction<ActionType>::serializeJSON(uint8_t id, char * json, size_t maxSize, Scope scope)
-{
-	StaticJsonBuffer<JSONBUFFER_SIZE> jsonBuffer;
-
-	JsonObject& actions = jsonBuffer.createObject();
-
-	if (scope == LIST || scope == DETAILS) {
-		actions["tit"] = title;
-		actions["grp"] = group_title;
-		if (antaObject != NULL) actions["anta"] = antaObject->getTitle();
-		actions["vis"] = visible;
-		actions["par"] = parameter;
-	}
-
-
-	if (scope == DETAILS) {
-		actions["id"] = id;
-		actions["obj"] = "ACTION";
-	}
-
-	actions.printTo(json, maxSize);
-	LOGDEBUG2(F("[ParameterizedSimpleAction]"), F("serializeJSON()"), F("OK: Serialized Action"), String(id), String(actions.measureLength()), String(maxSize));
-}
-
-template<class ActionType>
-void ParameterizedSimpleAction<ActionType>::serializeJSON(JsonObject & data, Scope scope)
+void ParameterizedAction<ActionType>::serializeJSON(JsonObject & data, Scope scope)
 {
 	if (scope == LIST || scope == DETAILS) {
 		data["tit"] = title;
 		data["grp"] = group_title;
 		if (antaObject != NULL) data["anta"] = antaObject->getTitle();
+		else data["anta"] = F("none");
 		data["vis"] = visible;
 		data["par"] = parameter;
 	}
@@ -160,76 +119,48 @@ void ParameterizedSimpleAction<ActionType>::serializeJSON(JsonObject & data, Sco
 		data["obj"] = "ACTION";
 	}
 
-	LOGDEBUG2(F("[ParameterizedSimpleAction]"), F("serializeJSON()"), F("OK: Serialized Action"), String(data.measureLength()), "", "");
+	LOGDEBUG2(F("[ParameterizedAction]"), F("serializeJSON()"), F("OK: Serialized members"), F("Action"), String(this->title), String(data.measureLength()));
 }
 
 template<class ActionType>
-void ParameterizedSimpleAction<ActionType>::execute()
+void ParameterizedAction<ActionType>::execute()
 {
 	if (actionObject != NULL) {
 		if (callback != NULL) {
 			if (parameter >= 0) {
-				LOGDEBUG(F("[Action]"), F("execute()"), F("OK: Execute Action"), getTitle(), "", "");
+				(actionObject->*callback)(parameter);
+				LOGDEBUG(F("[ParameterizedAction]"), F("execute()"), F("OK: Execute Action"), getTitle(), F("Parameter"), String(parameter));
+				
 				String keys[] = {};
 				String values[] = {};
 				logengine.addLogEntry(ACTION, "Action", "OK: Execute Action " + String(getTitle()), keys, values, 0);
-
-				(actionObject->*callback)(parameter);
 			}
 			else {
-				LOGDEBUG(F("[Action]"), F("execute()"), F("ERROR: Argument missing"), getTitle(), "", "");
+				LOGDEBUG(F("[ParameterizedAction]"), F("execute()"), F("ERROR: Argument missing"), getTitle(), "", "");
 			}
 		}
-		else LOGDEBUG(F("[Action]"), F("execute()"), F("ERROR: Callback missing"), getTitle(), "", "");
+		else LOGDEBUG(F("[ParameterizedAction]"), F("execute()"), F("ERROR: Callback missing"), getTitle(), "", "");
 	}
-	else LOGDEBUG(F("[Action]"), F("execute()"), F("ERROR: Action Object missing"), getTitle(), "", "");
+	else LOGDEBUG(F("[ParameterizedAction]"), F("execute()"), F("ERROR: Action Object missing"), getTitle(), "", "");
 }
 
 template<class ActionType>
-String ParameterizedSimpleAction<ActionType>::getTitle()
+String ParameterizedAction<ActionType>::getTitle()
 {
 	return String(title);
 }
 
 template<class ActionType>
-NamedParameterizedSimpleAction<ActionType>::NamedParameterizedSimpleAction(uint8_t id, String title, ActionType * actionObj, void(ActionType::* cFunct)(int), String(ActionType::* getTitle)(int), int par, bool visible) :
-ParameterizedSimpleAction<ActionType>(id, title, actionObj, cFunct, par, visible)
+NamedParameterizedAction<ActionType>::NamedParameterizedAction(uint8_t id, String title, ActionType * actionObj, void(ActionType::* cFunct)(int), String(ActionType::* getTitle)(int), int par, bool visible) :
+ParameterizedAction<ActionType>(id, title, actionObj, cFunct, par, visible)
 {
 	this->getForeignTitle = getTitle;
-}
 
-
-template<class ActionType>
-void NamedParameterizedSimpleAction<ActionType>::serializeJSON(uint8_t id, char * json, size_t maxSize, Scope scope)
-{
-	StaticJsonBuffer<JSONBUFFER_SIZE> jsonBuffer;
-
-	JsonObject& actions = jsonBuffer.createObject();
-
-	if (scope == LIST || scope == DETAILS) {
-		String temp = this->title;
-		temp += " ";
-		temp += (this->actionObject->*getForeignTitle)(this->parameter);
-
-		actions["tit"] = temp;
-		actions["grp"] = this->group_title;
-		if (this->antaObject != NULL) actions["anta"] = this->antaObject->getTitle();
-		actions["vis"] = this->visible;
-		actions["par"] = this->parameter;
-	}
-
-
-	if (scope == DETAILS) {
-		actions["id"] = id;
-		actions["obj"] = "ACTION";
-	}
-
-	actions.printTo(json, maxSize);
-	LOGDEBUG2(F("[ParameterizedSimpleAction]"), F("serializeJSON()"), F("OK: Serialized Action"), String(id), String(actions.measureLength()), String(maxSize));
+	LOGDEBUG3(F("[NamedParameterizedAction]"), F("SimpleAction()"), F("OK: Created NamedParameterizedAction"), String(this->title), F("Parameter"), String(par));
 }
 
 template<class ActionType>
-void NamedParameterizedSimpleAction<ActionType>::serializeJSON(JsonObject & data, Scope scope)
+void NamedParameterizedAction<ActionType>::serializeJSON(JsonObject & data, Scope scope)
 {
 	if (scope == LIST || scope == DETAILS) {
 		String temp = this->title;
@@ -247,19 +178,19 @@ void NamedParameterizedSimpleAction<ActionType>::serializeJSON(JsonObject & data
 		data["obj"] = "ACTION";
 	}
 
-	LOGDEBUG2(F("[ParameterizedSimpleAction]"), F("serializeJSON()"), F("OK: Serialized Action"), String(data.measureLength()), "", "");
+	LOGDEBUG2(F("[NamedParameterizedAction]"), F("serializeJSON()"), F("OK: Serialized members"), F("Action"), String(this->title), String(data.measureLength()));
 }
 
 
 template<class ActionType>
-String NamedParameterizedSimpleAction<ActionType>::getTitle()
+String NamedParameterizedAction<ActionType>::getTitle()
 {
 	return String(this->title + " " + (this->actionObject->*getForeignTitle)(this->parameter));
 }
 
 //All Types of Templates used:
 template class SimpleAction<RCSocketController>;
-template class ParameterizedSimpleAction<RCSocketController>;
-template class ParameterizedSimpleAction<Trigger>;
-template class NamedParameterizedSimpleAction<Trigger>;
-template class NamedParameterizedSimpleAction<RCSocketController>;
+template class ParameterizedAction<RCSocketController>;
+template class ParameterizedAction<Trigger>;
+template class NamedParameterizedAction<Trigger>;
+template class NamedParameterizedAction<RCSocketController>;

@@ -64,7 +64,7 @@ float AdvancedSensor<float>::fromNAN(String str)
 template<class ReturnType>
 float AdvancedSensor<ReturnType>::average(int start, int num_elements, ReturnType * values, int max)
 {
-	LOGDEBUG2(F("[AdvancedSensor]"), F("average()"), String(title), String(start), String(num_elements), String(max));
+	LOGDEBUG3(F("[AdvancedSensor]"), F("average()"), String(title), String(start), String(num_elements), String(max));
 
 	float dividend = 0;
 	int divisor = 0;
@@ -75,7 +75,7 @@ float AdvancedSensor<ReturnType>::average(int start, int num_elements, ReturnTyp
 
 	while (counter <= num_elements)
 	{
-		//LOGDEBUG2(F("[AdvancedSensor]"), F("average()"), "Value at", String(element_ptr), String(counter), String(values[element_ptr]));
+		LOGDEBUG3(F("[AdvancedSensor]"), F("average()"), "Value at", String(element_ptr), String(counter), String(values[element_ptr]));
 		if (values[element_ptr] != nan_val) {		
 			dividend += (float)values[element_ptr];
 			divisor++;
@@ -96,7 +96,7 @@ float AdvancedSensor<ReturnType>::average(int start, int num_elements, ReturnTyp
 	}
 	else {
 		avg = nan_val;
-		LOGDEBUG(F("[AdvancedSensor]"), F("average()"), F("Warning: Division by Zero. Returning NaN Value"), String(dividend), String(divisor), String(nan_val));
+		LOGDEBUG(F("[AdvancedSensor]"), F("average()"), F("WARNING: Division by Zero. Returning NaN Value"), String(this->getTitle()), String(dividend), String(nan_val));
 	}
 
 	return float(avg);
@@ -115,7 +115,7 @@ AdvancedSensor<ReturnType>::AdvancedSensor(uint8_t id, String title, String unit
 
 	reset();
 
-	LOGDEBUG(F("[AdvancedSensor]"), F("AdvancedSensor()"), F("INFO:Free HEAP"), String(ESP.getFreeHeap()), "", "");
+	LOGDEBUG3(F("[AdvancedSensor]"), F("AdvancedSensor()"), F("OK: Created Sensor"), String(this->getTitle()),  F("INFO:Free HEAP"), String(ESP.getFreeHeap()));
 }
 
 template<class ReturnType>
@@ -133,6 +133,8 @@ void AdvancedSensor<ReturnType>::reset()
 	for (int i = 0; i < SENS_VALUES_HOUR; i++) this->hour_values[i] = this->nan_val;
 	for (int i = 0; i < SENS_VALUES_DAY; i++) this->day_values[i] = this->nan_val;
 	for (int i = 0; i < SENS_VALUES_MONTH; i++) this->month_values[i] = this->nan_val;
+
+	LOGDEBUG(F("[AdvancedSensor]"), F("AdvancedSensor()"), F("OK: Reset of Sensor"), String(this->getTitle()), "", "");
 }
 
 template<class ReturnType>
@@ -261,6 +263,7 @@ ReturnType AdvancedSensor<ReturnType>::getValue(Interval interval)
 		avg = average(month_ptr, element_count, month_values, SENS_VALUES_MONTH);
 		break;
 	}
+	LOGDEBUG3(F("[AdvancedSensor<int>]"), F("getValue()"), String(this->getTitle()), String(static_cast<int>(interval)), F("Value"), String(avg));
 	
 	if ((ReturnType)avg == nan_val) return ReturnType(nan_val);
 	else return ReturnType(round(avg));
@@ -270,14 +273,14 @@ template<class ReturnType>
 void AdvancedSensor<ReturnType>::setUpperThreshold()
 {
 	this->upper_threshold = readRaw();
-	LOGDEBUG(F("[AdvancedSensor]"), F("setUpperThreshold()"), F("Info: Set Upper Threshold to "), String(this->upper_threshold), "", "");
+	LOGDEBUG(F("[AdvancedSensor]"), F("setUpperThreshold()"), F("INFO: Set Upper Threshold to "), String(this->getTitle()), F("Raw Value"), String(this->upper_threshold));
 }
 
 template<class ReturnType>
 void AdvancedSensor<ReturnType>::setLowerThreshold()
 {
 	this->lower_threshold = readRaw();
-	LOGDEBUG(F("[AdvancedSensor]"), F("setUpperThreshold()"), F("Info: Set Lower Threshold to "), String(this->lower_threshold), "", "");
+	LOGDEBUG(F("[AdvancedSensor]"), F("setUpperThreshold()"), F("INFO: Set Lower Threshold to "), String(this->getTitle()), F("Raw Value"), String(this->lower_threshold));
 }
 
 template<>
@@ -400,6 +403,7 @@ float AdvancedSensor<float>::getValue(Interval interval)
 		avg = average(month_ptr, element_count, month_values, SENS_VALUES_MONTH);
 		break;
 	}
+	LOGDEBUG3(F("[AdvancedSensor<float>]"), F("getValue()"), String(this->getTitle()), String(static_cast<int>(interval)), F("Value"), String(avg));
 
 	if (avg == nan_val) return nan_val;
 	else return avg;
@@ -428,6 +432,7 @@ void AdvancedSensor<ReturnType>::update()
 	else min_ptr = 0;
 
 	min_values[min_ptr] = (ReturnType) round(readValue());
+	LOGDEBUG3(F("[AdvancedSensor]"), F("update()"), F("OK: Saved new Value in Hour Array"), String(getTitle()), String(min_ptr), String(min_values[min_ptr]));
 
 	//Hour -> calculate average every SENS_VALUES_HOUR * 24 / SENS_VALUES_DAY  -> Example: 1 Minute (12 entries in Hour array)
 	if (sensor_cycles >= (SENS_VALUES_MIN * 60 / SENS_VALUES_HOUR) && sensor_cycles % (SENS_VALUES_MIN * 60  / SENS_VALUES_HOUR) == 0) {
@@ -436,7 +441,7 @@ void AdvancedSensor<ReturnType>::update()
 
 		element_count = SENS_VALUES_MIN * 60 / SENS_VALUES_HOUR;
 		hour_values[hour_ptr] = (ReturnType)round(average(min_ptr, element_count, min_values, SENS_VALUES_MIN));
-		LOGDEBUG(F("[AdvancedSensor]"), F("update()"), F("OK: Saved new Value in Hour Array"), String(getTitle()), String(hour_ptr), String(min_values[min_ptr]));
+		LOGDEBUG1(F("[AdvancedSensor]"), F("update()"), F("OK: Saved new Value in Hour Array"), String(getTitle()), String(hour_ptr), String(hour_values[hour_ptr]));
 	}
 	
 	//Day -> calculate average every SENS_VALUES_HOUR * 24 / SENS_VALUES_DAY  -> Example: 1 Minute (12 entries in Hour array)
@@ -446,7 +451,7 @@ void AdvancedSensor<ReturnType>::update()
 
 		element_count = SENS_VALUES_HOUR * 24 / SENS_VALUES_DAY;
 		day_values[day_ptr] = (ReturnType) round(average(hour_ptr, element_count, hour_values, SENS_VALUES_HOUR));
-		LOGDEBUG(F("[AdvancedSensor]"), F("update()"), F("OK: Saved new Value in Day Array"), String(getTitle()), String(day_ptr), String(day_values[day_ptr]));
+		LOGDEBUG1(F("[AdvancedSensor]"), F("update()"), F("OK: Saved new Value in Day Array"), String(getTitle()), String(day_ptr), String(day_values[day_ptr]));
 	}
 
 	//Month -> calculate average every SENS_VALUES_DAY * 28 / (SENS_VALUES_MONTH / NUM_MONTH)  -> Example: 1 Hour (60 entries in day array)
@@ -456,7 +461,7 @@ void AdvancedSensor<ReturnType>::update()
 
 		element_count = SENS_VALUES_DAY * 28 / (SENS_VALUES_MONTH / NUM_MONTH);
 		month_values[month_ptr] = (ReturnType) round(average(day_ptr, element_count, day_values, SENS_VALUES_DAY));
-		LOGDEBUG(F("[AdvancedSensor]"), F("update()"), F("OK: Saved new Value in Month Array"), String(getTitle()), String(month_ptr), String(month_values[month_ptr]));
+		LOGDEBUG1(F("[AdvancedSensor]"), F("update()"), F("OK: Saved new Value in Month Array"), String(getTitle()), String(month_ptr), String(month_values[month_ptr]));
 	}
 }
 
@@ -471,6 +476,7 @@ void AdvancedSensor<float>::update()
 	else min_ptr = 0;
 
 	min_values[min_ptr] = readValue();
+	LOGDEBUG3(F("[AdvancedSensor]"), F("update()"), F("OK: Saved new Value in Hour Array"), String(getTitle()), String(min_ptr), String(min_values[min_ptr]));
 
 	//Hour -> calculate average every SENS_VALUES_HOUR * 24 / SENS_VALUES_DAY  -> Example: 1 Minute (12 entries in Hour array)
 	if (sensor_cycles >= (SENS_VALUES_MIN * 60 / SENS_VALUES_HOUR) && sensor_cycles % (SENS_VALUES_MIN * 60 / SENS_VALUES_HOUR) == 0) {
@@ -479,7 +485,7 @@ void AdvancedSensor<float>::update()
 
 		element_count = SENS_VALUES_MIN * 60 / SENS_VALUES_HOUR;
 		hour_values[hour_ptr] = average(min_ptr, element_count, min_values, SENS_VALUES_MIN);
-		LOGDEBUG(F("[AdvancedSensor]"), F("update()"), F("OK: Saved new Value in Hour Array"), String(getTitle()), String(hour_ptr), String(min_values[min_ptr]));
+		LOGDEBUG1(F("[AdvancedSensor]"), F("update()"), F("OK: Saved new Value in Hour Array"), String(getTitle()), String(hour_ptr), String(hour_values[hour_ptr]));
 	}
 
 	//Day -> calculate average every SENS_VALUES_HOUR * 24 / SENS_VALUES_DAY  -> Example: 1 Minute (12 entries in Hour array)
@@ -489,7 +495,7 @@ void AdvancedSensor<float>::update()
 
 		element_count = SENS_VALUES_HOUR * 24 / SENS_VALUES_DAY;
 		day_values[day_ptr] = average(hour_ptr, element_count, hour_values, SENS_VALUES_HOUR);
-		LOGDEBUG(F("[AdvancedSensor]"), F("update()"), F("OK: Saved new Value in Day Array"), String(getTitle()), String(day_ptr), String(day_values[day_ptr]));
+		LOGDEBUG1(F("[AdvancedSensor]"), F("update()"), F("OK: Saved new Value in Day Array"), String(getTitle()), String(day_ptr), String(day_values[day_ptr]));
 	}
 
 	//Month -> calculate average every SENS_VALUES_DAY * 28 / (SENS_VALUES_MONTH / NUM_MONTH)  -> Example: 1 Hour (60 entries in day array)
@@ -499,7 +505,7 @@ void AdvancedSensor<float>::update()
 
 		element_count = SENS_VALUES_DAY * 28 / (SENS_VALUES_MONTH / NUM_MONTH);
 		month_values[month_ptr] = average(day_ptr, element_count, day_values, SENS_VALUES_DAY);
-		LOGDEBUG(F("[AdvancedSensor]"), F("update()"), F("OK: Saved new Value in Month Array"), String(getTitle()), String(month_ptr), String(month_values[month_ptr]));
+		LOGDEBUG1(F("[AdvancedSensor]"), F("update()"), F("OK: Saved new Value in Month Array"), String(getTitle()), String(month_ptr), String(month_values[month_ptr]));
 	}
 }
 
@@ -515,7 +521,7 @@ bool AdvancedSensor<ReturnType>::compareWithValue(RelOp relop, Interval interval
 	ReturnType lower_boundery = (ReturnType)round(multi_low * value);
 	ReturnType upper_boundery = (ReturnType)round(multi_high * value);
 
-	LOGDEBUG2(F("[AdvancedSensor]"), F("compareWithValue()"), F("Info: Set Bounderies"), lower_boundery, upper_boundery, current_value);
+	LOGDEBUG3(F("[AdvancedSensor]"), F("compareWithValue()"), F("Set Bounderies"), lower_boundery, upper_boundery, current_value);
 
 	if (current_value != this->nan_val) {
 		switch (relop) {
@@ -556,7 +562,7 @@ bool AdvancedSensor<float>::compareWithValue(RelOp relop, Interval interval, flo
 	float lower_boundery = multi_low * value;
 	float upper_boundery = multi_high * value;
 
-	LOGDEBUG2(F("[AdvancedSensor]"), F("compareWithValue()"), F("Info: Set Bounderies"), lower_boundery, upper_boundery, current_value);
+	LOGDEBUG3(F("[AdvancedSensor]"), F("compareWithValue()"), F("Set Bounderies"), lower_boundery, upper_boundery, current_value);
 
 	if (current_value != this->nan_val) {
 		switch (relop) {
@@ -695,7 +701,7 @@ void AdvancedSensor<ReturnType>::serializeJSON(JsonObject & data, Scope scope)
 		for (int j = 0; j < SENS_VALUES_MONTH; j++) month.add(toNAN(month_values[j]));
 	}
 
-	LOGDEBUG2(F("[BaseSensor]"), F("serializeJSON()"), F("OK: Serialized members for Sensor"), String(data.measureLength()), "", "");
+	LOGDEBUG2(F("[BaseSensor]"), F("serializeJSON()"), F("OK: Serialized members for Sensor"), String(this->getTitle()), String(data.measureLength()), String(static_cast<int>(scope)));
 }
 
 template<class ReturnType>
@@ -715,10 +721,10 @@ bool AdvancedSensor<ReturnType>::deserializeJSON(JsonObject & data)
 		for (int j = 0; j < SENS_VALUES_DAY; j++) if (data["d_vals"][j] != "") day_values[j] = fromNAN(data["d_vals"][j]);
 		for (int j = 0; j < SENS_VALUES_MONTH; j++) if (data["m_vals"][j] != "") month_values[j] = fromNAN(data["m_vals"][j]);
 
-		LOGDEBUG2(F("[BaseSensor]"), F("deserializeJSON()"), F("OK: Deserialized members for Sensor"), String(data["id"].asString()), "", "");
+		LOGDEBUG2(F("[AdvancedSensor]"), F("serializeJSON()"), F("OK: Serialized members"), F("Sensor"), String(this->title), String(data.size()));
 	}
 	else {
-		LOGDEBUG2(F("[BaseSensor]"), F("deserializeJSON()"), F("ERROR: No Data to deserialize members"), F("Datasize"), String(data.size()), "");
+		LOGDEBUG2(F("[AdvancedSensor]"), F("deserializeJSON()"), F("ERROR: No Data to deserialize members"), F("Sensor"), String(this->title), String(data.size()));
 	}
 	return data.success();
 }
@@ -740,7 +746,7 @@ float BMETemperature::readValue()
 {
 	float adj_val = float(readRaw());
 
-	LOGDEBUG3(F("[BMETemperature]"), F("readValue()"), F("Info: Temperature "), String(adj_val), "", "");
+	LOGDEBUG3(F("[BMETemperature]"), F("readValue()"), F("INFO: Temperature "), String(adj_val), "", "");
 
 	return adj_val;
 }
@@ -762,7 +768,7 @@ int8_t BMEHumidity::readValue()
 {
 	float adj_val = float(readRaw());
 
-	LOGDEBUG3(F("[BMEHumidity]"), F("readValue()"), F("Info: Humidity "), String(adj_val), "", "");
+	LOGDEBUG3(F("[BMEHumidity]"), F("readValue()"), F("INFO: Humidity "), String(adj_val), "", "");
 
 	return float(adj_val);
 }
@@ -784,7 +790,7 @@ float BMEPressure::readValue()
 {
 	float adj_val = float(readRaw() / 1000);
 
-	LOGDEBUG3(F("[BMEPressure]"), F("readValue()"), F("Info: Air Pressure "), String(adj_val), "", "");
+	LOGDEBUG3(F("[BMEPressure]"), F("readValue()"), F("INFO: Air Pressure "), String(adj_val), "", "");
 	return float(adj_val);
 }
 
@@ -808,7 +814,6 @@ short DistanceLampSensor::readRaw()
 	for (uint8_t i = 0; i < 3; i++) {
 		delay(50);
 		current_value = distance->distanceRead();
-		LOGDEBUG3(F("[DistanceLampSensor]"), F("readRaw()"), F("Info: Distance to Bottom"), String(current_value), "", "");
 		if (current_value != nan_val) {
 			dividend += current_value;
 			divisor++;
@@ -817,7 +822,7 @@ short DistanceLampSensor::readRaw()
 
 	if (divisor > 0) {
 		adj_val = round(dividend / divisor);
-		LOGDEBUG3(F("[DistanceLampSensor]"), F("readRaw()"), F("Info: Distance to Bottom"), String(adj_val), "", "");
+		LOGDEBUG3(F("[DistanceLampSensor]"), F("readRaw()"), F("INFO: Distance to Bottom"), F("Average"), String(adj_val), "");
 	}
 	else adj_val = nan_val;
 
@@ -868,10 +873,10 @@ float HeightSensor::readSensor(Ultrasonic *sensor)
 short HeightSensor::readRaw()
 {
 	float toTop = readSensor(distance1);
-	LOGDEBUG3(F("[HeightSensor]"), F("readRaw()"), F("Info: Distance to Roof"), String(toTop), "", "");
+	LOGDEBUG3(F("[HeightSensor]"), F("readRaw()"), F("INFO: Distance to Roof"), String(toTop), "", "");
 
 	float toBottom = readSensor(distance2);
-	LOGDEBUG3(F("[HeightSensor]"), F("readRaw()"), F("Info: Distance to Bottom"), String(toBottom), "", "");
+	LOGDEBUG3(F("[HeightSensor]"), F("readRaw()"), F("INFO: Distance to Bottom"), String(toBottom), "", "");
 
 	if (upper_threshold != nan_val && lower_threshold != nan_val) return short(upper_threshold - toTop - toBottom - lower_threshold);
 	else return (short) 0;
@@ -911,7 +916,7 @@ short CapacityMoistureSensor::readRaw()
 	for (uint8_t i = 0; i < 3; i++) {
 		delay(50);
 		current_value = analogRead(this->pin);
-		LOGDEBUG3(F("[CapacityMoistureSensor]"), F("readRaw()"), F("Info: Capacity Moisture Raw Value"), String(current_value), String(resolution), String(width));
+		LOGDEBUG3(F("[CapacityMoistureSensor]"), F("readRaw()"), F("INFO: Capacity Moisture Raw Value"), String(current_value), String(resolution), String(width));
 		if (current_value != this->nan_val) {
 			dividend += current_value;
 			divisor++;
@@ -920,7 +925,7 @@ short CapacityMoistureSensor::readRaw()
 
 	if (divisor > 0) {
 		adj_val = round(dividend / divisor);
-		LOGDEBUG3(F("[CapacityMoistureSensor]"), F("readRaw()"), F("Info: Capacity Moisture Average Reading"), String(adj_val), "", "");
+		LOGDEBUG3(F("[CapacityMoistureSensor]"), F("readRaw()"), F("INFO: Capacity Moisture Average Reading"), String(adj_val), "", "");
 	}
 	else adj_val = this->nan_val;
 
@@ -945,6 +950,6 @@ short CapacityMoistureSensor::readValue()
 			adj_val = short(round(float(this->upper_threshold - adj_val) / float(this->upper_threshold - this->lower_threshold) * 100));
 		}
 	}
-	LOGDEBUG3(F("[CapacityMoistureSensor]"), F("readValue()"), F("Info: Moisture Value % "), String(adj_val), String(this->lower_threshold), String(this->upper_threshold));
+	LOGDEBUG3(F("[CapacityMoistureSensor]"), F("readValue()"), F("INFO: Moisture Value % "), String(adj_val), String(this->lower_threshold), String(this->upper_threshold));
 	return (short)adj_val;
 }
