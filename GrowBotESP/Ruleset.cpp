@@ -24,7 +24,7 @@ bool RuleSet::checkState()
 		while (i < RULESETS_TRIGGER && assignedTrigger[i] != NULL) {   
 			if (i == 0) {
 				state = assignedTrigger[i]->checkState();
-				LOGDEBUG(F("[Ruleset]"), F("checkstate()"), F("Trigger "),  String(i), String(assignedTrigger[i]->getTitle()), String(state));
+				LOGDEBUG(F("[Ruleset]"), F("checkstate()"), F("INITIAL Trigger "),  String(i), String(assignedTrigger[i]->getTitle()), String(state));
 			}
 			else {
 				if (assignedTrigger[i - 1] != NULL) {
@@ -85,6 +85,8 @@ void RuleSet::reset()
 		actionChainPtr[i] = ACTIONCHAINS_NUM;
 		assignedChain[i] = NULL;
 	}
+
+	LOGDEBUG3(F("[Ruleset]"), F("reset()"), F("OK: Reset Ruleset"), String(title), "", "");
 }
 
 void RuleSet::serializeJSON(JsonObject & data, Scope scope)
@@ -118,7 +120,7 @@ void RuleSet::serializeJSON(JsonObject & data, Scope scope)
 		}
 	}
 
-	LOGDEBUG2(F("[Ruleset]"), F("serializeJSON()"), F("OK: Serialized Members for Ruleset"), String(data.measureLength()), "", "");
+	LOGDEBUG2(F("[Ruleset]"), F("serializeJSON()"), F("OK: Serialized Members of Ruleset"), String(id), String(this->getTitle()), String(data.measureLength()));
 }
 
 bool RuleSet::deserializeJSON(JsonObject & data)
@@ -177,10 +179,10 @@ bool RuleSet::deserializeJSON(JsonObject & data)
 			}
 		}
 
-		LOGDEBUG2(F("[Ruleset]"), F("deserializeJSON()"), F("OK: Deserialized members for Ruleset"), data["id"].asString(), F("Datasize"), String(data.size()));
+		LOGDEBUG2(F("[Ruleset]"), F("deserializeJSON()"), F("OK: Deserialized Members of Ruleset"), String(id), String(this->getTitle()), String(data.size()));
 	}
 	else {
-		LOGDEBUG2(F("[Ruleset]"), F("deserializeJSON()"), F("ERROR: No Data to deserialize membersRuleset"), F("Datasize"), String(data.size()), "");
+		LOGDEBUG2(F("[Ruleset]"), F("deserializeJSON()"), F("ERROR: No Data to deserialize membersRuleset"), String(id), String(this->getTitle()), String(data.size()));
 	}
 	return data.success();
 }

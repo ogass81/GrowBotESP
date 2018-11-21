@@ -92,7 +92,6 @@ public:
 	bool loadDefaultConfig();
 	bool loadBackupConfig();
 
-	void serializeJSON(char* json, size_t maxSize);
 	void serializeJSON(JsonObject& data);
 	bool deserializeJSON(JsonObject& data);
 

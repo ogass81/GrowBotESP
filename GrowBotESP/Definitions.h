@@ -72,7 +72,7 @@
 
 //Task Manager
 #define TASK_QUEUE_LENGTH 120 //MAX 255!!!
-#define ACTIONCHAIN_TASK_MAXDURATION (TASK_QUEUE_LENGTH / ACTIONCHAIN_LENGTH)
+#define ACTIONCHAIN_TASK_MAXDURATION 90
 #define TASK_PARALLEL_SEC 4
 
 //Front Panel
@@ -100,7 +100,7 @@ enum TriggerTypes { TIME, SENSOR, COUNTER, SWITCH };
 enum LogTypes { INFO, DEBUG, ERROR, WARNING, ACTION};
 enum SensorTypes { TEMPERATURE, HUMIDITY, PRESSURE, DISTANCE, SOILMOISTURE, HEIGHT, OTHER };
 
-#define LOGLEVEL 5
+#define LOGLEVEL 3
 
 #define LOGMSG(classname, msg, par1, par2, par3)   if(LOGLEVEL >1) { Serial.print(classname); Serial.print(" "); Serial.print(msg); Serial.print(" "); Serial.print(par1); Serial.print(" "); Serial.print(par2); Serial.print(" "); Serial.println(par3); }
 #define LOGMSG2(classname, msg, par1, par2, par3, par4)   if(LOGLEVEL >2) { Serial.print(classname); Serial.print(" "); Serial.print(msg); Serial.print(" "); Serial.print(par1); Serial.print(" "); Serial.print(par2); Serial.print(" "); Serial.print(par3);  }

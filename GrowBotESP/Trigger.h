@@ -73,7 +73,6 @@ public:
 	bool checkState();
 	void setState(int);
 
-	void serializeJSON(uint8_t cat, uint8_t id, char* json, size_t maxSize, Scope scope);
 	void serializeJSON(JsonObject& data, Scope scope);
 	bool deserializeJSON(JsonObject& data);
 

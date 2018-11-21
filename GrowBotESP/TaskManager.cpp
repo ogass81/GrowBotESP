@@ -63,13 +63,13 @@ void TaskManager::addActions(ActionChain *actionchain)
 		if (actionchain->assignedAction[slot] != NULL) {
 			//Simple Actions
 			if (actionchain->actionPar[slot] == 0 || actionchain->assignedAction[slot]->antaObject == NULL) {
-				LOGDEBUG2(F("[TaskManager]"), F("addActions()"), String(actionchain->getTitle()), F("INFO: Trying to add SIMPLE Action"), "Slot", String(slot));
+				LOGDEBUG3(F("[TaskManager]"), F("addActions()"), String(actionchain->getTitle()), F("INFO: Trying to add SIMPLE Action"), "Slot", String(slot));
 				while (counter < TASK_QUEUE_LENGTH) {
 					for (uint8_t i = 0; i < TASK_PARALLEL_SEC; i++) {
 						if (queue[current_ptr][i] == NULL) {
 							queue[current_ptr][i] = actionchain->assignedAction[slot];
 							assigned = true;
-							LOGDEBUG2(F("[TaskManager]"), F("addActions()"), String(actionchain->getTitle()), F("INFO: Added SIMPLE Action to "), String(current_ptr), String(i));
+							LOGDEBUG1(F("[TaskManager]"), F("addActions()"), String(actionchain->getTitle()), F("INFO: Added SIMPLE Action to "), String(current_ptr), String(i));
 							break;
 						}
 					}
@@ -83,7 +83,7 @@ void TaskManager::addActions(ActionChain *actionchain)
 			}
 			//Complex Actions
 			else {
-				LOGDEBUG2(F("[TaskManager]"), F("addActions()"), String(actionchain->getTitle()), F("INFO: Trying to add COMPLEX Action"), "Slot", String(slot));
+				LOGDEBUG3(F("[TaskManager]"), F("addActions()"), String(actionchain->getTitle()), F("INFO: Trying to add COMPLEX Action"), "Slot", String(slot));
 
 				while (counter < TASK_QUEUE_LENGTH) {
 					for (uint8_t i = 0; i < TASK_PARALLEL_SEC; i++) {
@@ -96,7 +96,7 @@ void TaskManager::addActions(ActionChain *actionchain)
 									queue[current_ptr][i]  = actionchain->assignedAction[slot];								
 									queue[anta_ptr][j] = actionchain->assignedAction[slot]->antaObject;
 									assigned = true;
-									LOGDEBUG2(F("[TaskManager]"), F("addActions()"), String(actionchain->getTitle()), F("INFO: Added COMPLEX Action to "), String(current_ptr), String(anta_ptr));
+									LOGDEBUG1(F("[TaskManager]"), F("addActions()"), String(actionchain->getTitle()), F("INFO: Added COMPLEX Action to "), String(current_ptr), String(anta_ptr));
 									break;
 								}
 							}
@@ -113,15 +113,15 @@ void TaskManager::addActions(ActionChain *actionchain)
 			}
 
 			if (assigned == true) {
-				LOGDEBUG2(F("[TaskManager]"), F("addActions()"), String(actionchain->getTitle()), F("INFO: Added Slot  to Task Queue"), String(current_ptr), "");
+				LOGDEBUG1(F("[TaskManager]"), F("addActions()"), String(actionchain->getTitle()), F("INFO: Added Slot  to Task Queue"), String(current_ptr), "");
 			}
 			else {
-				LOGDEBUG2(F("[TaskManager]"), F("addActions()"), String(actionchain->getTitle()), F("ERROR: Could not add Slot "), String(slot), "");
+				LOGDEBUG(F("[TaskManager]"), F("addActions()"), String(actionchain->getTitle()), F("ERROR: Could not add Slot "), String(slot), "");
 			}
 		}
 		//No Action assigned to slot
 		else {
-			LOGDEBUG2(F("[TaskManager]"), F("addActions()"), F("INFO: no actions in chain"), String(actionchain->getTitle()), "", "");
+			LOGDEBUG1(F("[TaskManager]"), F("addActions()"), F("INFO: no actions in chain"), String(actionchain->getTitle()), "", "");
 		}
 	}
 }
@@ -133,7 +133,7 @@ void TaskManager::execute()
 	//LOGDEBUG(F("[TaskManager]"), F("execute()"), F("OK: Taskpointer @"), String(task_ptr), F("of"), String(TASK_QUEUE_LENGTH));
 	for (uint8_t i = 0; i < TASK_PARALLEL_SEC; i++) {
 		if (queue[task_ptr][i] != NULL) {
-			LOGMSG(F("[TaskManager]"), F("OK: Executing task @"), String(task_ptr), String(queue[task_ptr][i]->getTitle()), "");
+			LOGDEBUG(F("[TaskManager]"), F("execute()"), F("OK: Executing task @"), String(task_ptr), String(queue[task_ptr][i]->getTitle()), "");
 		
 			queue[task_ptr][i]->execute();
 			queue[task_ptr][i] = NULL;

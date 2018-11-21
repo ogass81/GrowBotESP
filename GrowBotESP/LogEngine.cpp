@@ -6,8 +6,6 @@
 
 LogEntry::LogEntry(int id, LogTypes type, String origin, String message, uint8_t size)
 {
-	LOGDEBUG2(F("LogEntry"), F("LogEntry()"), F("New LogEntry"), F("Parameters"), String(size), "")
-
 	this->id = id;
 	this->type = type;
 	this->origin = origin;
@@ -19,18 +17,19 @@ LogEntry::LogEntry(int id, LogTypes type, String origin, String message, uint8_t
 
 	this->keys = new String[size];
 	this->values = new String[size];
+
+	LOGDEBUG3(F("LogEntry"), F("LogEntry()"), F("New LogEntry"), String(message), F("Parameters"), String(size));
 }
 
 LogEntry::~LogEntry()
 {
-	//LOGDEBUG2(F("LogEntry"), F("~LogEntry()"), F("Freed memory for Key->Value"), "", "", "")
 	delete[] this->keys;
 	delete[] this->values;
+	LOGDEBUG3(F("LogEntry"), F("~LogEntry()"), F("Freed memory for Key->Value"), String(ESP.getFreeHeap()), "", "");
 }
 
 void LogEntry::addParameter(String key, String value)
 {
-	//LOGDEBUG2(F("LogEntry"), F("addParameter()"), F("Adding Key->Value Pair"), String(key), String(value), "")
 	if (para_ptr < this->para_size) {
 		this->keys[para_ptr] = key;
 		this->values[para_ptr] = value;
@@ -63,7 +62,7 @@ String LogEntry::serializeJSON()
 		if (this->values[j] != "") values.add(this->values[j]);
 	}
 	log.printTo(json, 1500);
-	LOGDEBUG(F("[LogEntry]"), F("serializeJSON()"), F("OK: Serialized LogEntry"), "", "", "");
+	LOGDEBUG2(F("[LogEntry]"), F("serializeJSON()()"), F("OK: Serialized LogEntry"), String(id), String(static_cast<int>(type)), String(origin));
 
 	return String(json);
 }
@@ -72,7 +71,6 @@ void LogEntry::serializeJSON(JsonObject & data)
 {
 	data["id"] = id;
 	data["typ"] = static_cast<int>(type);
-	//RTC problem data["time"] = internalRTC.getEpochTime() - internalRTC.timezone_offset;
 	data["time"] = timestamp;
 	data["src"] = origin;
 	data["msg"] = message;
@@ -87,7 +85,7 @@ void LogEntry::serializeJSON(JsonObject & data)
 	for (uint8_t j = 0; j < this->para_size; j++) {
 		if (this->values[j] != "") values.add(this->values[j]);
 	}
-	LOGDEBUG(F("[LogEntry]"), F("serializeJSON()"), F("OK: Serialized LogEntry"), "", "", "");
+	LOGDEBUG2(F("[LogEntry]"), F("serializeJSON()(JsonObject)"), F("OK: Serialized LogEntry"), String(id), String(static_cast<int>(type)), String(origin));
 }
 
 LogEngine::LogEngine(const char* filename)
@@ -108,12 +106,13 @@ void LogEngine::addLogEntry(LogTypes type, String origin, String message, String
 	}
 
 	log_buffer[entry_ptr] = new LogEntry(counter, type, origin, message, size);
-	LOGDEBUG2(F("LogEngine"), F("addLogEntry()"), F("Creating new LogEntry"), String(counter), "", "");
+
 	
 	for (uint8_t i = 0; i < size; i++) {
 		log_buffer[entry_ptr]->addParameter(keys[i], values[i]);
 		//LOGDEBUG2(F("LogEngine"), F("addLogEntry()"), F("Adding Parameter"), String(keys[i]), String(values[i]), "");
 	}
+	LOGDEBUG3(F("LogEngine"), F("addLogEntry()"), F("OK: Add new LogEntry to memory queue"), String(counter), "Pointer", String(entry_ptr));
 
 	this->entry_ptr++;
 	this->counter++;
@@ -144,7 +143,6 @@ void LogEngine::serializeJSON(JsonObject & data, DynamicJsonBuffer& buffer, int 
 	if (file) {
 
 		while (file.available()) {
-			//Buffer Needs to be here ...
 			String line = file.readStringUntil('\n');
 
 			if (line_ptr < end) {
@@ -157,10 +155,10 @@ void LogEngine::serializeJSON(JsonObject & data, DynamicJsonBuffer& buffer, int 
 			line_ptr++;
 		}
 		file.close();
-		LOGDEBUG2(F("FileSystem"), F("readLinesFromFile()"), F("OK: Loading Logentries from File"), String(start), String(end), String(list.size()));
+		LOGDEBUG2(F("LogEngine"), F("serializeJSON()"), F("OK: Loaded Log Entries from File"), String(start), String(end), String(list.size()));
 	}
 	else {
-		LOGMSG(F("[FileSystem]"), F("ERROR: Could not read from file"), String(filename), "", "");
+		LOGMSG(F("[LogEngine]"), F("ERROR: Could not read from file"), String(filename), "", "");
 	}
 }
 
@@ -169,6 +167,8 @@ void LogEngine::reset()
 	saveToFile();
 	resetFile();
 	this->counter = 0;
+
+	LOGDEBUG3(F("LogEngine"), F("reset()"), F("Reset Logengine"), String(entry_ptr), "", "")
 }
 
 void LogEngine::saveToFile()
@@ -195,7 +195,7 @@ bool LogEngine::appendLinesToFile(String data[], uint8_t size)
 	File file = SD.open(filename, FILE_APPEND);
 
 	if (file) {
-		//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("File Open"), "", "", "");
+		//LOGDEBUG2(F("[LogEngine]"), F("saveSettings()"), F("File Open"), "", "", "");
 		led[2]->turnOn();
 		//Settings
 		for (uint8_t i = 0; i < size; i++) {
@@ -204,10 +204,10 @@ bool LogEngine::appendLinesToFile(String data[], uint8_t size)
 
 		led[2]->turnOff();
 		file.close();
-		LOGDEBUG2(F("[FileSystem]"), F("appendLinesToFile()"), F("OK: Saved Log Entries to file"), String(filename), size, "");
+		LOGDEBUG2(F("[LogEngine]"), F("appendLinesToFile()"), F("OK: Saved Log Entries to file"), String(filename), size, "");
 	}
 	else {
-		LOGMSG(F("[FileSystem]"), F("ERROR: Could not write to file"), String(filename), "", "");
+		LOGMSG(F("[LogEngine]"), F("ERROR: Could not write to file"), String(filename), "", "");
 		success = false;
 	}
 	return success;
@@ -225,10 +225,10 @@ int LogEngine::fileLength()
 			counter++;
 		}
 		file.close();
-		LOGDEBUG2(F("FileSystem"), F("fileLength()"), F("OK: Determining file length"), String(filename), String(counter), "");
+		LOGDEBUG1(F("LogEngine"), F("fileLength()"), F("OK: Determined file length"), String(filename), String(counter), "");
 	}
 	else {
-		LOGMSG(F("[FileSystem]"), F("ERROR: Could not determine length of file"), String(filename), "", "");
+		LOGMSG(F("[LogEngine]"), F("ERROR: Could not determine length of file"), String(filename), "", "");
 	}
 
 	return counter;
@@ -237,11 +237,11 @@ int LogEngine::fileLength()
 bool LogEngine::resetFile()
 {
 	if (SD.remove(filename)) {
-		LOGMSG(F("[FileSystem]"), F("OK: Reset log file"), String(filename), "", "");
+		LOGDEBUG1(F("[LogEngine]"), F("resetFile()"), F("OK: Reset log file"), String(filename), "", "");
 		return true;
 	}
 	else {
-		LOGMSG(F("[FileSystem]"), F("ERROR: Could not reset log file"), String(filename), "", "");
+		LOGMSG(F("[LogEngine]"), F("ERROR: Could not reset log file"), String(filename), "", "");
 		return false;
 	}
 }

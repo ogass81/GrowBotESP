@@ -20,6 +20,8 @@ void ActionChain::reset()
 		actionPtr[i] = ACTIONS_NUM;
 		actionPar[i] = 0;
 	}
+
+	LOGDEBUG(F("[ActionChain]"), F("reset()"), F("OK: Reset"), String(id), String(this->getTitle()), "");
 }
 
 void ActionChain::serializeJSON(JsonObject & data, Scope scope)

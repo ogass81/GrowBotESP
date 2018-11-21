@@ -77,9 +77,6 @@ void Setting::reset()
 	this->http_user = this->default_http_user;
 	this->http_pw = this->default_http_pw;
 
-
-	LOGMSG(F("[FileSystem]"), F("OK: Reset to Default Settings (SSID | Password | API_secret)"), String(ap_ssid), String(ap_pw), "");
-
 	//Initialize Trigger
 	for (int tcategory = 0; tcategory < TRIGGER_TYPES; tcategory++) {
 		for (int tset = 0; tset < TRIGGER_SETS; tset++) {
@@ -112,50 +109,8 @@ void Setting::reset()
 	String keys[] = { "Wifi SSID", "Wifi Password", "AP SSID", "AP Password", "Http User", "Http Password" };
 	String values[] = { wifi_ssid, wifi_pw, ap_ssid, ap_pw, http_user, http_pw };
 	logengine.addLogEntry(INFO, "Setting", "Reset to Default Settings", keys, values, 5);
-}
 
-void Setting::serializeJSON(char * json, size_t maxSize)
-{
-	StaticJsonBuffer<JSONBUFFER_SIZE> jsonBuffer;
-
-	JsonObject& settings = jsonBuffer.createObject();
-	settings["obj"] = "SETTING";
-	//Constants
-	settings["firm_version"] = GROWBOT_FIRMWARE;
-	settings["firm_date"] = __DATE__;
-	settings["firm_time"] = __TIME__;
-	settings["actions_num"] = ACTIONS_NUM;
-	settings["actionschains_num"] = ACTIONCHAINS_NUM;
-	settings["actionschains_length"] = ACTIONCHAIN_LENGTH;
-	settings["rulesets_num"] = RULESETS_NUM;
-	settings["trigger_sets"] = TRIGGER_SETS;
-	settings["trigger_types"] = TRIGGER_TYPES;
-	settings["sensor_num"] = SENS_NUM;
-	settings["task_queue_length"] = TASK_QUEUE_LENGTH;
-	settings["actionchain_task_maxduration"] = ACTIONCHAIN_TASK_MAXDURATION;
-	settings["task_parallel_sec"] = TASK_PARALLEL_SEC;
-	settings["rc_sockets_num"] = RC_SOCKETS;
-	settings["rc_signals_num"] = RC_SIGNALS;
-	settings["task_frq_sec"] = TASK_FRQ_SEC;
-	settings["sens_frq_sec"] = SENS_FRQ_SEC;
-	
-	//Variable Settings	
-	settings["wifi_SSID"] = wifi_ssid;
-	settings["wifi_pw"] = wifi_pw;
-	
-	settings["ap_SSID"] = ap_ssid;
-	settings["ap_pw"] = ap_pw;
-
-	settings["http_user"] = http_user;
-	settings["http_password"] = http_pw;
-
-	settings["time"] = sensor_cycles * SENS_FRQ_SEC - internalRTC.timezone_offset;
-	settings["timezone"] = internalRTC.timezone_offset;
-
-	settings["log_size"] = logengine.counter;
-
-	settings.printTo(json, maxSize);
-	LOGDEBUG(F("[Setting]"), F("serializeJSON()"), F("OK: Serialized Settings"), String(settings.measureLength()), String(maxSize), "");
+	LOGMSG(F("[FileSystem]"), F("OK: Reset to Default Settings (SSID | Password | API_secret)"), String(ap_ssid), String(ap_pw), "");
 }
 
 void Setting::serializeJSON(JsonObject & data)
@@ -198,7 +153,7 @@ void Setting::serializeJSON(JsonObject & data)
 
 	data["log_size"] = logengine.counter;
 
-	LOGDEBUG(F("[Setting]"), F("serializeJSON()"), F("OK: Serialized Overall Settings "), String(data.measureLength()), "", "");
+	LOGDEBUG2(F("[Setting]"), F("serializeJSON()"), F("OK: Serialized Global Settings "), String(data.measureLength()), "", "");
 }
 
 bool Setting::deserializeJSON(JsonObject & data)
@@ -277,27 +232,27 @@ bool Setting::deserializeJSON(JsonObject & data)
 		}
 	}
 	else {
-		LOGDEBUG(F("[Setting]"), F("deserializeJSON()"), F("ERROR: No Data to deserialize settings"), F("Datasize"), String(data.size()), "");
+		LOGMSG(F("[Setting]"), F("ERROR: No Data to deserialize settings"), F("Datasize"), String(data.size()), "");
 	}
 	return data.success();
 }
 
 bool Setting::saveActiveConfig()
 {
-	LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Config to active config file"), "", "", "");
+	LOGMSG(F("[FileSystem]"), F("Saving Settings to ACTIVE config file"), String(active_config_file), "", "");
 	return saveSettings(active_config_file.c_str());
 }
 
 bool Setting::saveDefaultConfig()
 {
-	LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("OK: Saved Config to default config file"), "", "", "");
+	LOGMSG(F("[FileSystem]"), F("Saving Settings to DEFAULT config file"), String(default_config_file), "", "");
 	return saveSettings(default_config_file.c_str());
 }
 
 
 bool Setting::backupConfig()
 {
-	LOGDEBUG2(F("[FileSystem]"), F("copyFile()"), F("OK: Ending Task"), "", "", "");
+	LOGMSG(F("[FileSystem]"), F("Creating BACKUP config file"), String(backup_config_file), "", "");
 	return copyFile(active_config_file.c_str(), backup_config_file.c_str());
 }
 
@@ -325,16 +280,19 @@ void Setting::asyncBackupConfig(void *_this)
 
 bool Setting::loadActiveConfig()
 {
+	LOGMSG(F("[FileSystem]"), F("OK: Loading Config from ACTIVE config file"), String(active_config_file), "", "");
 	return loadSettings(active_config_file.c_str());
 }
 
 bool Setting::loadDefaultConfig()
 {
+	LOGMSG(F("[FileSystem]"), F("OK: Loading Config from ACTIVE config file"), String(default_config_file), "", "");
 	return loadSettings(default_config_file.c_str());
 }
 
 bool Setting::loadBackupConfig()
 {
+	LOGMSG(F("[FileSystem]"), F("OK: Loading from Backup file"), String(backup_config_file), "", "");
 	return loadSettings(backup_config_file.c_str());
 }
 
@@ -345,7 +303,7 @@ bool Setting::saveSettings(const char*  filename)
 	File file = SD.open(filename, FILE_WRITE);
 
 	if (file) {
-		//LOGDEBUG2(F("[FileSystem]"), F("saveSettings()"), F("File Open"), "", "", "");
+		LOGDEBUG3(F("[FileSystem]"), F("saveSettings()"), F("File Open"), "", "", "");
 		led[2]->turnOn();
 		
 		//Settings
@@ -406,7 +364,7 @@ bool Setting::saveSettings(const char*  filename)
 		led[2]->turnOff();
 		file.close();
 
-		LOGMSG(F("[FileSystem]"), F("OK: Saved Settings to file:"), String(filename), "Free Heap", String(ESP.getFreeHeap()));
+		LOGDEBUG2(F("[FileSystem]"), F("saveSettings"), F("OK: Saved Settings to file:"), String(filename), "Free Heap", String(ESP.getFreeHeap()));
 	}
 	else {
 		LOGMSG(F("[FileSystem]"), F("ERROR: Could not write to file:"), String(filename), "", "");
@@ -444,10 +402,10 @@ bool Setting::loadSettings(const char* filename)
 					id = (int)node["id"];
 					if (id < SENS_NUM) {
 						success = sensors[id]->deserializeJSON(node);
-						LOGDEBUG(F("[FileSystem]"), F("loadSettings()"), F("OK: Loaded Sensor"), F("Id"), String(id), "");
+						LOGDEBUG2(F("[FileSystem]"), F("loadSettings()"), F("OK: Loaded Sensor"), F("Id"), String(id), "");
 					}
 					else {
-						LOGDEBUG(F("[FileSystem]"), F("loadSettings()"), F("ERROR: Invalid Sensor"), F("Id"), String(id), "");
+						LOGDEBUG2(F("[FileSystem]"), F("loadSettings()"), F("ERROR: Invalid Sensor"), F("Id"), String(id), "");
 						success = false;
 					}
 				}
@@ -457,10 +415,10 @@ bool Setting::loadSettings(const char* filename)
 
 					if (id <= TRIGGER_SETS && cat <= TRIGGER_TYPES) {
 						success = trigger[cat][id]->deserializeJSON(node);
-						LOGDEBUG(F("[FileSystem]"), F("loadSettings()"), F("OK: Loaded Trigger"), F("Cat | Id"), String(id), String(cat));
+						LOGDEBUG2(F("[FileSystem]"), F("loadSettings()"), F("OK: Loaded Trigger"), F("Cat | Id"), String(id), String(cat));
 					}
 					else {
-						LOGDEBUG(F("[FileSystem]"), F("loadSettings()"), F("ERROR: Invalid Trigger"), F("Cat | Id"), String(cat), String(id));
+						LOGDEBUG2(F("[FileSystem]"), F("loadSettings()"), F("ERROR: Invalid Trigger"), F("Cat | Id"), String(cat), String(id));
 						success = false;
 					}
 				}
@@ -468,10 +426,10 @@ bool Setting::loadSettings(const char* filename)
 					id = (int)node["id"];
 					if (id < RULESETS_NUM) {
 						success = rulesets[id]->deserializeJSON(node);
-						LOGDEBUG(F("[FileSystem]"), F("loadSettings()"), F("OK: Loaded Ruleset"), F("Id"), String(id), "");
+						LOGDEBUG2(F("[FileSystem]"), F("loadSettings()"), F("OK: Loaded Ruleset"), F("Id"), String(id), "");
 					}
 					else {
-						LOGDEBUG(F("[FileSystem]"), F("loadSettings()"), F("ERROR: Invalid Ruleset"), F("Id"), String(id), "");
+						LOGDEBUG2(F("[FileSystem]"), F("loadSettings()"), F("ERROR: Invalid Ruleset"), F("Id"), String(id), "");
 						success = false;
 					}
 				}
@@ -479,10 +437,10 @@ bool Setting::loadSettings(const char* filename)
 					id = (int)node["id"];
 					if (id < ACTIONCHAINS_NUM) {
 						success = actionchains[id]->deserializeJSON(node);
-						LOGDEBUG(F("[FileSystem]"), F("loadSettings()"), F("OK: Loaded Actionchain"), F("Id"), String(id), "");
+						LOGDEBUG2(F("[FileSystem]"), F("loadSettings()"), F("OK: Loaded Actionchain"), F("Id"), String(id), "");
 					}
 					else {
-						LOGDEBUG(F("[FileSystem]"), F("loadSettings()"), F("ERROR: Invalid Actionchain"), F("Id"), String(id), "");
+						LOGDEBUG2(F("[FileSystem]"), F("loadSettings()"), F("ERROR: Invalid Actionchain"), F("Id"), String(id), "");
 						success = false;
 					}
 				}
@@ -490,22 +448,22 @@ bool Setting::loadSettings(const char* filename)
 					id = (int)node["id"];
 					if (id < RC_SOCKETS) {
 						success = rcsocketcontroller->deserializeJSON(id, node);
-						LOGDEBUG(F("[FileSystem]"), F("loadSettings()"), F("OK: Loaded Remote Controlled Socket"), F("Id"), String(id), "");
+						LOGDEBUG2(F("[FileSystem]"), F("loadSettings()"), F("OK: Loaded Remote Controlled Socket"), F("Id"), String(id), "");
 					}
 					else {
-						LOGDEBUG(F("[FileSystem]"), F("loadSettings()"), F("ERROR: Remote Controlled Socket"), F("Id"), String(id), "");
+						LOGDEBUG2(F("[FileSystem]"), F("loadSettings()"), F("ERROR: Remote Controlled Socket"), F("Id"), String(id), "");
 						success = false;
 					}
 				}
 			}
 			else {
-				LOGMSG(F("[FileSystem]"), F("ERROR: Parsing JSON @"), F("Line"), String(j), "");
+				LOGDEBUG2(F("[FileSystem]"), F("loadSettings()"), F("ERROR: Parsing JSON @"), F("Line"), String(j), "");
 				success = false;
 			}
 			j++;
 		}
 		file.close();
-		LOGMSG(F("[FileSystem]"), F("OK: Loaded Settings from file"), String(filename), "Lines", String(j));
+		LOGDEBUG2(F("[FileSystem]"), F("loadSettings()"), F("OK: Loaded Settings from file"), String(filename), "Lines", String(j));
 	}
 	else {
 		LOGMSG(F("[FileSystem]"), F("ERROR: Could not read from file:"), String(filename), "", "");
@@ -526,12 +484,12 @@ bool Setting::copyFile(const char* source, const char* destination)
 	File current_file = SD.open(source, FILE_READ);
 
 	if (current_file) {
-		LOGDEBUG(F("[FileSystem]"), F("copyFile()"), F("OK: Source File open"), F("Filename"), String(source), "");
+		LOGDEBUG2(F("[FileSystem]"), F("copyFile()"), F("OK: Source File open"), F("Filename"), String(source), "");
 
 		File backup_file = SD.open(destination, FILE_WRITE);
 
 		if (backup_file) {
-			LOGDEBUG(F("[FileSystem]"), F("copyFile()"), F("OK: Target File open"), F("Filename"), String(destination), "");
+			LOGDEBUG2(F("[FileSystem]"), F("copyFile()"), F("OK: Target File open"), F("Filename"), String(destination), "");
 
 			led[2]->turnOn();
 			while ((current_file.read(buf, sizeof(buf))) > 0) {
@@ -544,7 +502,7 @@ bool Setting::copyFile(const char* source, const char* destination)
 			output = String(i * 64);
 			current_file.close();
 			backup_file.close();
-			LOGMSG(F("[FileSystem]"), F("OK: Copied settings to backup file"), String(destination), "Filesize", String(output));
+			LOGDEBUG2(F("[FileSystem]"), F("copyFile()"), F("OK: Copied settings to backup file"), String(destination), "Filesize", String(output));
 		}
 		else {
 			LOGMSG(F("[FileSystem]"), F("ERROR: Could not open destination file"), String(destination), "", "");

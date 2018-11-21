@@ -48,36 +48,6 @@ bool Trigger::deserializeJSON(JsonObject & data)
 	return false;
 }
 
-void TimeTrigger::serializeJSON(uint8_t cat, uint8_t id, char * json, size_t maxSize, Scope scope)
-{
-	StaticJsonBuffer<500> jsonBuffer;
-
-	JsonObject& trigger = jsonBuffer.createObject();
-	
-	if (scope == LIST || scope == DETAILS) {
-		trigger["tit"] = title;
-		trigger["act"] = active;
-		trigger["src"] = source;
-		trigger["typ"] = static_cast<int>(type);
-	}
-
-	if (scope == DETAILS) {
-		trigger["obj"] = "TRIGGER";
-		trigger["cat"] = cat;
-		trigger["id"] = id;
-		trigger["start_time"] = start_time;
-		trigger["end_time"] = end_time;
-		trigger["relop"] = static_cast<int>(relop);
-		trigger["fire"] = fired;
-		trigger["val"] = threshold;
-		trigger["intv"] = static_cast<int>(interval);
-		trigger["tol"] = tolerance;
-	}
-
-	trigger.printTo(json, maxSize);
-	LOGDEBUG2(F("[Trigger]"), F("serializeJSON()"), F("OK: Serialized Members for Trigger"), String(getTitle()), String(trigger.measureLength()), String(maxSize));
-}
-
 void TimeTrigger::serializeJSON(JsonObject & data, Scope scope)
 {
 	if (scope == LIST || scope == DETAILS) {
@@ -101,7 +71,7 @@ void TimeTrigger::serializeJSON(JsonObject & data, Scope scope)
 		data["state"] = checkState();
 	}
 
-	LOGDEBUG2(F("[Trigger]"), F("serializeJSON()"), F("OK: Serialized Members for Trigger"), String(data.measureLength()), "" , "");
+	LOGDEBUG2(F("[TimeTrigger]"), F("serializeJSON()"), F("OK: Serialized members for Trigger"), String(id), String(this->getTitle()), String(data.measureLength()));
 }
 
 bool TimeTrigger::deserializeJSON(JsonObject& data)
@@ -160,10 +130,10 @@ bool TimeTrigger::deserializeJSON(JsonObject& data)
 				active = false;
 			}
 		}
-		LOGDEBUG2(F("[Trigger]"), F("deserializeJSON()"), F("OK: Deserialized members for Trigger"), String(data["cat"].asString()), String(data["id"].asString()), "");
+		LOGDEBUG2(F("[TimeTrigger]"), F("deserializeJSON()"), F("OK: Deserialized members for Trigger"), String(id), String(this->getTitle()), String(this->source));
 	}
 	else {
-		LOGDEBUG2(F("[Trigger]"), F("deserializeJSON()"), F("ERROR: No Data to deserialize members of Trigger"), F("Datasize"), String(data.size()), "");
+		LOGDEBUG(F("[TimeTrigger]"), F("deserializeJSON()"), F("ERROR: No Data to deserialize members of Trigger"), String(id), String(this->getTitle()), String(data.size()));
 	}
 	return data.success();
 }
@@ -176,12 +146,14 @@ void TimeTrigger::reset()
 	fired = false;
 
 	start_time = RealTimeClock::toEpochTime(internalRTC.defaulttime.Year, internalRTC.defaulttime.Month, internalRTC.defaulttime.Day, 0, 0, 0);
-	end_time = RealTimeClock::toEpochTime(internalRTC.defaulttime.Year, internalRTC.defaulttime.Month + 1, internalRTC.defaulttime.Day, 0, 0, 0);
+	end_time = RealTimeClock::toEpochTime(internalRTC.defaulttime.Year, internalRTC.defaulttime.Month, internalRTC.defaulttime.Day, 1, 0, 0);
 
 	interval = ONEMIN;
 	relop = EQUAL;
 	threshold = 0;
 	tolerance = 0;
+
+	LOGDEBUG(F("[TimeTrigger]"), F("reset()"), F("OK: Reset"), String(id), String(this->getTitle()), String(this->source));
 }
 
 
@@ -193,6 +165,8 @@ TimeTrigger::TimeTrigger(int id, uint8_t cat)
 	this->source = String(F("RTC"));
 
 	reset();
+
+	LOGDEBUG3(F("[TimeTrigger]"), F("TimeTrigger()"), F("OK: Created new Time Trigger"), String(id), String(this->getTitle()), String(this->source));
 }
 
 bool TimeTrigger::checkState()
@@ -487,6 +461,8 @@ bool TimeTrigger::checkState()
 			}
 		}
 	}
+	LOGDEBUG3(F("[TimeTrigger]"), F("checkState()"), String("OK: Time Trigger Checked " + getTitle()), static_cast<int>(interval), fired, state);
+
 	return state;
 }
 
@@ -509,6 +485,8 @@ SensorTrigger::SensorTrigger(int id, uint8_t cat, SensorInterface *ptr)
 	this->source = sens_ptr->getTitle();
 
 	reset();
+
+	LOGDEBUG3(F("[SensorTrigger]"), F("SensorTrigger()"), F("OK: Created new Sensor Trigger"), String(id), String(this->getTitle()), String(this->source));
 }
 
 bool SensorTrigger::checkState()
@@ -518,7 +496,7 @@ bool SensorTrigger::checkState()
 	if (active == true) state = sens_ptr->compareWithValue(relop, interval, threshold, tolerance);
 	else state = false;
 
-	LOGMSG(F("[Trigger]"), String("OK: Sensor Trigger Checked " + getTitle()), threshold, interval, state);
+	LOGDEBUG3(F("[SensorTrigger]"), F("checkState()"), String("OK: Sensor Trigger Checked " + getTitle()), threshold, static_cast<int>(interval), state);
 	return state;
 }
 
@@ -549,7 +527,7 @@ void SensorTrigger::serializeJSON(JsonObject & data, Scope scope)
 		data["state"] = checkState();
 	}
 
-	LOGDEBUG2(F("[Trigger]"), F("serializeJSON()"), F("OK: Serialized Members for Trigger"), String(data.measureLength()), "", "");
+	LOGDEBUG2(F("[SensorTrigger]"), F("serializeJSON()"), F("OK: Serialized members for Trigger"), String(id), String(this->getTitle()), String(data.measureLength()));
 }
 
 bool SensorTrigger::deserializeJSON(JsonObject& data)
@@ -598,10 +576,10 @@ bool SensorTrigger::deserializeJSON(JsonObject& data)
 				active = false;
 			}
 		}
-		LOGDEBUG2(F("[Trigger]"), F("deserializeJSON()"), F("OK: Deserialized members for Trigger"), String(data["cat"].asString()), String(data["id"].asString()), "");
+		LOGDEBUG2(F("[ SensorTrigger]"), F("deserializeJSON()"), F("OK: Deserialized members for Trigger"), String(id), String(this->getTitle()), String(this->source));
 	}
 	else {
-		LOGDEBUG2(F("[Trigger]"), F("deserializeJSON()"), F("ERROR: No Data to deserialize members of Trigger"), F("Datasize"), String(data.size()), "");
+		LOGDEBUG(F("[SensorTrigger]"), F("deserializeJSON()"), F("ERROR: No Data to deserialize members of Trigger"), String(id), String(this->getTitle()), String(data.size()));
 	}
 	return data.success();
 }
@@ -621,6 +599,8 @@ void SensorTrigger::reset()
 	relop = EQUAL;
 	threshold = 0;
 	tolerance = 0;
+
+	LOGDEBUG(F("[SensorTrigger]"), F("reset()"), F("OK: Reset"), String(id), String(this->getTitle()), String(this->source));
 }
 
 Counter::Counter(int id, uint8_t cat)
@@ -630,6 +610,8 @@ Counter::Counter(int id, uint8_t cat)
 	this->type = COUNTER;
 
 	reset();
+
+	LOGDEBUG3(F("[Counter]"), F("Counter()"), F("OK: Created new Counter"), String(id), String(this->getTitle()), "");
 }
 
 bool Counter::checkState()
@@ -655,6 +637,8 @@ bool Counter::checkState()
 			break;
 		}
 	}
+	LOGDEBUG3(F("[Counter]"), F("checkState()"), String("OK: Counter Trigger Checked " + getTitle()), threshold, static_cast<int>(relop), state);
+
 	return state;
 }
 
@@ -688,7 +672,7 @@ void Counter::serializeJSON(JsonObject & data, Scope scope)
 		data["state"] = checkState();
 	}
 
-	LOGDEBUG2(F("[Trigger]"), F("serializeJSON()"), F("OK: Serialized Members for Trigger"), String(data.measureLength()), "", "");
+	LOGDEBUG2(F("[Counter]"), F("serializeJSON()"), F("OK: Serialized members for Trigger"), String(id), String(this->getTitle()), String(data.measureLength()));
 }
 
 bool Counter::deserializeJSON(JsonObject & data)
@@ -738,10 +722,10 @@ bool Counter::deserializeJSON(JsonObject & data)
 				active = false;
 			}
 		}
-		LOGDEBUG2(F("[Trigger]"), F("deserializeJSON()"), F("OK: Deserialized members for Trigger"), String(data["cat"].asString()), String(data["id"].asString()), "");
+		LOGDEBUG2(F("[Counter]"), F("deserializeJSON()"), F("OK: Deserialized members for Trigger"), String(id), String(this->getTitle()), String(this->source));
 	}
 	else {
-		LOGDEBUG2(F("[Trigger]"), F("deserializeJSON()"), F("ERROR: No Data to deserialize members of Trigger"), F("Datasize"), String(data.size()), "");
+		LOGDEBUG(F("[Counter]"), F("deserializeJSON()"), F("ERROR: No Data to deserialize members of Trigger"), String(id), String(this->getTitle()), String(data.size()));
 	}
 	return data.success();
 }
@@ -764,6 +748,8 @@ void Counter::reset()
 	count = 0;
 	threshold = 0;
 	tolerance = 0;
+
+	LOGDEBUG(F("[Counter]"), F("reset()"), F("OK: Reset"), String(id), String(this->getTitle()), String(this->source));
 }
 
 Switch::Switch(int id, uint8_t cat)
@@ -774,10 +760,14 @@ Switch::Switch(int id, uint8_t cat)
 	this->type = SWITCH;
 
 	reset();
+
+	LOGDEBUG3(F("[Counter]"), F("Counter()"), F("OK: Created new Switch"), String(id), String(this->getTitle()), "");
 }
 
 bool Switch::checkState()
 {
+	LOGDEBUG3(F("[Switch]"), F("checkState()"), String("OK: Switch Checked " + getTitle()), state, "" , "");
+
 	return state;
 }
 
@@ -811,7 +801,7 @@ void Switch::serializeJSON(JsonObject & data, Scope scope)
 		data["tol"] = tolerance;
 	}
 
-	LOGDEBUG2(F("[Trigger]"), F("serializeJSON()"), F("OK: Serialized Members for Trigger"), String(data.measureLength()), "", "");
+	LOGDEBUG2(F("[Switch]"), F("serializeJSON()"), F("OK: Serialized members for Trigger"), String(id), String(this->getTitle()), String(data.measureLength()));
 }
 
 bool Switch::deserializeJSON(JsonObject & data)
@@ -861,10 +851,10 @@ bool Switch::deserializeJSON(JsonObject & data)
 				active = false;
 			}
 		}
-		LOGDEBUG2(F("[Trigger]"), F("deserializeJSON()"), F("OK: Deserialized members for Trigger"), String(data["cat"].asString()), String(data["id"].asString()), "");
+		LOGDEBUG2(F("[Switch]"), F("deserializeJSON()"), F("OK: Deserialized members for Trigger"), String(id), String(this->getTitle()), String(this->source));
 	}
 	else {
-		LOGDEBUG2(F("[Trigger]"), F("deserializeJSON()"), F("ERROR: No Data to deserialize members of Trigger"), F("Datasize"), String(data.size()), "");
+		LOGDEBUG(F("[Switch]"), F("deserializeJSON()"), F("ERROR: No Data to deserialize members of Trigger"), String(id), String(this->getTitle()), String(data.size()));
 	}
 	return data.success();
 }
@@ -887,4 +877,6 @@ void Switch::reset()
 	state = false;
 	threshold = 0;
 	tolerance = 0;
+
+	LOGDEBUG(F("[Switch]"), F("reset()"), F("OK: Reset"), String(id), String(this->getTitle()), String(this->source));
 }

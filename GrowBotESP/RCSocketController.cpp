@@ -157,7 +157,7 @@ void RCSocketCodeSet::serializeJSON(JsonObject &codeset, Scope scope)
 	for (uint8_t j = 0; j < RC_SIGNALS; j++) protocols.add(nReceivedProtocol[j]);
 	}
 
-	LOGDEBUG2(F("[Sensor]"), F("serializeJSON()"), F("OK: Sub-routine serialized codeset"), String(codeset.measureLength()), "", "");
+	LOGDEBUG2(F("[RCSocketCodeSet]"), F("serializeJSON()"), F("OK: Serialized codeset"), String(id), String(codeset.measureLength()), "");
 }
 
 bool RCSocketCodeSet::deserializeJSON(JsonObject &data)
@@ -171,10 +171,10 @@ bool RCSocketCodeSet::deserializeJSON(JsonObject &data)
 		for (uint8_t j = 0; j < RC_SIGNALS; j++) if (data["del"][j] != "") nReceivedDelay[j] = data["del"][j];
 		for (uint8_t j = 0; j < RC_SIGNALS; j++) if (data["len"][j] != "") nReceivedBitlength[j] = data["len"][j];
 		for (uint8_t j = 0; j < RC_SIGNALS; j++) if (data["pro"][j] != "") nReceivedProtocol[j] = data["pro"][j];
-		LOGDEBUG2(F("[Sensor]"), F("deserializeJSON()"), F("OK: Sub-routine deserialized codeset"), String(data["id"].asString()), "", "");
+		LOGDEBUG2(F("[RCSocketCodeSet]"), F("deserializeJSON()"), F("OK: Deserialized codeset"), String(id), "", "");
 	}
 	else {
-		LOGDEBUG2(F("[Sensor]"), F("deserializeJSON()"), F("ERROR: No Data for sub-routine to deserialize codeset"), F("Datasize"), String(data.size()), "");
+		LOGDEBUG2(F("[RCSocketCodeSet]"), F("deserializeJSON()"), F("ERROR: No Data to deserialize codeset"), F("Datasize"), String(id), String(data.size()));
 	}
 	return data.success();
 }
@@ -187,7 +187,7 @@ RCSocketController::RCSocketController(uint8_t transmitter, uint8_t receiver)
 	for (uint8_t i = 0; i < RC_SOCKETS; i++) {
 		socketcode[i] = new RCSocketCodeSet(i, RC_REPEAT);
 	}
-	LOGMSG(F("[RCSocketController]"), F("OK: Started 433Mhz Controller."), F("Supported Sockets"), String(RC_SOCKETS), "");
+	LOGDEBUG3(F("[RCSocketController]"), F("RCSocketController()"), F("OK: Started 433Mhz Controller."), F("Supported Sockets"), String(RC_SOCKETS), "");
 }
 
 void RCSocketController::receiver_on()
@@ -220,8 +220,6 @@ void RCSocketController::transmitter_off()
 
 void RCSocketController::learningmode_on()
 {
-	LOGMSG(F("[RCSocketController]"), F("OK: Learning Mode set ON"), String(sensor_cycles), "@", String(RealTimeClock::printTime(sensor_cycles)));
-
 	String keys[] = { "" };
 	String values[] = { "" };
 	logengine.addLogEntry(WARNING, "RCSocketController", "Halting System. Learning Mode On", keys, values, 0);
@@ -230,6 +228,8 @@ void RCSocketController::learningmode_on()
 	learning = true;
 
 	internalRTC.switch_haltstate();
+
+	LOGMSG(F("[RCSocketController]"), F("OK: Learning Mode set ON"), String(sensor_cycles), "@", String(RealTimeClock::printTime(sensor_cycles)));
 }
 
 void RCSocketController::learningmode_on(int set)
@@ -247,11 +247,11 @@ void RCSocketController::learningmode_off()
 		learning = false;
 		internalRTC.switch_haltstate();
 
-		LOGMSG(F("[RCSocketController]"), F("OK: Learning Mode set OFF"), String(sensor_cycles), "@", String(RealTimeClock::printTime(sensor_cycles)));
-
 		String keys[] = { "" };
 		String values[] = { "" };
 		logengine.addLogEntry(WARNING, "RCSocketController", "Learning Mode Off. Resuming System.", keys, values, 0);
+
+		LOGMSG(F("[RCSocketController]"), F("OK: Learning Mode set OFF"), String(sensor_cycles), "@", String(RealTimeClock::printTime(sensor_cycles)));
 	}
 }
 
@@ -267,25 +267,31 @@ void RCSocketController::learnPattern(uint8_t set)
 		socketcode[set]->setCurrentBitlength(getReceivedBitlength());
 		socketcode[set]->setCurrentDelay(getReceivedDelay());
 		socketcode[set]->setCurrentProtocol(getReceivedProtocol());
-		LOGDEBUG(F("[RCSocketController]"), F("learnPattern()"), F("OK: Received data -> New Signal"), String(socketcode[set]->getCurrentValue()), String(socketcode[set]->getCurrentDelay()), String(socketcode[set]->getCurrentProtocol()));
+		
+		LOGMSG(F("[RCSocketController]"), F("OK: New Signal detected"), String(socketcode[set]->getCurrentValue()), String(socketcode[set]->getCurrentDelay()), String(socketcode[set]->getCurrentProtocol()));
 		socketcode[set]->incSignalPtr();
 	}
 	else {
-		LOGDEBUG(F("[RCSocketController]"), F("learnPattern()"), F("OK: Received data -> Signal alread known "), String(socketcode[set]->getCurrentValue()), String(socketcode[set]->getCurrentDelay()), String(socketcode[set]->getCurrentProtocol()));
+		LOGDEBUG(F("[RCSocketController]"), F("learnPattern()"), F("INFO: Signal already known"), String(socketcode[set]->getCurrentValue()), String(socketcode[set]->getCurrentDelay()), String(socketcode[set]->getCurrentProtocol()));
 	}
 }
 
-void RCSocketController::testSettings()
+void RCSocketController::testSettings(uint8_t set)
 {
+	bool prev_state;
 	learningmode_off();
 
-	socketcode[code_set_ptr]->active = true;
+	if (socketcode[set]->active != true) {
+		socketcode[set]->active == true;
+		prev_state = false;
+	}
+	else prev_state = true;
 
 	for (uint8_t i = 0; i < 5; i++) {
-		LOGDEBUG(F("[RCSocketController]"), F("testSettings()"), F("OK: Starting Test for Set"), String(code_set_ptr), F("Number of Signal"), String(socketcode[code_set_ptr]->numberSignals()));
-		sendCode(code_set_ptr);
+		LOGMSG(F("[RCSocketController]"), F("OK: Starting Test for Set"), String(code_set_ptr), F("Number of Signal"), String(socketcode[code_set_ptr]->numberSignals()));
+		sendCode(set);
 	}
-	socketcode[code_set_ptr]->active = false;
+	socketcode[set]->active = prev_state;
 }
 
 void RCSocketController::resetSettings()
@@ -295,6 +301,7 @@ void RCSocketController::resetSettings()
 	for (uint8_t i = 0; i < RC_SOCKETS; i++) {
 		resetSettings(i);
 	}
+	LOGDEBUG1(F("[RCSocketController]"), F("resetSettings()"), F("OK: Reset of all code sets"), "", "", "");
 }
 
 void RCSocketController::resetSettings(uint8_t set)
@@ -310,18 +317,19 @@ void RCSocketController::resetSettings(uint8_t set)
 	}
 	socketcode[set]->title = "Signal " + String(set);
 	socketcode[set]->active = false;
-	
+
+	LOGDEBUG1(F("[RCSocketController]"), F("resetSettings(set)"), F("OK: Reset of code set"), String(set), "", "");
 }
 
 void RCSocketController::sendCode(int set)
 {
-	LOGDEBUG(F("[RCSocketController]"), F("sendCode()"), F("OK: Called with"), F("Parameter"), String(set), String(learning));
+	LOGDEBUG3(F("[RCSocketController]"), F("sendCode()"), F("OK: Called with"), F("Parameter"), String(set), String(learning));
 	if (learning != true) {
 		if (socketcode[set]->active == true) {
 			transmitter_on();
 			socketcode[set]->signal_ptr = 0;
 			setRepeatTransmit(socketcode[set]->repeat);
-			LOGDEBUG2(F("[RCSocketController]"), F("sendCode()"), F("OK: Set Signal Repeat"), F("Parameter"), String(socketcode[set]->repeat), "");
+			LOGDEBUG3(F("[RCSocketController]"), F("sendCode()"), F("OK: Set Signal Repeat"), F("Parameter"), String(socketcode[set]->repeat), "");
 
 			for (uint8_t i = 0; i < socketcode[set]->numberSignals(); i++) {
 				LOGDEBUG(F("[RCSocketController]"), F("sendCode()"), F("OK: Sending Signal"), String(socketcode[set]->getValueFrom(i)), String(socketcode[set]->getDelayFrom(i)), String(socketcode[set]->getProtocolFrom(i)));
@@ -391,39 +399,6 @@ String RCSocketController::dec2binWzerofill(unsigned long Dec, unsigned int bitL
 String RCSocketController::getTitle(int set)
 {
 	return String(socketcode[set]->title);
-}
-
-void RCSocketController::serializeJSON(uint8_t set, char * json, size_t maxSize, Scope scope)
-{
-	DynamicJsonBuffer jsonBuffer;
-
-	JsonObject& socket = jsonBuffer.createObject();
-	
-	socketcode[set]->serializeJSON(socket, scope);
-	
-	socket.printTo(json, maxSize);
-	LOGDEBUG2(F("[RCSocketController]"), F("serializeJSON()"), F("OK: Serialized remote sockets"), String(socket.measureLength()), String(maxSize), "");
-}
-
-void RCSocketController::serializeJSON(char * json, size_t maxSize, Scope scope)
-{
-	DynamicJsonBuffer jsonBuffer;
-
-	jsonBuffer.clear();
-
-	JsonObject& controller = jsonBuffer.createObject();
-	
-	controller["obj"] = "RCSOCKET";
-	JsonArray& list = controller.createNestedArray("list");
-
-	for (uint8_t i = 0; i < RC_SOCKETS; i++) {
-		JsonObject& socket = jsonBuffer.createObject();
-		socketcode[i]->serializeJSON(socket, scope);
-		list.add(socket);
-	}
-
-	controller.printTo(json, maxSize);
-	LOGDEBUG2(F("[RCSocketController]"), F("serializeJSON()"), F("OK: Serialized remote sockets"), String(controller.measureLength()), String(maxSize), "");
 }
 
 void RCSocketController::serializeJSON(JsonObject & data, Scope scope, uint8_t set)
