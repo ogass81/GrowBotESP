@@ -55,6 +55,7 @@ void TimeTrigger::serializeJSON(JsonObject & data, Scope scope)
 		data["act"] = active;
 		data["src"] = source;
 		data["typ"] = static_cast<int>(type);
+		data["state"] = checkState();
 	}
 
 	if (scope == DETAILS) {
@@ -68,7 +69,6 @@ void TimeTrigger::serializeJSON(JsonObject & data, Scope scope)
 		data["val"] = threshold;
 		data["intv"] = static_cast<int>(interval);
 		data["tol"] = tolerance;
-		data["state"] = checkState();
 	}
 
 	LOGDEBUG2(F("[TimeTrigger]"), F("serializeJSON()"), F("OK: Serialized members for Trigger"), String(id), String(this->getTitle()), String(data.measureLength()));
@@ -512,6 +512,7 @@ void SensorTrigger::serializeJSON(JsonObject & data, Scope scope)
 		data["act"] = active;
 		data["src"] = source;
 		data["typ"] = static_cast<int>(type);
+		data["state"] = checkState();
 	}
 
 	if (scope == DETAILS) {
@@ -524,7 +525,6 @@ void SensorTrigger::serializeJSON(JsonObject & data, Scope scope)
 		data["relop"] = static_cast<int>(relop);
 		data["val"] = threshold;
 		data["tol"] = tolerance;
-		data["state"] = checkState();
 	}
 
 	LOGDEBUG2(F("[SensorTrigger]"), F("serializeJSON()"), F("OK: Serialized members for Trigger"), String(id), String(this->getTitle()), String(data.measureLength()));
@@ -656,6 +656,8 @@ void Counter::serializeJSON(JsonObject & data, Scope scope)
 		data["act"] = active;
 		data["src"] = source;
 		data["typ"] = static_cast<int>(type);
+		data["state"] = checkState();
+		data["count"] = count;
 	}
 
 	if (scope == DETAILS) {
@@ -667,9 +669,7 @@ void Counter::serializeJSON(JsonObject & data, Scope scope)
 		data["intv"] = static_cast<int>(interval);
 		data["relop"] = static_cast<int>(relop);
 		data["val"] = threshold;
-		data["count"] = count;
 		data["tol"] = tolerance;
-		data["state"] = checkState();
 	}
 
 	LOGDEBUG2(F("[Counter]"), F("serializeJSON()"), F("OK: Serialized members for Trigger"), String(id), String(this->getTitle()), String(data.measureLength()));
@@ -786,6 +786,7 @@ void Switch::serializeJSON(JsonObject & data, Scope scope)
 		data["act"] = active;
 		data["src"] = source;
 		data["typ"] = static_cast<int>(type);
+		data["state"] = state;
 	}
 
 	if (scope == DETAILS) {
@@ -797,7 +798,6 @@ void Switch::serializeJSON(JsonObject & data, Scope scope)
 		data["intv"] = static_cast<int>(interval);
 		data["relop"] = static_cast<int>(relop);
 		data["val"] = threshold;
-		data["state"] = state;
 		data["tol"] = tolerance;
 	}
 

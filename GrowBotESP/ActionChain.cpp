@@ -92,6 +92,11 @@ void ActionChain::execute()
 {
 	if (active == true) {
 		taskmanager->addActions(this);
+	
+		String keys[] = {""};
+		String values[] = {""};
+		logengine.addLogEntry(ACTION, "Sequence", String("Executed Sequence " + this->getTitle()), keys, values, 0);
+		
 		LOGDEBUG(F("[ActionChain]"), F("execute()"), F("OK: Actionchain sent to Task Manager"), F("ActionChain"), String(this->getTitle()), "");
 	}
 	else LOGDEBUG(F("[ActionChain]"), F("execute()"), F("ERROR: Actionchain not active"), F("ActionChain"), String(this->getTitle()), "");

@@ -71,10 +71,6 @@ void SimpleAction<ActionType>::execute()
 		if(callback != NULL) {
 			(actionObject->*callback)();
 			LOGDEBUG(F("[SimpleAction]"), F("execute()"), F("OK: Executed Action"), getTitle(), "", "");
-
-			String keys[] = {};
-			String values[] = {};
-			logengine.addLogEntry(ACTION, "Action", "OK: Execute Action " + String(getTitle()), keys, values, 0);
 		}
 		else LOGDEBUG(F("[SimpleAction]"), F("execute()"), F("ERROR: Callback missing"), getTitle(), "", "");
 	}
@@ -129,11 +125,7 @@ void ParameterizedAction<ActionType>::execute()
 		if (callback != NULL) {
 			if (parameter >= 0) {
 				(actionObject->*callback)(parameter);
-				LOGDEBUG(F("[ParameterizedAction]"), F("execute()"), F("OK: Execute Action"), getTitle(), F("Parameter"), String(parameter));
-				
-				String keys[] = {};
-				String values[] = {};
-				logengine.addLogEntry(ACTION, "Action", "OK: Execute Action " + String(getTitle()), keys, values, 0);
+				LOGDEBUG(F("[ParameterizedAction]"), F("execute()"), F("OK: Execute Action"), getTitle(), F("Parameter"), String(parameter));	
 			}
 			else {
 				LOGDEBUG(F("[ParameterizedAction]"), F("execute()"), F("ERROR: Argument missing"), getTitle(), "", "");
