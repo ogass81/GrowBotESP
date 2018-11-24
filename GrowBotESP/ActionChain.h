@@ -20,6 +20,8 @@ extern Action *actions[ACTIONS_NUM];
 
 
 class ActionChain {
+private:
+	uint8_t getActiveSlots();
 public:
 	uint8_t id;
 	bool active;

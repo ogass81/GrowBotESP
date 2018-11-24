@@ -58,7 +58,7 @@ void Webhandler::loginGet(AsyncWebServerRequest * request)
 	response->setLength();
 	request->send(response);
 
-	LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings GET"), "Initial Login", "");
+	LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings GET"), "Initial Login", "");
 }
 
 void Webhandler::actionGet(AsyncWebServerRequest * request)
@@ -74,7 +74,7 @@ void Webhandler::actionGet(AsyncWebServerRequest * request)
 		return request->requestAuthentication();
 
 	if (uri[1] == "") {
-		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Action GET"), F("List"), "");
+		LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Action GET"), F("List"), "");
 
 		AsyncJsonResponse * response = new AsyncJsonResponse();
 		response->addHeader("Server", "GrowAI");
@@ -98,18 +98,18 @@ void Webhandler::actionGet(AsyncWebServerRequest * request)
 
 			JsonObject& root = response->getRoot();
 			actions[uri[1].toInt()]->serializeJSON(root, DETAILS);
-			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Action: GET"), String(uri[1]), "");
+			LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Action: GET"), String(uri[1]), "");
 
 			response->setLength();
 			request->send(response);
 		}
 		else if (uri[2] == "execute") {
 			actions[uri[1].toInt()]->execute();
-			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Action EXECUTE"), String(uri[1]), "");
+			LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Action EXECUTE"), String(uri[1]), "");
 			request->send(200);
 		}
 		else {
-			LOGMSG(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
+			LOGMSG2(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
 			request->send(404);
 		}
 	}
@@ -129,7 +129,7 @@ void Webhandler::actionchainGet(AsyncWebServerRequest * request)
 		return request->requestAuthentication();
 
 	if (uri[1] == "") {
-		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: ActionChain GET"), F("List"), "");
+		LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: ActionChain GET"), F("List"), "");
 
 		AsyncJsonResponse * response = new AsyncJsonResponse();
 		response->addHeader("Server", "GrowAI");
@@ -152,7 +152,7 @@ void Webhandler::actionchainGet(AsyncWebServerRequest * request)
 
 				JsonObject& root = response->getRoot();
 				actionchains[uri[1].toInt()]->serializeJSON(root, DETAILS);
-				LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: ActionChain GET"), String(uri[1]), "");
+				LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: ActionChain GET"), String(uri[1]), "");
 
 				response->setLength();
 				request->send(response);
@@ -160,12 +160,12 @@ void Webhandler::actionchainGet(AsyncWebServerRequest * request)
 
 		else if (uri[2] == "execute") {
 			actionchains[uri[1].toInt()]->execute();
-			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: ActionChain EXECUTE"), String(uri[1]), "");
+			LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: ActionChain EXECUTE"), String(uri[1]), "");
 			request->send(200);
 		}
 	}
 	else {
-		LOGMSG(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
+		LOGMSG2(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
 		request->send(404);
 	}
 }
@@ -183,7 +183,7 @@ void Webhandler::logGet(AsyncWebServerRequest * request)
 		return request->requestAuthentication();
 
 	if (uri[1] == "") {
-		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: LogEntry GET Range"), F("Recent Entries"), "");
+		LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: LogEntry GET Range"), F("Recent Entries"), "");
 
 		AsyncJsonResponse * response = new AsyncJsonResponse();
 		response->addHeader("Server", "GrowAI");
@@ -199,7 +199,7 @@ void Webhandler::logGet(AsyncWebServerRequest * request)
 	else if (uri[1] == "reset") {
 		logengine.reset();
 		request->send(200);
-		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Reset Log file"), "", "");
+		LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Reset Log file"), "", "");
 	}
 	else {
 		if (uri[2] == "") {
@@ -213,7 +213,7 @@ void Webhandler::logGet(AsyncWebServerRequest * request)
 			response->setLength();
 			request->send(response);
 
-			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: LogEntry GET Range from"), String(uri[1].toInt()), String(0));
+			LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: LogEntry GET Range from"), String(uri[1].toInt()), String(0));
 		}
 		else {
 			AsyncJsonResponse * response = new AsyncJsonResponse();
@@ -226,7 +226,7 @@ void Webhandler::logGet(AsyncWebServerRequest * request)
 			response->setLength();
 			request->send(response);
 
-			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: LogEntry GET Range from"), String(uri[1].toInt()), String(uri[2].toInt()));
+			LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: LogEntry GET Range from"), String(uri[1].toInt()), String(uri[2].toInt()));
 		}
 	}
 }
@@ -244,7 +244,7 @@ void Webhandler::rcsocketGet(AsyncWebServerRequest * request)
 		return request->requestAuthentication();
 
 	if (uri[1] == "" || uri[1].toInt() >= RC_SOCKETS) {
-		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Remote Controlled Socket GET"), F("List"), "");
+		LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Remote Controlled Socket GET"), F("List"), "");
 
 		AsyncJsonResponse * response = new AsyncJsonResponse();
 		response->addHeader("Server", "GrowAI");
@@ -271,27 +271,27 @@ void Webhandler::rcsocketGet(AsyncWebServerRequest * request)
 
 			response->setLength();
 			request->send(response);
-			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Remote Controlled Socket GET"), F("Set"), String(uri[1]));
+			LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Remote Controlled Socket GET"), F("Set"), String(uri[1]));
 
 		}
 		else if (uri[2] == "learn_on") {
-			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Remote Socket Learning mode activated"), F("Set"), String(uri[1]));
+			LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Remote Socket Learning mode activated"), F("Set"), String(uri[1]));
 			rcsocketcontroller->learningmode_on(uri[1].toInt());
 			request->send(200);
 		}
 		else if (uri[2] == "learn_off") {
-			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Remote Socket Learning mode deactivated"), F("Set"), String(uri[1]));
+			LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Remote Socket Learning mode deactivated"), F("Set"), String(uri[1]));
 			rcsocketcontroller->learningmode_off();
 			request->send(200);
 		}
 		else if (uri[2] == "reset") {
-			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Remote Socket Reset"), F("Set"), String(uri[1]));
+			LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Remote Socket Reset"), F("Set"), String(uri[1]));
 			rcsocketcontroller->resetSettings(uri[1].toInt());
 			Serial.println(uri[1].toInt());
 			request->send(200);
 		}
 		else {
-			LOGMSG(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
+			LOGMSG2(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
 			request->send(404);
 		}
 	}
@@ -310,7 +310,7 @@ void Webhandler::rulesetGet(AsyncWebServerRequest * request)
 		return request->requestAuthentication();
 
 	if (uri[1] == "") {
-		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: RuleSet GET"), F("List"), "");
+		LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: RuleSet GET"), F("List"), "");
 
 		AsyncJsonResponse * response = new AsyncJsonResponse();
 		response->addHeader("Server", "GrowAI");
@@ -336,10 +336,10 @@ void Webhandler::rulesetGet(AsyncWebServerRequest * request)
 		response->setLength();
 		request->send(response);
 
-		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Ruleset Action: GET"), F("Set"), String(uri[1]));
+		LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Ruleset Action: GET"), F("Set"), String(uri[1]));
 	}
 	else {
-		LOGMSG(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
+		LOGMSG2(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
 		request->send(404);
 	}
 }
@@ -357,7 +357,7 @@ void Webhandler::sensorGet(AsyncWebServerRequest * request)
 		return request->requestAuthentication();;
 
 	if (uri[1] == "") {
-		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action GET"), F("List"), "");
+		LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action GET"), F("List"), "");
 
 		AsyncJsonResponse * response = new AsyncJsonResponse();
 		response->addHeader("Server", "GrowAI");
@@ -385,7 +385,7 @@ void Webhandler::sensorGet(AsyncWebServerRequest * request)
 			response->setLength();
 			request->send(response);
 
-			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action GET"), String(uri[1]), F("Scope: Header"));
+			LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action GET"), String(uri[1]), F("Scope: Header"));
 		}
 		else if (uri[2] == "details") {
 			AsyncJsonResponse * response = new AsyncJsonResponse();
@@ -395,7 +395,7 @@ void Webhandler::sensorGet(AsyncWebServerRequest * request)
 			sensors[uri[1].toInt()]->serializeJSON(root, DETAILS);
 			response->setLength();
 			request->send(response);
-			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action GET"), String(uri[1]), F("Scope: Details"));
+			LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action GET"), String(uri[1]), F("Scope: Details"));
 		}
 		else if (uri[2] == "avg") {
 			AsyncJsonResponse * response = new AsyncJsonResponse();
@@ -406,7 +406,7 @@ void Webhandler::sensorGet(AsyncWebServerRequest * request)
 			response->setLength();
 			request->send(response);
 
-			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action GET"), String(uri[1]), F("Scope: AVG"));
+			LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action GET"), String(uri[1]), F("Scope: AVG"));
 		}
 		else if (uri[2] == "date_min") {
 			AsyncJsonResponse * response = new AsyncJsonResponse();
@@ -417,7 +417,7 @@ void Webhandler::sensorGet(AsyncWebServerRequest * request)
 			response->setLength();
 			request->send(response);
 
-			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action GET"), String(uri[1]), F("Scope: MIN"));
+			LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action GET"), String(uri[1]), F("Scope: MIN"));
 		}
 		else if (uri[2] == "date_hour") {
 			AsyncJsonResponse * response = new AsyncJsonResponse();
@@ -428,7 +428,7 @@ void Webhandler::sensorGet(AsyncWebServerRequest * request)
 			response->setLength();
 			request->send(response);
 
-			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action GET"), String(uri[1]), F("Scope: HOUR"));
+			LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action GET"), String(uri[1]), F("Scope: HOUR"));
 		}
 		else if (uri[2] == "date_day") {
 			AsyncJsonResponse * response = new AsyncJsonResponse();
@@ -439,7 +439,7 @@ void Webhandler::sensorGet(AsyncWebServerRequest * request)
 			response->setLength();
 			request->send(response);
 
-			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action GET"), String(uri[1]), F("Scope: DAY"));
+			LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action GET"), String(uri[1]), F("Scope: DAY"));
 		}
 		else if (uri[2] == "date_month") {
 			AsyncJsonResponse * response = new AsyncJsonResponse();
@@ -450,7 +450,7 @@ void Webhandler::sensorGet(AsyncWebServerRequest * request)
 			response->setLength();
 			request->send(response);
 
-			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action GET"), String(uri[1]), F("Scope: MONTH"));
+			LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action GET"), String(uri[1]), F("Scope: MONTH"));
 		}
 		else if (uri[2] == "date_all") {
 			AsyncJsonResponse * response = new AsyncJsonResponse();
@@ -461,31 +461,31 @@ void Webhandler::sensorGet(AsyncWebServerRequest * request)
 			response->setLength();
 			request->send(response);
 
-			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action GET"), String(uri[1]), F("Scope: ALL"));
+			LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action GET"), String(uri[1]), F("Scope: ALL"));
 		}
 		//Commands
 		else if (uri[2] == "lower") {
 			sensors[uri[1].toInt()]->setLowerThreshold();
-			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor set Lower Raw Value"), String(uri[1]), "");
+			LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor set Lower Raw Value"), String(uri[1]), "");
 			request->send(200);
 		}
 		else if (uri[2] == "upper") {
 			sensors[uri[1].toInt()]->setUpperThreshold();
-			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor set upper Raw Value"), String(uri[1]), "");
+			LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor set upper Raw Value"), String(uri[1]), "");
 			request->send(200);
 		}
 		else if (uri[2] == "reset") {
 			sensors[uri[1].toInt()]->reset();
-			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor reset"), String(uri[1]), "");
+			LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor reset"), String(uri[1]), "");
 			request->send(200);
 		}
 		else {
-			LOGMSG(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
+			LOGMSG2(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
 			request->send(404);
 		}
 	}
 	else {
-		LOGMSG(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
+		LOGMSG2(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
 		request->send(404);
 	}
 }
@@ -510,11 +510,11 @@ void Webhandler::settingGet(AsyncWebServerRequest * request)
 		response->setLength();
 		request->send(response);
 
-		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings GET"), F("Current Settings"), "");
+		LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings GET"), F("Current Settings"), "");
 	}
 	else if (uri[1] == "default") {
 		settings.loadDefaultConfig();
-		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action LOAD"), F("Default Config"), "");
+		LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action LOAD"), F("Default Config"), "");
 
 		AsyncJsonResponse * response = new AsyncJsonResponse();
 		response->addHeader("Server", "GrowAI");
@@ -523,11 +523,11 @@ void Webhandler::settingGet(AsyncWebServerRequest * request)
 		response->setLength();
 		request->send(response);
 
-		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings GET"), F("Default Config"), "");
+		LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings GET"), F("Default Config"), "");
 	}
 	else if (uri[1] == "active") {
 		settings.loadActiveConfig();
-		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action LOAD"), F("Active Config"), "");
+		LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action LOAD"), F("Active Config"), "");
 
 		AsyncJsonResponse * response = new AsyncJsonResponse();
 		response->addHeader("Server", "GrowAI");
@@ -536,11 +536,11 @@ void Webhandler::settingGet(AsyncWebServerRequest * request)
 		response->setLength();
 		request->send(response);
 
-		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings GET"), F("Active Config"), "");
+		LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings GET"), F("Active Config"), "");
 	}
 	else if (uri[1] == "reset") {
 		settings.reset();
-		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings RESET all"), "", "");
+		LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings RESET all"), "", "");
 
 		AsyncJsonResponse * response = new AsyncJsonResponse();
 		response->addHeader("Server", "GrowAI");
@@ -549,7 +549,7 @@ void Webhandler::settingGet(AsyncWebServerRequest * request)
 		response->setLength();
 		request->send(response);
 
-		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings GET"), F("Active Config"), "");
+		LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings GET"), F("Active Config"), "");
 	}
 	else request->send(404);
 }
@@ -597,7 +597,7 @@ void Webhandler::triggerGet(AsyncWebServerRequest * request)
 		response->setLength();
 		request->send(response);
 
-		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Trigger Categories GET"), F("List"), "");
+		LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Trigger Categories GET"), F("List"), "");
 	}
 	else if (uri[1] == "all") {
 		AsyncJsonResponse * response = new AsyncJsonResponse();
@@ -621,7 +621,7 @@ void Webhandler::triggerGet(AsyncWebServerRequest * request)
 		response->setLength();
 		request->send(response);
 
-		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Trigger Categories & Trigger GET"), F("List"), "");
+		LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Trigger Categories & Trigger GET"), F("List"), "");
 	}
 	else if (uri[1] != "" && uri[1].toInt() < TRIGGER_TYPES) {
 		if (uri[2] == "") {
@@ -639,7 +639,7 @@ void Webhandler::triggerGet(AsyncWebServerRequest * request)
 			response->setLength();
 			request->send(response);
 
-			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Trigger for Category GET"), F("List"), String(uri[1]));
+			LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Trigger for Category GET"), F("List"), String(uri[1]));
 		}
 		else if (uri[2] != "" && uri[2].toInt() < TRIGGER_SETS) {
 			AsyncJsonResponse * response = new AsyncJsonResponse();
@@ -651,32 +651,32 @@ void Webhandler::triggerGet(AsyncWebServerRequest * request)
 			response->setLength();
 			request->send(response);
 
-			LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Trigger GET"), String(uri[1]), String(uri[2]));
+			LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Trigger GET"), String(uri[1]), String(uri[2]));
 		}
 		else {
 			request->send(404);
-			LOGMSG(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
+			LOGMSG2(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
 		}
 	}
 	else {
 		request->send(404);
-		LOGMSG(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
+		LOGMSG2(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
 	}
 }
 
 void Webhandler::restart(AsyncWebServerRequest * request)
 {
 	settings.saveActiveConfig();
-	LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action SAVE"), F("Active Config"), "");
+	LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action SAVE"), F("Active Config"), "");
 	request->send(200);
-	LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Restart Machine"), F("Delay"), F("Delay"));
+	LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Restart Machine"), F("Delay"), F("Delay"));
 	delay(5000);
 	ESP.restart();
 }
 
 void Webhandler::unknownGet(AsyncWebServerRequest * request)
 {
-	LOGMSG(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
+	LOGMSG2(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
 	request->send(404);
 }
 
@@ -695,11 +695,11 @@ void Webhandler::actionchainPatch(AsyncWebServerRequest * request, JsonVariant &
 	if (uri[1] != "" && uri[1].toInt() < ACTIONS_NUM) {
 		actionchains[uri[1].toInt()]->deserializeJSON(json);
 		request->send(200);
-		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Actionchain Action SET"), String(uri[1]), "");
+		LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Actionchain Action SET"), String(uri[1]), "");
 	}
 	else {
 		request->send(404);
-		LOGMSG(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
+		LOGMSG2(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
 	}
 }
 
@@ -718,11 +718,11 @@ void Webhandler::rcsocketPatch(AsyncWebServerRequest * request, JsonVariant & js
 	if (uri[1] != "" && uri[1].toInt() < RC_SOCKETS) {
 		rcsocketcontroller->deserializeJSON(uri[1].toInt(), json);
 		request->send(200);
-		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Remote Socket Action SET"), String(uri[1]), "");
+		LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Remote Socket Action SET"), String(uri[1]), "");
 	}
 	else {
 		request->send(404);
-		LOGMSG(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
+		LOGMSG2(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
 	}
 
 }
@@ -742,12 +742,12 @@ void Webhandler::rulesetPatch(AsyncWebServerRequest * request, JsonVariant & jso
 	if (uri[1] != "" && uri[1].toInt() < RULESETS_NUM) {
 		rulesets[uri[1].toInt()]->deserializeJSON(json);
 		request->send(200);
-		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Ruleset Action SET"), String(uri[1]), "");
+		LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Ruleset Action SET"), String(uri[1]), "");
 
 	}
 	else {
 		request->send(404);
-		LOGMSG(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
+		LOGMSG2(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
 	}
 }
 
@@ -766,11 +766,11 @@ void Webhandler::sensorPatch(AsyncWebServerRequest * request, JsonVariant & json
 	if (uri[1] != "" && uri[1].toInt() < SENS_NUM) {
 		sensors[uri[1].toInt()]->deserializeJSON(json);
 		request->send(200);
-		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Remote Sensor Action SET"), String(uri[1]), "");
+		LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Remote Sensor Action SET"), String(uri[1]), "");
 	}
 	else {
 		request->send(404);
-		LOGMSG(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
+		LOGMSG2(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
 	}
 }
 
@@ -789,25 +789,25 @@ void Webhandler::settingPatch(AsyncWebServerRequest * request, JsonVariant & jso
 	if (uri[1] == "") {
 		settings.deserializeJSON(json);
 		request->send(200);
-		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Actio: SET"), "", "");
+		LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Actio: SET"), "", "");
 	}
 	else if (uri[1] == "default") {
 		settings.deserializeJSON(json);
-		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action SET"), "", "");
+		LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action SET"), "", "");
 		settings.saveDefaultConfig();
 		request->send(200);
-		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action SAVE"), F("Default Config"), "");
+		LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action SAVE"), F("Default Config"), "");
 	}
 	else if (uri[1] == "active") {
 		settings.deserializeJSON(json);
-		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action SET"), "", "");
+		LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action SET"), "", "");
 		settings.saveActiveConfig();
 		request->send(200);
-		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action SAVE"), F("Active Config"), "");
+		LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action SAVE"), F("Active Config"), "");
 	}
 	else {
 		request->send(404);
-		LOGMSG(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
+		LOGMSG2(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
 	}
 }
 
@@ -826,11 +826,11 @@ void Webhandler::triggerPatch(AsyncWebServerRequest * request, JsonVariant & jso
 	if (uri[2] != "" && uri[2].toInt() < TRIGGER_SETS) {
 		trigger[uri[1].toInt()][uri[2].toInt()]->deserializeJSON(json);
 		request->send(200);
-		LOGMSG(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Trigger Action SET"), String(uri[1]), String(uri[2]));
+		LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Trigger Action SET"), String(uri[1]), String(uri[2]));
 	}
 	else {
 		request->send(404);
-		LOGMSG(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
+		LOGMSG2(F("[WebServer]"), F("ERROR: Invalid HTTP Request"), F("Type: URI UNKOWN"), "", "");
 	}
 }
 

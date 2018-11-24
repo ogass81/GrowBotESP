@@ -101,6 +101,10 @@ void LogEngine::begin()
 
 void LogEngine::addLogEntry(LogTypes type, String origin, String message, String keys[], String values[], uint8_t size)
 {
+	if (counter == LOGBUFFER_FLUSH) {
+		resetFile();
+	}
+
 	if (entry_ptr == LOGBUFFER_SIZE) {
 		saveToFile();
 	}
@@ -116,6 +120,7 @@ void LogEngine::addLogEntry(LogTypes type, String origin, String message, String
 
 	this->entry_ptr++;
 	this->counter++;
+
 }
 
 void LogEngine::serializeJSON(JsonObject & data, DynamicJsonBuffer& buffer, int end, int count)

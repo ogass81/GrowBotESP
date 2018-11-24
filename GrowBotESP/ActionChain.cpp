@@ -4,6 +4,16 @@
 
 #include "ActionChain.h"
 
+uint8_t ActionChain::getActiveSlots()
+{
+	uint8_t counter = 0;
+	for (uint8_t i = 0; i < ACTIONCHAIN_LENGTH; i++) {
+		if (assignedAction[i] != NULL) counter++;
+	}
+
+	return uint8_t(counter);
+}
+
 ActionChain::ActionChain(int count)
 {
 	this->id = count;
@@ -92,10 +102,12 @@ void ActionChain::execute()
 {
 	if (active == true) {
 		taskmanager->addActions(this);
-	
-		String keys[] = {""};
-		String values[] = {""};
-		logengine.addLogEntry(ACTION, "Sequence", String("Executed Sequence " + this->getTitle()), keys, values, 0);
+
+		String count = String(getActiveSlots());
+
+		String keys[] = { "Number of Actions" };
+		String values[] = { count };
+		logengine.addLogEntry(ACTION, "Sequence", String("Executed Sequence " + this->getTitle()), keys, values, 1);
 		
 		LOGDEBUG(F("[ActionChain]"), F("execute()"), F("OK: Actionchain sent to Task Manager"), F("ActionChain"), String(this->getTitle()), "");
 	}

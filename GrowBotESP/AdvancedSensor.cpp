@@ -912,12 +912,13 @@ short CapacityMoistureSensor::readRaw()
 	analogSetWidth(width);
 	analogSetPinAttenuation(this->pin, attentuation);
 
+
 	//Read 3 times just to make sure
-	for (uint8_t i = 0; i < 3; i++) {
-		delay(50);
+	for (uint8_t i = 0; i < 200; i++) {
+		//delay(15);
 		current_value = analogRead(this->pin);
 		LOGDEBUG3(F("[CapacityMoistureSensor]"), F("readRaw()"), F("INFO: Capacity Moisture Raw Value"), String(current_value), String(resolution), String(width));
-		if (current_value != this->nan_val) {
+		if (current_value > min_val || current_value < max_val) {
 			dividend += current_value;
 			divisor++;
 		}
@@ -934,7 +935,7 @@ short CapacityMoistureSensor::readRaw()
 
 short CapacityMoistureSensor::readValue()
 {
-	short adj_val;
+	short adj_val = nan_val;
 
 	adj_val = readRaw();
 
@@ -944,12 +945,15 @@ short CapacityMoistureSensor::readValue()
 			adj_val = short(0);
 		}
 		else if (adj_val <= this->lower_threshold) {
-			adj_val = short(100);
+			if(adj_val > round(this->lower_threshold / 2)) adj_val = short(100);
+			else adj_val = nan_val; //less than 50% of 100% moisture => error or no sensor connected
 		}
 		else {
 			adj_val = short(round(float(this->upper_threshold - adj_val) / float(this->upper_threshold - this->lower_threshold) * 100));
 		}
 	}
+	else adj_val = nan_val;
+
 	LOGDEBUG3(F("[CapacityMoistureSensor]"), F("readValue()"), F("INFO: Moisture Value % "), String(adj_val), String(this->lower_threshold), String(this->upper_threshold));
 	return (short)adj_val;
 }
