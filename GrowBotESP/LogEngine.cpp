@@ -103,6 +103,7 @@ void LogEngine::addLogEntry(LogTypes type, String origin, String message, String
 {
 	if (counter == LOGBUFFER_FLUSH) {
 		resetFile();
+		this->counter = 0;
 	}
 
 	if (entry_ptr == LOGBUFFER_SIZE) {

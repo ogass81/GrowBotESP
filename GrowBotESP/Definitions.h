@@ -12,7 +12,7 @@
 #define GROWBOT_FIRMWARE 4
 
 //Wifi
-#define WIFI_TIMEOUT 30
+#define WIFI_TIMEOUT 60
 #define NTP true
 #define NTP_TIMEOUT 30
 

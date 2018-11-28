@@ -150,6 +150,8 @@ public:
 
 	short readRaw();
 	short readValue();
+
+	void serializeJSON(JsonObject& data, Scope scope);
 };
 
 class CapacityMoistureSensor : public AdvancedSensor<short> {
@@ -163,6 +165,7 @@ public:
 	CapacityMoistureSensor(uint8_t id, uint8_t pin, uint8_t resolution, uint8_t width, adc_attenuation_t attentuation, bool active, String title, String unit, short nan_val, short min_val, short max_val);
 	short readRaw();
 	short readValue();
+	void serializeJSON(JsonObject& data, Scope scope);
 };
 #endif
 

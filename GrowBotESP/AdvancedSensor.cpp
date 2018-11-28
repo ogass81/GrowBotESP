@@ -671,34 +671,82 @@ void AdvancedSensor<ReturnType>::serializeJSON(JsonObject & data, Scope scope)
 	}
 	//Hour Values
 	if (scope == DETAILS || scope == DATE_MIN || scope == DATE_ALL) {
-		data["min_ptr"] = min_ptr;
 		data["frq"] = SENS_VALUES_MIN;
+		data["min_ptr"] = min_ptr;
+		
+		int counter = 0;
+		int ptr = min_ptr;
+		
 		JsonArray& minutes = data.createNestedArray("min_vals");
-		for (int j = 0; j < SENS_VALUES_MIN; j++) minutes.add(toNAN(min_values[j]));
+
+		while (counter < SENS_VALUES_MIN) {
+			minutes.add(toNAN(min_values[ptr]));
+
+			counter++;
+			ptr--;
+
+			if (ptr < 0) ptr = SENS_VALUES_MIN - 1;
+		}
 	}
 
 	//Hour Values
 	if (scope == DETAILS || scope == DATE_HOUR || scope == DATE_ALL) {
 		data["h_ptr"] = hour_ptr;
 		data["frq"] = SENS_VALUES_HOUR;
+
+		int counter = 0;
+		int ptr = hour_ptr;
+
 		JsonArray& hours = data.createNestedArray("h_vals");
-		for (int j = 0; j < SENS_VALUES_HOUR; j++) hours.add(toNAN(hour_values[j]));
+
+		while (counter < SENS_VALUES_HOUR) {
+			hours.add(toNAN(hour_values[ptr]));
+
+			counter++;
+			ptr--;
+
+			if (ptr < 0) ptr = SENS_VALUES_HOUR - 1;
+		}
 	}
 
 	//Day Values
 	if (scope == DETAILS || scope == DATE_DAY || scope == DATE_ALL) {
 		data["d_ptr"] = day_ptr;
 		data["frq"] = SENS_VALUES_DAY;
+
+		int counter = 0;
+		int ptr = day_ptr;
+
 		JsonArray& days = data.createNestedArray("d_vals");
-		for (int j = 0; j < SENS_VALUES_DAY; j++) days.add(toNAN(day_values[j]));
+
+		while (counter < SENS_VALUES_DAY) {
+			days.add(toNAN(day_values[ptr]));
+
+			counter++;
+			ptr--;
+
+			if (ptr < 0) ptr = SENS_VALUES_DAY - 1;
+		}
 	}
 
 	//Month Values
 	if (scope == DETAILS || scope == DATE_MONTH || scope == DATE_ALL) {
 		data["m_ptr"] = month_ptr;
 		data["frq"] = SENS_VALUES_MONTH;
+		
+		int counter = 0;
+		int ptr = month_ptr;
+
 		JsonArray& month = data.createNestedArray("m_vals");
-		for (int j = 0; j < SENS_VALUES_MONTH; j++) month.add(toNAN(month_values[j]));
+
+		while (counter < SENS_VALUES_MONTH) {
+			month.add(toNAN(month_values[ptr]));
+
+			counter++;
+			ptr--;
+
+			if (ptr < 0) ptr = SENS_VALUES_MONTH - 1;
+		}
 	}
 
 	LOGDEBUG2(F("[BaseSensor]"), F("serializeJSON()"), F("OK: Serialized members for Sensor"), String(this->getTitle()), String(data.measureLength()), String(static_cast<int>(scope)));
@@ -853,8 +901,8 @@ float HeightSensor::readSensor(Ultrasonic *sensor)
 	float current_value = 0;
 
 	//Read 3 times just to make sure
-	for (uint8_t i = 0; i < 3; i++) {
-		delay(50);
+	for (uint8_t i = 0; i < 5; i++) {
+		delay(10);
 		current_value = sensor->distanceRead();
 		if (current_value != nan_val) {
 			dividend += current_value;
@@ -885,6 +933,13 @@ short HeightSensor::readRaw()
 short HeightSensor::readValue()
 {
 	return short(readRaw());
+}
+
+void HeightSensor::serializeJSON(JsonObject & data, Scope scope)
+{
+	AdvancedSensor::serializeJSON(data, scope);
+	data["toTop"] = readSensor(distance1);
+	data ["toBottom"] = readSensor(distance2);
 }
 
 
@@ -945,7 +1000,7 @@ short CapacityMoistureSensor::readValue()
 			adj_val = short(0);
 		}
 		else if (adj_val <= this->lower_threshold) {
-			if(adj_val > round(this->lower_threshold / 2)) adj_val = short(100);
+			if (adj_val > round(this->lower_threshold / 2)) adj_val = short(100);
 			else adj_val = nan_val; //less than 50% of 100% moisture => error or no sensor connected
 		}
 		else {
@@ -956,4 +1011,10 @@ short CapacityMoistureSensor::readValue()
 
 	LOGDEBUG3(F("[CapacityMoistureSensor]"), F("readValue()"), F("INFO: Moisture Value % "), String(adj_val), String(this->lower_threshold), String(this->upper_threshold));
 	return (short)adj_val;
+}
+
+void CapacityMoistureSensor::serializeJSON(JsonObject& data, Scope scope)
+{
+	AdvancedSensor::serializeJSON(data, scope);
+	data["raw"] = readRaw();
 }
