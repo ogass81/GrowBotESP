@@ -40,25 +40,32 @@ void SensorInterface::reset()
 
 
 template<class ReturnType>
-String AdvancedSensor<ReturnType>::toNAN(ReturnType i)
+String AdvancedSensor<ReturnType>::formatValueOut(ReturnType value)
 {
-	if (i == nan_val)	return String("#");
-	else return String(i);
+	if (value == nan_val)	return String("#");
+	else return String(value);
 }
 
 //Different Template Specification for Variable Types
 template<class ReturnType>
-ReturnType AdvancedSensor<ReturnType>::fromNAN(String str)
+ReturnType AdvancedSensor<ReturnType>::formatValueIn(String str)
 {
 	if (str == "#") return nan_val;
 	else return ReturnType(str.toInt());
 }
 
-template<>
-float AdvancedSensor<float>::fromNAN(String str)
+template <>
+String AdvancedSensor<float>::formatValueOut(float value)
+{
+	if (value == nan_val)	return String("#");
+	else return String(value, precision);
+}
+
+template <>
+float AdvancedSensor<float>::formatValueIn(String str)
 {
 	if (str == "#") return nan_val;
-	else return str.toFloat();
+	else return float(str.toFloat());
 }
 
 template<class ReturnType>
@@ -103,7 +110,7 @@ float AdvancedSensor<ReturnType>::average(int start, int num_elements, ReturnTyp
 }
 
 template<class ReturnType>
-AdvancedSensor<ReturnType>::AdvancedSensor(uint8_t id, String title, String unit, bool active, ReturnType nan_val, ReturnType min_val, ReturnType max_val) 
+AdvancedSensor<ReturnType>::AdvancedSensor(uint8_t id, String title, String unit, bool active, ReturnType nan_val, ReturnType min_val, ReturnType max_val, uint8_t precision) 
 {
 	this->id = id;
 	this->title = title;
@@ -112,6 +119,10 @@ AdvancedSensor<ReturnType>::AdvancedSensor(uint8_t id, String title, String unit
 	this->nan_val = nan_val;
 	this->min_val = min_val;
 	this->max_val = max_val;
+	this->precision = precision;
+
+	this->lower_threshold = nan_val;
+	this->upper_threshold = nan_val;
 
 	reset();
 
@@ -649,29 +660,31 @@ void AdvancedSensor<ReturnType>::serializeJSON(JsonObject & data, Scope scope)
 	//AVG Values
 	if (scope == DETAILS || scope == AVG) {
 		JsonObject& avg = data.createNestedObject("avg_vals");
-		avg["last"] = getValue(REALTIME);
-		avg["10s"] = getValue(TENSEC);
-		avg["20s"] = getValue(TWENTYSEC);
-		avg["30s"] = getValue(THIRTYSEC);
-		avg["1min"] = getValue(ONEMIN);
-		avg["2min"] = getValue(TWOMIN);
-		avg["5min"] = getValue(FIVEMIN);
-		avg["15min"] = getValue(QUARTER);
-		avg["30min"] = getValue(HALF);
-		avg["1h"] = getValue(ONE);
-		avg["2h"] = getValue(TWO);
-		avg["3h"] = getValue(THREE);
-		avg["4h"] = getValue(FOUR);
-		avg["6h"] = getValue(SIX);
-		avg["12h"] = getValue(TWELVE);
-		avg["1d"] = getValue(DAILY);
-		avg["2d"] = getValue(BIDAILY);
-		avg["1w"] = getValue(WEEKLY);
-		avg["2w"] = getValue(BIWEEKLY);
+		avg["last"] = formatValueOut(getValue(REALTIME));
+		avg["10s"] = formatValueOut(getValue(TENSEC));
+		avg["20s"] = formatValueOut(getValue(TWENTYSEC));
+		avg["30s"] = formatValueOut(getValue(THIRTYSEC));
+		avg["1min"] = formatValueOut(getValue(ONEMIN));
+		avg["2min"] = formatValueOut(getValue(TWOMIN));
+		avg["5min"] = formatValueOut(getValue(FIVEMIN));
+		avg["15min"] = formatValueOut(getValue(QUARTER));
+		avg["30min"] = formatValueOut(getValue(HALF));
+		avg["1h"] = formatValueOut(getValue(ONE));
+		avg["2h"] = formatValueOut(getValue(TWO));
+		avg["3h"] = formatValueOut(getValue(THREE));
+		avg["4h"] = formatValueOut(getValue(FOUR));
+		avg["6h"] = formatValueOut(getValue(SIX));
+		avg["12h"] = formatValueOut(getValue(TWELVE));
+		avg["1d"] = formatValueOut(getValue(DAILY));
+		avg["2d"] = formatValueOut(getValue(BIDAILY));
+		avg["1w"] = formatValueOut(getValue(WEEKLY));
+		avg["2w"] = formatValueOut(getValue(BIWEEKLY));
 	}
-	//Hour Values
+	//Minute Values
 	if (scope == DETAILS || scope == DATE_MIN || scope == DATE_ALL) {
-		data["frq"] = SENS_VALUES_MIN;
+		data["frq"] = 60/SENS_VALUES_MIN;
+		data["frq_unit"] = "s";
+
 		data["min_ptr"] = min_ptr;
 		
 		int counter = 0;
@@ -680,7 +693,7 @@ void AdvancedSensor<ReturnType>::serializeJSON(JsonObject & data, Scope scope)
 		JsonArray& minutes = data.createNestedArray("min_vals");
 
 		while (counter < SENS_VALUES_MIN) {
-			minutes.add(toNAN(min_values[ptr]));
+			minutes.add(formatValueOut(min_values[ptr]));
 
 			counter++;
 			ptr--;
@@ -692,7 +705,8 @@ void AdvancedSensor<ReturnType>::serializeJSON(JsonObject & data, Scope scope)
 	//Hour Values
 	if (scope == DETAILS || scope == DATE_HOUR || scope == DATE_ALL) {
 		data["h_ptr"] = hour_ptr;
-		data["frq"] = SENS_VALUES_HOUR;
+		data["frq"] = 60/SENS_VALUES_HOUR;
+		data["frq_unit"] = "min";
 
 		int counter = 0;
 		int ptr = hour_ptr;
@@ -700,7 +714,7 @@ void AdvancedSensor<ReturnType>::serializeJSON(JsonObject & data, Scope scope)
 		JsonArray& hours = data.createNestedArray("h_vals");
 
 		while (counter < SENS_VALUES_HOUR) {
-			hours.add(toNAN(hour_values[ptr]));
+			hours.add(formatValueOut(hour_values[ptr]));
 
 			counter++;
 			ptr--;
@@ -712,7 +726,8 @@ void AdvancedSensor<ReturnType>::serializeJSON(JsonObject & data, Scope scope)
 	//Day Values
 	if (scope == DETAILS || scope == DATE_DAY || scope == DATE_ALL) {
 		data["d_ptr"] = day_ptr;
-		data["frq"] = SENS_VALUES_DAY;
+		data["frq"] = 1440 / SENS_VALUES_DAY;
+		data["frq_unit"] = "min";
 
 		int counter = 0;
 		int ptr = day_ptr;
@@ -720,7 +735,7 @@ void AdvancedSensor<ReturnType>::serializeJSON(JsonObject & data, Scope scope)
 		JsonArray& days = data.createNestedArray("d_vals");
 
 		while (counter < SENS_VALUES_DAY) {
-			days.add(toNAN(day_values[ptr]));
+			days.add(formatValueOut(day_values[ptr]));
 
 			counter++;
 			ptr--;
@@ -732,15 +747,16 @@ void AdvancedSensor<ReturnType>::serializeJSON(JsonObject & data, Scope scope)
 	//Month Values
 	if (scope == DETAILS || scope == DATE_MONTH || scope == DATE_ALL) {
 		data["m_ptr"] = month_ptr;
-		data["frq"] = SENS_VALUES_MONTH;
-		
+		data["frq"] = 672/ (SENS_VALUES_MONTH / NUM_MONTH);
+		data["frq_unit"] = "h";
+
 		int counter = 0;
 		int ptr = month_ptr;
 
 		JsonArray& month = data.createNestedArray("m_vals");
 
 		while (counter < SENS_VALUES_MONTH) {
-			month.add(toNAN(month_values[ptr]));
+			month.add(formatValueOut(month_values[ptr]));
 
 			counter++;
 			ptr--;
@@ -764,10 +780,10 @@ bool AdvancedSensor<ReturnType>::deserializeJSON(JsonObject & data)
 		if (data["d_ptr"] != "") day_ptr = data["d_ptr"];
 		if (data["m_ptr"] != "") month_ptr = data["m_ptr"];
 
-		for (int j = 0; j < SENS_VALUES_MIN; j++) if (data["min_vals"][j] != "") min_values[j] = fromNAN(data["min_vals"][j]);
-		for (int j = 0; j < SENS_VALUES_HOUR; j++) if (data["h_vals"][j] != "") hour_values[j] = fromNAN(data["h_vals"][j]);
-		for (int j = 0; j < SENS_VALUES_DAY; j++) if (data["d_vals"][j] != "") day_values[j] = fromNAN(data["d_vals"][j]);
-		for (int j = 0; j < SENS_VALUES_MONTH; j++) if (data["m_vals"][j] != "") month_values[j] = fromNAN(data["m_vals"][j]);
+		for (int j = 0; j < SENS_VALUES_MIN; j++) if (data["min_vals"][j] != "") min_values[j] = formatValueIn(data["min_vals"][j]);
+		for (int j = 0; j < SENS_VALUES_HOUR; j++) if (data["h_vals"][j] != "") hour_values[j] = formatValueIn(data["h_vals"][j]);
+		for (int j = 0; j < SENS_VALUES_DAY; j++) if (data["d_vals"][j] != "") day_values[j] = formatValueIn(data["d_vals"][j]);
+		for (int j = 0; j < SENS_VALUES_MONTH; j++) if (data["m_vals"][j] != "") month_values[j] = formatValueIn(data["m_vals"][j]);
 
 		LOGDEBUG2(F("[AdvancedSensor]"), F("serializeJSON()"), F("OK: Serialized members"), F("Sensor"), String(this->title), String(data.size()));
 	}
@@ -777,11 +793,10 @@ bool AdvancedSensor<ReturnType>::deserializeJSON(JsonObject & data)
 	return data.success();
 }
 
-BMETemperature::BMETemperature(uint8_t id, BME280I2C * bme, bool active, String title, String unit, float nan_val, float min_val, float max_val) :
-	AdvancedSensor<float>(id, title, unit, active, nan_val, min_val, max_val)
+BMETemperature::BMETemperature(uint8_t id, BME280I2C * bme, bool active, String title, String unit, float nan_val, float min_val, float max_val, uint8_t precision) :
+	AdvancedSensor<float>(id, title, unit, active, nan_val, min_val, max_val, precision)
 {
 	this->bme = bme;
-
 	this->type = TEMPERATURE;
 }
 
@@ -803,7 +818,6 @@ BMEHumidity::BMEHumidity(uint8_t id, BME280I2C * bme, bool active, String title,
 	:	AdvancedSensor<int8_t>(id, title, unit, active, nan_val, min_val, max_val)
 {
 	this->bme = bme;
-
 	this->type = HUMIDITY;
 }
 
@@ -821,11 +835,10 @@ int8_t BMEHumidity::readValue()
 	return float(adj_val);
 }
 
-BMEPressure::BMEPressure(uint8_t id, BME280I2C * bme, bool active, String title, String unit, float nan_val, float min_val, float max_val)
-	: AdvancedSensor<float>(id, title, unit, active, nan_val, min_val, max_val)
+BMEPressure::BMEPressure(uint8_t id, BME280I2C * bme, bool active, String title, String unit, float nan_val, float min_val, float max_val, uint8_t precision)
+	: AdvancedSensor<float>(id, title, unit, active, nan_val, min_val, max_val, precision)
 {
 	this->bme = bme;
-
 	this->type = PRESSURE;
 }
 
@@ -836,7 +849,7 @@ float BMEPressure::readRaw()
 
 float BMEPressure::readValue()
 {
-	float adj_val = float(readRaw() / 1000);
+	float adj_val = float(readRaw() / 100);
 
 	LOGDEBUG3(F("[BMEPressure]"), F("readValue()"), F("INFO: Air Pressure "), String(adj_val), "", "");
 	return float(adj_val);

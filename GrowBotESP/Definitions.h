@@ -9,10 +9,10 @@
 	#include "WProgram.h"
 #endif
 
-#define GROWBOT_FIRMWARE 4
+#define GROWBOT_FIRMWARE 5
 
 //Wifi
-#define WIFI_TIMEOUT 60
+#define WIFI_TIMEOUT 120
 #define NTP true
 #define NTP_TIMEOUT 30
 
@@ -36,7 +36,7 @@
 #define DIST2_ECHO 26
 
 //Settings
-#define DEBUG_RESET false
+#define DEBUG_RESET true
 
 //Tact
 #define TASK_FRQ_SEC 1

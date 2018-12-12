@@ -45,8 +45,9 @@ template <class ReturnType>
 class AdvancedSensor : public SensorInterface {
 private:
 	//Methods to prepare NAN values for JSON serialization / deserialization
-	String toNAN(ReturnType i);
-	ReturnType fromNAN(String str);
+	String formatValueOut(ReturnType value);
+	ReturnType formatValueIn(String str);
+
 	//Calculate Average
 	float average(int start, int num_elements, ReturnType * values, int max);
 public:
@@ -55,6 +56,7 @@ public:
 	String title;
 	String unit;
 	SensorTypes type;
+	uint8_t precision;
 	bool active;
 
 	//Sensor Value
@@ -78,7 +80,7 @@ public:
 	int day_ptr = SENS_VALUES_DAY;
 	int month_ptr = SENS_VALUES_MONTH;
 
-	AdvancedSensor(uint8_t id, String title, String unit, bool active, ReturnType nan_val, ReturnType min_val, ReturnType max_val);
+	AdvancedSensor(uint8_t id, String title, String unit, bool active, ReturnType nan_val, ReturnType min_val, ReturnType max_val, uint8_t precision = 0);
 	void reset();
 
 	String getTitle();
@@ -106,8 +108,10 @@ public:
 class BMETemperature : public AdvancedSensor<float> {
 private:
 	BME280I2C *bme = NULL;
+	uint8_t precision;
+
 public:
-	BMETemperature(uint8_t id, BME280I2C *bme, bool active, String title, String unit, float nan_val, float min_val, float max_val);
+	BMETemperature(uint8_t id, BME280I2C *bme, bool active, String title, String unit, float nan_val, float min_val, float max_val, uint8_t precision);
 	float readRaw();
 	float readValue();
 };
@@ -124,8 +128,9 @@ public:
 class BMEPressure : public AdvancedSensor<float> {
 private:
 	BME280I2C *bme = NULL;
+
 public:
-	BMEPressure(uint8_t id, BME280I2C *bme, bool active, String title, String unit, float nan_val, float min_val, float max_val);
+	BMEPressure(uint8_t id, BME280I2C *bme, bool active, String title, String unit, float nan_val, float min_val, float max_val, uint8_t precision);
 	float readRaw();
 	float readValue();
 };

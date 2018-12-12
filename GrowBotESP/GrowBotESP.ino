@@ -65,7 +65,7 @@ Ultrasonic distance1(DIST1_TRIG, DIST1_ECHO);
 Ultrasonic distance2(DIST2_TRIG, DIST2_ECHO);
 
 //Settings
-Setting settings("/_CURRENTCONFIG.JSON", "/DEFAULTCONFIG.JSON.JSON", "/_CURRENTCONFIG.JSON.BAK", "/LOG.JSON", "wgempire", "ert456sdf233sa!!!", "growAI", "1234qwert", "admin", "");
+Setting settings("/_CURRENTCONFIG.JSON", "/DEFAULTCONFIG.JSON.JSON", "/_CURRENTCONFIG.JSON.BAK", "/LOG.JSON", "wgempireXT", "ert456sdf234ss!!!", "gAI", "1234qwert!", "admin", "");
 
 //RealTimeClock
 RealTimeClock internalRTC(2018, 10, 1, 7200);
@@ -142,9 +142,9 @@ void setup() {
 
 	//Initialize Sensors
 	LOGMSG("[Setup]", "Initializing Sensors", "", "", "");
-	sensors[0] = new	BMETemperature(0, &bme, true, F("Temperature"), F("C"), -127.0, -50, 100);
+	sensors[0] = new	BMETemperature(0, &bme, true, F("Temperature"), F("C"), -127.0, -15.0, 40.0, 1);
 	sensors[1] = new 	BMEHumidity(1, &bme, true, F("Humidity"), F("%"), -1, 0, 100);
-	sensors[2] = new 	BMEPressure(2, &bme, true, F("Pressure"), F("kPa"), -1.0, 95.0, 105.0);
+	sensors[2] = new 	BMEPressure(2, &bme, true, F("Pressure"), F("hPa"), -1.0, 95.0, 108.0, 3);
 	sensors[3] = new 	CapacityMoistureSensor(3, IN_MOS_1, 12, 12, ADC_11db, true, F("Soil 1"), F("%"), -1, 0, 100);
 	sensors[4] = new 	CapacityMoistureSensor(4, IN_MOS_2, 12, 12, ADC_11db, true, F("Soil 2"), F("%"), -1, 0, 100);
 	sensors[5] = new 	CapacityMoistureSensor(5, IN_MOS_3, 12, 12, ADC_11db, true, F("Soil 3"), F("%"), -1, 0, 100);
@@ -254,7 +254,7 @@ void setup() {
 				led[1]->switchState();
 				led[2]->switchState();
 			}
-			ESP.restart();
+			//ESP.restart();
 		}
 		else {
 			delay(1000);
