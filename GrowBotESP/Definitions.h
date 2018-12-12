@@ -36,7 +36,7 @@
 #define DIST2_ECHO 26
 
 //Settings
-#define DEBUG_RESET true
+#define DEBUG_RESET false
 
 //Tact
 #define TASK_FRQ_SEC 1

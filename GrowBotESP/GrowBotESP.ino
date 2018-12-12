@@ -144,13 +144,13 @@ void setup() {
 	LOGMSG("[Setup]", "Initializing Sensors", "", "", "");
 	sensors[0] = new	BMETemperature(0, &bme, true, F("Temperature"), F("C"), -127.0, -15.0, 40.0, 1);
 	sensors[1] = new 	BMEHumidity(1, &bme, true, F("Humidity"), F("%"), -1, 0, 100);
-	sensors[2] = new 	BMEPressure(2, &bme, true, F("Pressure"), F("hPa"), -1.0, 95.0, 108.0, 3);
+	sensors[2] = new 	BMEPressure(2, &bme, true, F("Pressure"), F("hPa"), -1.0, 950.0, 1080.0, 3);
 	sensors[3] = new 	CapacityMoistureSensor(3, IN_MOS_1, 12, 12, ADC_11db, true, F("Soil 1"), F("%"), -1, 0, 100);
 	sensors[4] = new 	CapacityMoistureSensor(4, IN_MOS_2, 12, 12, ADC_11db, true, F("Soil 2"), F("%"), -1, 0, 100);
 	sensors[5] = new 	CapacityMoistureSensor(5, IN_MOS_3, 12, 12, ADC_11db, true, F("Soil 3"), F("%"), -1, 0, 100);
 	sensors[6] = new 	CapacityMoistureSensor(6, IN_MOS_4, 12, 12, ADC_11db, true, F("Soil 4"), F("%"), -1, 0, 100);
-	sensors[7] = new 	DistanceLampSensor(7, &distance2, true, F("Distance Lamp"), F("cm"), -1, 0, 400);
-	sensors[8] = new 	HeightSensor(8, &distance1, &distance2, true, F("Height Sensor"), F("cm"), -1, 0, 400);
+	sensors[7] = new 	DistanceLampSensor(7, &distance2, true, F("Distance Lamp"), F("cm"), -1, 0, 200);
+	sensors[8] = new 	HeightSensor(8, &distance1, &distance2, true, F("Height Sensor"), F("cm"), -1, 0, 200);
 
 	//Initialize Trigger
 	LOGMSG("[Setup]", "Initializing Triggers", "", "", "");
