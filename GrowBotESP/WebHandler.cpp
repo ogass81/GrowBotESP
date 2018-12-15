@@ -348,6 +348,7 @@ void Webhandler::sensorGet(AsyncWebServerRequest * request)
 {
 	String uri[REST_URI_DEPTH];
 	String url = request->url();
+	Sort sort = RAW;
 
 	char temp[url.length() + 1];
 	url.toCharArray(temp, url.length() + 1);
@@ -355,6 +356,14 @@ void Webhandler::sensorGet(AsyncWebServerRequest * request)
 
 	if (!request->authenticate(settings.http_user.c_str(), settings.http_pw.c_str()))
 		return request->requestAuthentication();;
+	
+	if (uri[3] != "") {
+		if (uri[3] == "desc") sort = DESC;
+		else if (uri[3] == "asc") sort = ASC;
+		else sort = RAW;
+	}
+	else sort = RAW;
+	LOGDEBUG(F("[WebServer]"), F("sensorGet()"), F("Sort"), sort, uri[3], "");
 
 	if (uri[1] == "") {
 		LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action GET"), F("List"), "");
@@ -368,7 +377,7 @@ void Webhandler::sensorGet(AsyncWebServerRequest * request)
 		JsonArray&	list = root.createNestedArray("list");
 		for (uint8_t i = 0; i < SENS_NUM; i++) {
 			JsonObject& element = list.createNestedObject();
-			sensors[i]->serializeJSON(element, LIST);
+			sensors[i]->serializeJSON(element, LIST, sort);
 		}
 		response->setLength();
 		request->send(response);
@@ -381,7 +390,7 @@ void Webhandler::sensorGet(AsyncWebServerRequest * request)
 
 			JsonObject& root = response->getRoot();
 
-			sensors[uri[1].toInt()]->serializeJSON(root, HEADER);
+			sensors[uri[1].toInt()]->serializeJSON(root, HEADER, sort);
 			response->setLength();
 			request->send(response);
 
@@ -392,7 +401,7 @@ void Webhandler::sensorGet(AsyncWebServerRequest * request)
 			response->addHeader("Server", "GrowAI");
 
 			JsonObject& root = response->getRoot();
-			sensors[uri[1].toInt()]->serializeJSON(root, DETAILS);
+			sensors[uri[1].toInt()]->serializeJSON(root, DETAILS, sort);
 			response->setLength();
 			request->send(response);
 			LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action GET"), String(uri[1]), F("Scope: Details"));
@@ -402,62 +411,62 @@ void Webhandler::sensorGet(AsyncWebServerRequest * request)
 			response->addHeader("Server", "GrowAI");
 
 			JsonObject& root = response->getRoot();
-			sensors[uri[1].toInt()]->serializeJSON(root, AVG);
+			sensors[uri[1].toInt()]->serializeJSON(root, AVG, sort);
 			response->setLength();
 			request->send(response);
 
 			LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action GET"), String(uri[1]), F("Scope: AVG"));
 		}
-		else if (uri[2] == "date_min") {
+		else if (uri[2] == "minute") {
 			AsyncJsonResponse * response = new AsyncJsonResponse();
 			response->addHeader("Server", "GrowAI");
 
 			JsonObject& root = response->getRoot();
-			sensors[uri[1].toInt()]->serializeJSON(root, DATE_MIN);
+			sensors[uri[1].toInt()]->serializeJSON(root, DATE_MIN, sort);
 			response->setLength();
 			request->send(response);
 
 			LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action GET"), String(uri[1]), F("Scope: MIN"));
 		}
-		else if (uri[2] == "date_hour") {
+		else if (uri[2] == "hour") {
 			AsyncJsonResponse * response = new AsyncJsonResponse();
 			response->addHeader("Server", "GrowAI");
 
 			JsonObject& root = response->getRoot();
-			sensors[uri[1].toInt()]->serializeJSON(root, DATE_HOUR);
+			sensors[uri[1].toInt()]->serializeJSON(root, DATE_HOUR, sort);
 			response->setLength();
 			request->send(response);
 
 			LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action GET"), String(uri[1]), F("Scope: HOUR"));
 		}
-		else if (uri[2] == "date_day") {
+		else if (uri[2] == "day") {
 			AsyncJsonResponse * response = new AsyncJsonResponse();
 			response->addHeader("Server", "GrowAI");
 
 			JsonObject& root = response->getRoot();
-			sensors[uri[1].toInt()]->serializeJSON(root, DATE_DAY);
+			sensors[uri[1].toInt()]->serializeJSON(root, DATE_DAY, sort);
 			response->setLength();
 			request->send(response);
 
 			LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action GET"), String(uri[1]), F("Scope: DAY"));
 		}
-		else if (uri[2] == "date_month") {
+		else if (uri[2] == "month") {
 			AsyncJsonResponse * response = new AsyncJsonResponse();
 			response->addHeader("Server", "GrowAI");
 
 			JsonObject& root = response->getRoot();
-			sensors[uri[1].toInt()]->serializeJSON(root, DATE_MONTH);
+			sensors[uri[1].toInt()]->serializeJSON(root, DATE_MONTH, sort);
 			response->setLength();
 			request->send(response);
 
 			LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Sensor Action GET"), String(uri[1]), F("Scope: MONTH"));
 		}
-		else if (uri[2] == "date_all") {
+		else if (uri[2] == "all") {
 			AsyncJsonResponse * response = new AsyncJsonResponse();
 			response->addHeader("Server", "GrowAI");
 
 			JsonObject& root = response->getRoot();
-			sensors[uri[1].toInt()]->serializeJSON(root, DATE_ALL);
+			sensors[uri[1].toInt()]->serializeJSON(root, DATE_ALL, sort);
 			response->setLength();
 			request->send(response);
 

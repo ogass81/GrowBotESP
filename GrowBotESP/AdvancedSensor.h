@@ -33,7 +33,7 @@ public:
 	virtual bool compareWithValue(RelOp relop, Interval interval, float value, int8_t tolerance);
 
 	//Serialize
-	virtual void serializeJSON(JsonObject& data, Scope scope);
+	virtual void serializeJSON(JsonObject& data, Scope scope, Sort sort);
 	virtual bool deserializeJSON(JsonObject& data);
 
 	//Settings
@@ -101,7 +101,7 @@ public:
 	bool compareWithValue(RelOp relop, Interval interval, float value, int8_t tolerance);
 
 	//Serialize
-	void serializeJSON(JsonObject& data, Scope scope);
+	void serializeJSON(JsonObject& data, Scope scope, Sort sort);
 	bool deserializeJSON(JsonObject& data);
 };
 
@@ -156,7 +156,7 @@ public:
 	short readRaw();
 	short readValue();
 
-	void serializeJSON(JsonObject& data, Scope scope);
+	void serializeJSON(JsonObject& data, Scope scope, Sort sort);
 };
 
 class CapacityMoistureSensor : public AdvancedSensor<short> {
@@ -170,7 +170,7 @@ public:
 	CapacityMoistureSensor(uint8_t id, uint8_t pin, uint8_t resolution, uint8_t width, adc_attenuation_t attentuation, bool active, String title, String unit, short nan_val, short min_val, short max_val);
 	short readRaw();
 	short readValue();
-	void serializeJSON(JsonObject& data, Scope scope);
+	void serializeJSON(JsonObject& data, Scope scope, Sort sort);
 };
 #endif
 

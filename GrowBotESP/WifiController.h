@@ -15,8 +15,8 @@
 #include "Setting.h"
 
 extern Setting settings;
-//extern WiFiUDP udp;
-//extern NTPClient ntpclient;
+extern LogEngine logengine;
+
 
 class WifiHandler : WiFiClass {
 public:

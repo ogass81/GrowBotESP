@@ -65,7 +65,7 @@ Ultrasonic distance1(DIST1_TRIG, DIST1_ECHO);
 Ultrasonic distance2(DIST2_TRIG, DIST2_ECHO);
 
 //Settings
-Setting settings("/_CURRENTCONFIG.JSON", "/DEFAULTCONFIG.JSON.JSON", "/_CURRENTCONFIG.JSON.BAK", "/LOG.JSON", "wgempireXT", "ert456sdf234ss!!!", "gAI", "1234qwert!", "admin", "");
+Setting settings("/_CURRENTCONFIG.JSON", "/DEFAULTCONFIG.JSON.JSON", "/_CURRENTCONFIG.JSON.BAK", "/LOG.JSON", "wgempireXT", "ert456sdf234ss!!!", "gAIXT", "1234qwert!!!", "admin", "");
 
 //RealTimeClock
 RealTimeClock internalRTC(2018, 10, 1, 7200);

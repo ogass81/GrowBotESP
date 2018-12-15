@@ -346,7 +346,7 @@ bool Setting::saveSettings(const char*  filename)
 			LOGDEBUG2(F("[Setting]"), F("saveSettings()"), F("Free HEAP before Sensors"), String(ESP.getFreeHeap()), "", "");
 			jsonbuffer.clear();
 			JsonObject& data = jsonbuffer.createObject();
-			sensors[i]->serializeJSON(data, DETAILS);
+			sensors[i]->serializeJSON(data, DETAILS, RAW);
 			data.printTo(file);
 			file.println();
 			led[2]->switchState();			

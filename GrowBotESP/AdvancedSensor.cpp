@@ -25,7 +25,7 @@ bool SensorInterface::compareWithValue(RelOp relop, Interval interval, float val
 	return false;
 }
 
-void SensorInterface::serializeJSON(JsonObject & data, Scope scope)
+void SensorInterface::serializeJSON(JsonObject & data, Scope scope, Sort sort)
 {
 }
 
@@ -603,7 +603,7 @@ bool AdvancedSensor<float>::compareWithValue(RelOp relop, Interval interval, flo
 }
 
 template<class ReturnType>
-void AdvancedSensor<ReturnType>::serializeJSON(JsonObject & data, Scope scope)
+void AdvancedSensor<ReturnType>::serializeJSON(JsonObject & data, Scope scope, Sort sort)
 {
 	//List View
 	if (scope == LIST) {
@@ -686,19 +686,33 @@ void AdvancedSensor<ReturnType>::serializeJSON(JsonObject & data, Scope scope)
 		data["frq_unit"] = "s";
 
 		data["min_ptr"] = min_ptr;
-		
+
+		//Counter Variables
 		int counter = 0;
-		int ptr = min_ptr;
-		
+		int ptr = 0;
+
+		//Start at current pointer + 1 for old to new and count forward
+		if(sort == ASC) ptr = min_ptr+1;
+		//Start a current pointer and count backwards
+		else if (sort == DESC) ptr = min_ptr;
+		//Start at 0 and count forward
+		else ptr = 0;
+
 		JsonArray& minutes = data.createNestedArray("min_vals");
 
 		while (counter < SENS_VALUES_MIN) {
 			minutes.add(formatValueOut(min_values[ptr]));
 
 			counter++;
-			ptr--;
+			
+			//Move pointer forward
+			if(sort == ASC || sort == RAW) ptr++;
+			//Move pointer backwards
+			else ptr--;
 
+			//Prevent index out of bound
 			if (ptr < 0) ptr = SENS_VALUES_MIN - 1;
+			else if (ptr == SENS_VALUES_MIN) ptr = 0;
 		}
 	}
 
@@ -708,8 +722,16 @@ void AdvancedSensor<ReturnType>::serializeJSON(JsonObject & data, Scope scope)
 		data["frq"] = 60/SENS_VALUES_HOUR;
 		data["frq_unit"] = "min";
 
+		//Counter Variables
 		int counter = 0;
-		int ptr = hour_ptr;
+		int ptr = 0;
+
+		//Start at current pointer + 1 for old to new and count forward
+		if (sort == ASC) ptr = min_ptr + 1;
+		//Start a current pointer and count backwards
+		else if (sort == DESC) ptr = min_ptr;
+		//Start at 0 and count forward
+		else ptr = 0;
 
 		JsonArray& hours = data.createNestedArray("h_vals");
 
@@ -717,9 +739,15 @@ void AdvancedSensor<ReturnType>::serializeJSON(JsonObject & data, Scope scope)
 			hours.add(formatValueOut(hour_values[ptr]));
 
 			counter++;
-			ptr--;
 
+			//Move pointer forward
+			if (sort == ASC || sort == RAW) ptr++;
+			//Move pointer backwards
+			else ptr--;
+
+			//Prevent index out of bound
 			if (ptr < 0) ptr = SENS_VALUES_HOUR - 1;
+			else if (ptr == SENS_VALUES_HOUR) ptr = 0;
 		}
 	}
 
@@ -729,8 +757,16 @@ void AdvancedSensor<ReturnType>::serializeJSON(JsonObject & data, Scope scope)
 		data["frq"] = 1440 / SENS_VALUES_DAY;
 		data["frq_unit"] = "min";
 
+		//Counter Variables
 		int counter = 0;
-		int ptr = day_ptr;
+		int ptr = 0;
+
+		//Start at current pointer + 1 for old to new and count forward
+		if (sort == ASC) ptr = min_ptr + 1;
+		//Start a current pointer and count backwards
+		else if (sort == DESC) ptr = min_ptr;
+		//Start at 0 and count forward
+		else ptr = 0;
 
 		JsonArray& days = data.createNestedArray("d_vals");
 
@@ -738,9 +774,15 @@ void AdvancedSensor<ReturnType>::serializeJSON(JsonObject & data, Scope scope)
 			days.add(formatValueOut(day_values[ptr]));
 
 			counter++;
-			ptr--;
 
+			//Move pointer forward
+			if (sort == ASC || sort == RAW) ptr++;
+			//Move pointer backwards
+			else ptr--;
+
+			//Prevent index out of bound
 			if (ptr < 0) ptr = SENS_VALUES_DAY - 1;
+			else if (ptr == SENS_VALUES_DAY) ptr = 0;
 		}
 	}
 
@@ -750,8 +792,16 @@ void AdvancedSensor<ReturnType>::serializeJSON(JsonObject & data, Scope scope)
 		data["frq"] = 672/ (SENS_VALUES_MONTH / NUM_MONTH);
 		data["frq_unit"] = "h";
 
+		//Counter Variables
 		int counter = 0;
-		int ptr = month_ptr;
+		int ptr = 0;
+
+		//Start at current pointer + 1 for old to new and count forward
+		if (sort == ASC) ptr = min_ptr + 1;
+		//Start a current pointer and count backwards
+		else if (sort == DESC) ptr = min_ptr;
+		//Start at 0 and count forward
+		else ptr = 0;
 
 		JsonArray& month = data.createNestedArray("m_vals");
 
@@ -759,9 +809,15 @@ void AdvancedSensor<ReturnType>::serializeJSON(JsonObject & data, Scope scope)
 			month.add(formatValueOut(month_values[ptr]));
 
 			counter++;
-			ptr--;
 
+			//Move pointer forward
+			if (sort == ASC || sort == RAW) ptr++;
+			//Move pointer backwards
+			else ptr--;
+
+			//Prevent index out of bound
 			if (ptr < 0) ptr = SENS_VALUES_MONTH - 1;
+			else if (ptr == SENS_VALUES_MONTH) ptr = 0;
 		}
 	}
 
@@ -948,9 +1004,9 @@ short HeightSensor::readValue()
 	return short(readRaw());
 }
 
-void HeightSensor::serializeJSON(JsonObject & data, Scope scope)
+void HeightSensor::serializeJSON(JsonObject & data, Scope scope, Sort sort)
 {
-	AdvancedSensor::serializeJSON(data, scope);
+	AdvancedSensor::serializeJSON(data, scope, sort);
 	data["toTop"] = readSensor(distance1);
 	data ["toBottom"] = readSensor(distance2);
 }
@@ -1026,8 +1082,8 @@ short CapacityMoistureSensor::readValue()
 	return (short)adj_val;
 }
 
-void CapacityMoistureSensor::serializeJSON(JsonObject& data, Scope scope)
+void CapacityMoistureSensor::serializeJSON(JsonObject& data, Scope scope, Sort sort)
 {
-	AdvancedSensor::serializeJSON(data, scope);
+	AdvancedSensor::serializeJSON(data, scope, sort);
 	data["raw"] = readRaw();
 }
