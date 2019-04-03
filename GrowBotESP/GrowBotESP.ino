@@ -4,8 +4,6 @@
  Author:	ogass
 */
 
-
-
 ////Helper
 #include "Definitions.h"
 #include "soc/soc.h"
@@ -68,7 +66,7 @@ Ultrasonic distance2(DIST2_TRIG, DIST2_ECHO);
 Setting settings("/_CURRENTCONFIG.JSON", "/DEFAULTCONFIG.JSON.JSON", "/_CURRENTCONFIG.JSON.BAK", "/LOG.JSON", "wgempireXT", "ert456sdf234ss!!!", "gAIXT", "1234qwert!!!", "admin", "");
 
 //RealTimeClock
-RealTimeClock internalRTC(2018, 10, 1, 7200);
+RealTimeClock internalRTC(2019, 4, 1, 7200);
 
 //433Mhz
 RCSocketController *rcsocketcontroller;
@@ -139,6 +137,10 @@ void setup() {
 	//433Mhz
 	LOGMSG("[Setup]", "Initializing 433 Mhz Controller", "", "", "");
 	rcsocketcontroller = new RCSocketController(TX_DATA_PIN, RX_DATA_PIN);
+
+	//Start Taskmanager
+	LOGMSG("[Setup]", "Initializing Task Manager", "", "", "");
+	taskmanager = new TaskManager();
 
 	//Initialize Sensors
 	LOGMSG("[Setup]", "Initializing Sensors", "", "", "");
@@ -221,6 +223,8 @@ void setup() {
 			group++;
 		}
 	}
+
+	actions[i] = new SimpleAction<TaskManager>(i,"Reset Taskmanager", taskmanager, &TaskManager::reset, true);
 	
 	//Initialize ActionChains
 	LOGMSG("[Setup]", "Initializing Actionchains", "", "", "");
@@ -237,10 +241,6 @@ void setup() {
 	//Initialize Settings from File
 	LOGMSG("[Setup]", "Loading Settings from SD Card", "", "", "");
 	settings.begin();
-
-	//Start Taskmanager
-	LOGMSG("[Setup]", "Initializing Task Manager", "", "", "");
-	taskmanager = new TaskManager();
 
 	//Wifi
 	LOGMSG("[Setup]", "Initializing Wifi", "", "", "");
@@ -354,9 +354,12 @@ void loop() {
 				String keys[] = { "" };
 				String values[] = { "" };
 				logengine.addLogEntry(INFO, "Main", "Saved Configuration", keys, values, 0);
-
+				
 				xTaskCreate(Setting::asyncSaveActiveConfig, "Save Config", 16384, &settings, 1, NULL);
-			}	
+			}
+
+			//Check Wifi
+			wifihandler.connectionWatchdog();
 		}
 
 		//Get Seconds from Clock

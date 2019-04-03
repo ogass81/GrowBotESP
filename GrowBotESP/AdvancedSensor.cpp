@@ -201,15 +201,34 @@ ReturnType AdvancedSensor<ReturnType>::getValue(Interval interval)
 
 		avg = average(hour_ptr, element_count, hour_values, SENS_VALUES_HOUR);
 		break;
+
+	case TENMIN:
+		int_length = 3600 / SENS_VALUES_HOUR;
+		element_count = 600 / int_length;
+
+		avg = average(hour_ptr, element_count, hour_values, SENS_VALUES_HOUR);
+		break;
 	case QUARTER:
 		int_length = 3600 / SENS_VALUES_HOUR;
 		element_count = 900 / int_length;
 
 		avg = average(hour_ptr, element_count, hour_values, SENS_VALUES_HOUR);
 		break;
+	case TWENMIN:
+		int_length = 3600 / SENS_VALUES_HOUR;
+		element_count = 1200 / int_length;
+
+		avg = average(hour_ptr, element_count, hour_values, SENS_VALUES_HOUR);
+		break;
 	case HALF:
 		int_length = 3600 / SENS_VALUES_HOUR;
 		element_count = 1800 / int_length;
+
+		avg = average(hour_ptr, element_count, hour_values, SENS_VALUES_HOUR);
+		break;
+	case FORTMIN:
+		int_length = 3600 / SENS_VALUES_HOUR;
+		element_count = 2400 / int_length;
 
 		avg = average(hour_ptr, element_count, hour_values, SENS_VALUES_HOUR);
 		break;
@@ -341,15 +360,33 @@ float AdvancedSensor<float>::getValue(Interval interval)
 
 		avg = average(hour_ptr, element_count, hour_values, SENS_VALUES_HOUR);
 		break;
+	case TENMIN:
+		int_length = 3600 / SENS_VALUES_HOUR;
+		element_count = 600 / int_length;
+
+		avg = average(hour_ptr, element_count, hour_values, SENS_VALUES_HOUR);
+		break;
 	case QUARTER:
 		int_length = 3600 / SENS_VALUES_HOUR;
 		element_count = 900 / int_length;
 
 		avg = average(hour_ptr, element_count, hour_values, SENS_VALUES_HOUR);
 		break;
+	case TWENMIN:
+		int_length = 3600 / SENS_VALUES_HOUR;
+		element_count = 1200 / int_length;
+
+		avg = average(hour_ptr, element_count, hour_values, SENS_VALUES_HOUR);
+		break;
 	case HALF:
 		int_length = 3600 / SENS_VALUES_HOUR;
 		element_count = 1800 / int_length;
+
+		avg = average(hour_ptr, element_count, hour_values, SENS_VALUES_HOUR);
+		break;
+	case FORTMIN:
+		int_length = 3600 / SENS_VALUES_HOUR;
+		element_count = 2400 / int_length;
 
 		avg = average(hour_ptr, element_count, hour_values, SENS_VALUES_HOUR);
 		break;
@@ -667,8 +704,11 @@ void AdvancedSensor<ReturnType>::serializeJSON(JsonObject & data, Scope scope, S
 		avg["1min"] = formatValueOut(getValue(ONEMIN));
 		avg["2min"] = formatValueOut(getValue(TWOMIN));
 		avg["5min"] = formatValueOut(getValue(FIVEMIN));
+		avg["10min"] = formatValueOut(getValue(TENMIN));
 		avg["15min"] = formatValueOut(getValue(QUARTER));
+		avg["20min"] = formatValueOut(getValue(TWENMIN));
 		avg["30min"] = formatValueOut(getValue(HALF));
+		avg["40min"] = formatValueOut(getValue(FORTMIN));
 		avg["1h"] = formatValueOut(getValue(ONE));
 		avg["2h"] = formatValueOut(getValue(TWO));
 		avg["3h"] = formatValueOut(getValue(THREE));
@@ -727,9 +767,9 @@ void AdvancedSensor<ReturnType>::serializeJSON(JsonObject & data, Scope scope, S
 		int ptr = 0;
 
 		//Start at current pointer + 1 for old to new and count forward
-		if (sort == ASC) ptr = min_ptr + 1;
+		if (sort == ASC) ptr = hour_ptr + 1;
 		//Start a current pointer and count backwards
-		else if (sort == DESC) ptr = min_ptr;
+		else if (sort == DESC) ptr = hour_ptr;
 		//Start at 0 and count forward
 		else ptr = 0;
 
@@ -762,9 +802,9 @@ void AdvancedSensor<ReturnType>::serializeJSON(JsonObject & data, Scope scope, S
 		int ptr = 0;
 
 		//Start at current pointer + 1 for old to new and count forward
-		if (sort == ASC) ptr = min_ptr + 1;
+		if (sort == ASC) ptr = day_ptr + 1;
 		//Start a current pointer and count backwards
-		else if (sort == DESC) ptr = min_ptr;
+		else if (sort == DESC) ptr = day_ptr;
 		//Start at 0 and count forward
 		else ptr = 0;
 
@@ -797,9 +837,9 @@ void AdvancedSensor<ReturnType>::serializeJSON(JsonObject & data, Scope scope, S
 		int ptr = 0;
 
 		//Start at current pointer + 1 for old to new and count forward
-		if (sort == ASC) ptr = min_ptr + 1;
+		if (sort == ASC) ptr = month_ptr + 1;
 		//Start a current pointer and count backwards
-		else if (sort == DESC) ptr = min_ptr;
+		else if (sort == DESC) ptr = month_ptr;
 		//Start at 0 and count forward
 		else ptr = 0;
 

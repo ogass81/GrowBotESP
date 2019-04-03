@@ -21,6 +21,38 @@ void WifiHandler::begin()
 	ntpclient->begin();
 }
 
+void WifiHandler::connectionWatchdog()
+{
+	static uint8_t watchdog = 0;
+
+	if (!ap_client && WATCHDOG) {
+	
+		if (!wifi_connected) {
+			if (++watchdog < WATCHDOG_TIMEOUT) { // timeout in minutes
+				if (watchdog == 1) {
+					LOGMSG(F("[WifiHandler]"), F("connectionWatchdog()"), F("Wifi Watchdog armed"), "", "");
+				}
+			}
+			else {		
+				String keys[] = { "Wifi Status" };
+				String values[] = { String(WiFi.status()) };
+				logengine.addLogEntry(ACTION, "Wifi", "Wifi Watchdog triggered. Reboot.", keys, values, 1);
+				LOGMSG(F("[WifiHandler]"), F("connectionWatchdog()"), F("Wifi Watchdog triggered."), F("Rebooting"), "");
+				settings.saveActiveConfig();
+				LOGMSG2(F("[WebServer]"), F("OK: Valid HTTP Request"), F("Type: Settings Action SAVE"), F("Active Config"), "");
+				delay(5000);
+				ESP.restart();
+			}
+		}
+		else {
+			if (watchdog) {
+				LOGMSG(F("[WifiHandler]"), F("connectionWatchdog()"), F("Disarmed watchdog"), "", "");
+				watchdog = 0;
+			}
+		}
+	}
+}
+
 long WifiHandler::returnNetworkTime()
 {
 	ntpclient->update();
@@ -51,18 +83,22 @@ void WifiHandler::WiFiEvent(WiFiEvent_t event)
 		break;
 	case SYSTEM_EVENT_AP_STACONNECTED:
 		LOGMSG(F("[WifiHandler]"), F("WifiEvent(SYSTEM_EVENT_AP_STACONNECTED)"), F("Client connected to internal Access point"), "", "");
+		ap_client = true;
 		break;
 	case SYSTEM_EVENT_AP_STADISCONNECTED:
 		LOGMSG(F("[WifiHandler]"), F("WifiEvent(SYSTEM_EVENT_AP_STACONNECTED)"), F("Client disconnected internal from access point"), "", "");
+		ap_client = false;
 		break;
 	case SYSTEM_EVENT_STA_START:
 		LOGMSG(F("[WifiHandler]"), F("WifiEvent(SYSTEM_EVENT_STA_START)"), F("Wifi station started"), "", "");
 		WiFi.setHostname(settings.ap_ssid.c_str());
 		LOGMSG(F("[WifiHandler]"), F("WifiEvent(SYSTEM_EVENT_STA_START)"), F("SSID"), settings.ap_ssid, "");
+		sta_enabled = true;
+
 		break;
 	case SYSTEM_EVENT_STA_STOP:
 		LOGMSG(F("[WifiHandler]"), F("WifiEvent(SYSTEM_EVENT_STA_START)"), F("Wifi station stopped"), "", "");
-		wifi_connected = false; 
+		sta_enabled = false; 
 
 		logengine.addLogEntry(ACTION, "Wifi", "Wifi station stopped", keys, values, 0);
 

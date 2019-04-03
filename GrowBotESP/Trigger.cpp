@@ -113,18 +113,21 @@ bool TimeTrigger::deserializeJSON(JsonObject& data)
 			else if (data["intv"] == 4) interval = ONEMIN;
 			else if (data["intv"] == 5) interval = TWOMIN;
 			else if (data["intv"] == 6) interval = FIVEMIN;
-			else if (data["intv"] == 7) interval = QUARTER;
-			else if (data["intv"] == 8) interval = HALF;
-			else if (data["intv"] == 9) interval = ONE;
-			else if (data["intv"] == 10) interval = TWO;
-			else if (data["intv"] == 11) interval = THREE;
-			else if (data["intv"] == 12) interval = FOUR;
-			else if (data["intv"] == 13) interval = SIX;
-			else if (data["intv"] == 14) interval = TWELVE;
-			else if (data["intv"] == 15) interval = DAILY;
-			else if (data["intv"] == 16) interval = BIDAILY;
-			else if (data["intv"] == 17) interval = WEEKLY;
-			else if (data["intv"] == 18) interval = BIWEEKLY;
+			else if (data["intv"] == 7) interval = TENMIN;
+			else if (data["intv"] == 8) interval = QUARTER;
+			else if (data["intv"] == 9) interval = TWENMIN;
+			else if (data["intv"] == 10) interval = HALF;
+			else if (data["intv"] == 11) interval = FORTMIN;
+			else if (data["intv"] == 12) interval = ONE;
+			else if (data["intv"] == 13) interval = TWO;
+			else if (data["intv"] == 14) interval = THREE;
+			else if (data["intv"] == 15) interval = FOUR;
+			else if (data["intv"] == 16) interval = SIX;
+			else if (data["intv"] == 17) interval = TWELVE;
+			else if (data["intv"] == 18) interval = DAILY;
+			else if (data["intv"] == 19) interval = BIDAILY;
+			else if (data["intv"] == 20) interval = WEEKLY;
+			else if (data["intv"] == 21) interval = BIWEEKLY;
 			else {
 				interval = ONEMIN;
 				active = false;
@@ -278,6 +281,23 @@ bool TimeTrigger::checkState()
 				else fired = false;
 
 				break;
+
+			case TENMIN:
+				remainder = checkStateInterval(sensor_start, 600);
+				if (remainder == 0) {
+					fired = true;
+					state = true;
+				}
+				else if (remainder <= 40) {
+					if (fired != true) {
+						state = true;
+						fired = true;
+					}
+				}
+				else fired = false;
+
+				break;
+
 			case QUARTER:
 				remainder = checkStateInterval(sensor_start, 900);
 				if (remainder == 0) {
@@ -293,6 +313,23 @@ bool TimeTrigger::checkState()
 				else fired = false;
 
 				break;
+
+			case TWENMIN:
+				remainder = checkStateInterval(sensor_start, 1200);
+				if (remainder == 0) {
+					fired = true;
+					state = true;
+				}
+				else if (remainder <= 80) {
+					if (fired != true) {
+						state = true;
+						fired = true;
+					}
+				}
+				else fired = false;
+
+				break;
+
 			case HALF:
 				remainder = checkStateInterval(sensor_start, 1800);
 				if (remainder == 0) {
@@ -308,6 +345,23 @@ bool TimeTrigger::checkState()
 				else fired = false;
 
 				break;
+
+			case FORTMIN:
+				remainder = checkStateInterval(sensor_start, 2400);
+				if (remainder == 0) {
+					fired = true;
+					state = true;
+				}
+				else if (remainder <= 160) {
+					if (fired != true) {
+						state = true;
+						fired = true;
+					}
+				}
+				else fired = false;
+
+				break;
+
 			case ONE:
 				remainder = checkStateInterval(sensor_start, 3600);
 				if (remainder == 0) {
@@ -559,18 +613,21 @@ bool SensorTrigger::deserializeJSON(JsonObject& data)
 			else if (data["intv"] == 4) interval = ONEMIN;
 			else if (data["intv"] == 5) interval = TWOMIN;
 			else if (data["intv"] == 6) interval = FIVEMIN;
-			else if (data["intv"] == 7) interval = QUARTER;
-			else if (data["intv"] == 8) interval = HALF;
-			else if (data["intv"] == 9) interval = ONE;
-			else if (data["intv"] == 10) interval = TWO;
-			else if (data["intv"] == 11) interval = THREE;
-			else if (data["intv"] == 12) interval = FOUR;
-			else if (data["intv"] == 13) interval = SIX;
-			else if (data["intv"] == 14) interval = TWELVE;
-			else if (data["intv"] == 15) interval = DAILY;
-			else if (data["intv"] == 16) interval = BIDAILY;
-			else if (data["intv"] == 17) interval = WEEKLY;
-			else if (data["intv"] == 18) interval = BIWEEKLY;
+			else if (data["intv"] == 7) interval = TENMIN;
+			else if (data["intv"] == 8) interval = QUARTER;
+			else if (data["intv"] == 9) interval = TWENMIN;
+			else if (data["intv"] == 10) interval = HALF;
+			else if (data["intv"] == 11) interval = FORTMIN;
+			else if (data["intv"] == 12) interval = ONE;
+			else if (data["intv"] == 13) interval = TWO;
+			else if (data["intv"] == 14) interval = THREE;
+			else if (data["intv"] == 15) interval = FOUR;
+			else if (data["intv"] == 16) interval = SIX;
+			else if (data["intv"] == 17) interval = TWELVE;
+			else if (data["intv"] == 18) interval = DAILY;
+			else if (data["intv"] == 19) interval = BIDAILY;
+			else if (data["intv"] == 20) interval = WEEKLY;
+			else if (data["intv"] == 21) interval = BIWEEKLY;
 			else {
 				interval = ONEMIN;
 				active = false;
@@ -705,18 +762,21 @@ bool Counter::deserializeJSON(JsonObject & data)
 			else if (data["intv"] == 4) interval = ONEMIN;
 			else if (data["intv"] == 5) interval = TWOMIN;
 			else if (data["intv"] == 6) interval = FIVEMIN;
-			else if (data["intv"] == 7) interval = QUARTER;
-			else if (data["intv"] == 8) interval = HALF;
-			else if (data["intv"] == 9) interval = ONE;
-			else if (data["intv"] == 10) interval = TWO;
-			else if (data["intv"] == 11) interval = THREE;
-			else if (data["intv"] == 12) interval = FOUR;
-			else if (data["intv"] == 13) interval = SIX;
-			else if (data["intv"] == 14) interval = TWELVE;
-			else if (data["intv"] == 15) interval = DAILY;
-			else if (data["intv"] == 16) interval = BIDAILY;
-			else if (data["intv"] == 17) interval = WEEKLY;
-			else if (data["intv"] == 18) interval = BIWEEKLY;
+			else if (data["intv"] == 7) interval = TENMIN;
+			else if (data["intv"] == 8) interval = QUARTER;
+			else if (data["intv"] == 9) interval = TWENMIN;
+			else if (data["intv"] == 10) interval = HALF;
+			else if (data["intv"] == 11) interval = FORTMIN;
+			else if (data["intv"] == 12) interval = ONE;
+			else if (data["intv"] == 13) interval = TWO;
+			else if (data["intv"] == 14) interval = THREE;
+			else if (data["intv"] == 15) interval = FOUR;
+			else if (data["intv"] == 16) interval = SIX;
+			else if (data["intv"] == 17) interval = TWELVE;
+			else if (data["intv"] == 18) interval = DAILY;
+			else if (data["intv"] == 19) interval = BIDAILY;
+			else if (data["intv"] == 20) interval = WEEKLY;
+			else if (data["intv"] == 21) interval = BIWEEKLY;
 			else {
 				interval = ONEMIN;
 				active = false;
@@ -834,18 +894,21 @@ bool Switch::deserializeJSON(JsonObject & data)
 			else if (data["intv"] == 4) interval = ONEMIN;
 			else if (data["intv"] == 5) interval = TWOMIN;
 			else if (data["intv"] == 6) interval = FIVEMIN;
-			else if (data["intv"] == 7) interval = QUARTER;
-			else if (data["intv"] == 8) interval = HALF;
-			else if (data["intv"] == 9) interval = ONE;
-			else if (data["intv"] == 10) interval = TWO;
-			else if (data["intv"] == 11) interval = THREE;
-			else if (data["intv"] == 12) interval = FOUR;
-			else if (data["intv"] == 13) interval = SIX;
-			else if (data["intv"] == 14) interval = TWELVE;
-			else if (data["intv"] == 15) interval = DAILY;
-			else if (data["intv"] == 16) interval = BIDAILY;
-			else if (data["intv"] == 17) interval = WEEKLY;
-			else if (data["intv"] == 18) interval = BIWEEKLY;
+			else if (data["intv"] == 7) interval = TENMIN;
+			else if (data["intv"] == 8) interval = QUARTER;
+			else if (data["intv"] == 9) interval = TWENMIN;
+			else if (data["intv"] == 10) interval = HALF;
+			else if (data["intv"] == 11) interval = FORTMIN;
+			else if (data["intv"] == 12) interval = ONE;
+			else if (data["intv"] == 13) interval = TWO;
+			else if (data["intv"] == 14) interval = THREE;
+			else if (data["intv"] == 15) interval = FOUR;
+			else if (data["intv"] == 16) interval = SIX;
+			else if (data["intv"] == 17) interval = TWELVE;
+			else if (data["intv"] == 18) interval = DAILY;
+			else if (data["intv"] == 19) interval = BIDAILY;
+			else if (data["intv"] == 20) interval = WEEKLY;
+			else if (data["intv"] == 21) interval = BIWEEKLY;
 			else {
 				interval = ONEMIN;
 				active = false;

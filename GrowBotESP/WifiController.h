@@ -20,13 +20,17 @@ extern LogEngine logengine;
 
 class WifiHandler : WiFiClass {
 public:
+	bool sta_enabled = false;
 	volatile bool wifi_connected = false;
+	bool ap_client =false;
+
 	WiFiUDP *udp;
 	NTPClient *ntpclient;
 
 	WifiHandler();
 	
 	void begin();
+	void connectionWatchdog();
 	long returnNetworkTime();
 
 	void WiFiEvent(WiFiEvent_t event);

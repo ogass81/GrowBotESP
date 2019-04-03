@@ -363,6 +363,7 @@ void Webhandler::sensorGet(AsyncWebServerRequest * request)
 		else sort = RAW;
 	}
 	else sort = RAW;
+
 	LOGDEBUG(F("[WebServer]"), F("sensorGet()"), F("Sort"), sort, uri[3], "");
 
 	if (uri[1] == "") {

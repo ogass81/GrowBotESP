@@ -73,6 +73,9 @@
     <Filter Include="src\_micro-api-readonly\libraries\AsyncTCP-idf-update">
       <UniqueIdentifier>{1ef0fdb1-172a-4e34-8750-e22ca91d5d1b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\_micro-api-readonly\libraries\SharpIR-2.0.1">
+      <UniqueIdentifier>{f98316ec-f0c4-4ff8-a20c-3df61c1de547}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="GrowBotESP.ino" />
@@ -141,6 +144,9 @@
     </None>
     <None Include="..\..\..\libraries\AsyncTCP-idf-update\library.properties">
       <Filter>src\_micro-api-readonly\libraries\AsyncTCP-idf-update</Filter>
+    </None>
+    <None Include="..\..\..\libraries\SharpIR-2.0.1\library.properties">
+      <Filter>src\_micro-api-readonly\libraries\SharpIR-2.0.1</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -690,6 +696,9 @@
     <ClInclude Include="..\..\..\libraries\AsyncTCP-idf-update\src\AsyncTCP.h">
       <Filter>src\_micro-api-readonly\libraries\AsyncTCP-idf-update</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\libraries\SharpIR-2.0.1\src\SharpIR.h">
+      <Filter>src\_micro-api-readonly\libraries\SharpIR-2.0.1</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Action.cpp">
@@ -1103,6 +1112,9 @@
     <ClCompile Include="..\..\..\libraries\AsyncTCP-idf-update\src\AsyncTCP.cpp">
       <Filter>src\_micro-api-readonly\libraries\AsyncTCP-idf-update</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\libraries\SharpIR-2.0.1\src\SharpIR.cpp">
+      <Filter>src\_micro-api-readonly\libraries\SharpIR-2.0.1</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\..\libraries\Ultrasonic\keywords.txt">
@@ -1179,6 +1191,9 @@
     </Text>
     <Text Include="..\..\..\libraries\NTPClient-master\keywords.txt">
       <Filter>src\_micro-api-readonly\libraries\NTPClient-master</Filter>
+    </Text>
+    <Text Include="..\..\..\libraries\SharpIR-2.0.1\keywords.txt">
+      <Filter>src\_micro-api-readonly\libraries\SharpIR-2.0.1</Filter>
     </Text>
   </ItemGroup>
 </Project>

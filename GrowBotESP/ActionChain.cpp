@@ -14,6 +14,16 @@ uint8_t ActionChain::getActiveSlots()
 	return uint8_t(counter);
 }
 
+String ActionChain::getActiveActions()
+{
+	String titles = "";
+	for (uint8_t i = 0; i < ACTIONCHAIN_LENGTH; i++) {
+		if (assignedAction[i] != NULL) titles += String(i) + ":" + assignedAction[i]->getTitle() +", ";
+	}
+
+	return String(titles);
+}
+
 ActionChain::ActionChain(int count)
 {
 	this->id = count;
@@ -104,10 +114,11 @@ void ActionChain::execute()
 		taskmanager->addActions(this);
 
 		String count = String(getActiveSlots());
+		String titles = String(getActiveActions());
 
-		String keys[] = { "Number of Actions" };
-		String values[] = { count };
-		logengine.addLogEntry(ACTION, "Sequence", String("Executed Sequence " + this->getTitle()), keys, values, 1);
+		String keys[] = { "Number:", "Actions:" };
+		String values[] = { count, titles };
+		logengine.addLogEntry(ACTION, "Sequence", String("Executed Sequence " + this->getTitle()), keys, values, 2);
 		
 		LOGDEBUG(F("[ActionChain]"), F("execute()"), F("OK: Actionchain sent to Task Manager"), F("ActionChain"), String(this->getTitle()), "");
 	}

@@ -12,16 +12,16 @@
 
 #ifndef _VSARDUINO_H_
 #define _VSARDUINO_H_
-#define __ESP32_ESp32__
+#define __ESP32_esp32__
 #define __ESP32_ESP32__
 #define ESP_PLATFORM
 #define HAVE_CONFIG_H
 #define F_CPU 240000000L
-#define ARDUINO 10806
+#define ARDUINO 10808
 #define ARDUINO_ESP32_DEV
 #define ARDUINO_ARCH_ESP32
 #define ESP32
-#define CORE_DEBUG_LEVEL 0
+#define CORE_DEBUG_LEVEL 1
 #define __cplusplus 201103L
 #undef __cplusplus
 #define __cplusplus 201103L
@@ -29,13 +29,12 @@
 #define __ARM__
 #define __arm__
 #define __inline__
-#define __asm__(x)
-#define __asm__
+#define __asm__(...)
 #define __extension__
 #define __ATTR_PURE__
 #define __ATTR_CONST__
 #define __volatile__
-
+//#define __builtin_constant_p
 
 #define __ASM
 #define __INLINE

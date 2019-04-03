@@ -182,6 +182,7 @@ String NamedParameterizedAction<ActionType>::getTitle()
 
 //All Types of Templates used:
 template class SimpleAction<RCSocketController>;
+template class SimpleAction<TaskManager>;
 template class ParameterizedAction<RCSocketController>;
 template class ParameterizedAction<Trigger>;
 template class NamedParameterizedAction<Trigger>;

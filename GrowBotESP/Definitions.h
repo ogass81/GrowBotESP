@@ -11,10 +11,18 @@
 
 #define GROWBOT_FIRMWARE 5
 
-//Wifi
-#define WIFI_TIMEOUT 120
-#define NTP true
-#define NTP_TIMEOUT 30
+//Tact
+#define TASK_FRQ_SEC 1
+#define SENS_FRQ_SEC 5
+#define HALTSTATE 20
+#define MILLIS_SEC 1000
+
+//Log
+#define NUM_MONTH 4
+#define SENS_VALUES_MIN (60 / SENS_FRQ_SEC)
+#define SENS_VALUES_HOUR 60  //every 60 seconds for one hour
+#define SENS_VALUES_DAY 288 // every 5 mintutes for one day
+#define SENS_VALUES_MONTH (336 * NUM_MONTH ) // every hour for six month
 
 //FS1000A
 #define TX_DATA_PIN 16
@@ -30,6 +38,7 @@
 
 //Distance
 #define DIST1_TRIG 33
+//Also Analog Read for Infrared Sensor
 #define DIST1_ECHO 32
 
 #define DIST2_TRIG 27
@@ -38,19 +47,12 @@
 //Settings
 #define DEBUG_RESET false
 
-//Tact
-#define TASK_FRQ_SEC 1
-#define SENS_FRQ_SEC 5
-#define HALTSTATE 20
-#define MILLIS_SEC 1000
-
-//Log
-#define NUM_MONTH 4
-#define SENS_VALUES_MIN (60 / SENS_FRQ_SEC)
-#define SENS_VALUES_HOUR 60  //every 60 seconds for one hour
-#define SENS_VALUES_DAY 288 // every 5 mintutes for one day
-#define SENS_VALUES_MONTH (336 * NUM_MONTH ) // every hour for six month
-
+//Wifi
+#define WIFI_TIMEOUT 120
+#define WATCHDOG true
+#define WATCHDOG_TIMEOUT 5 * (60 / SENS_FRQ_SEC)
+#define NTP true
+#define NTP_TIMEOUT 30
 
 //Sensors
 #define SENS_NUM 9
@@ -58,7 +60,7 @@
 //Rules Enginge
 //Trigger Categories and number for each category
 #define TRIGGER_TYPES 12
-#define TRIGGER_SETS 10
+#define TRIGGER_SETS 16
 
 //Number of Rulesssets
 #define RULESETS_NUM 32
@@ -66,13 +68,13 @@
 #define RULESETS_ACTIONS 2
 
 //Number of Actions
-#define ACTIONS_NUM RC_SOCKETS + (TRIGGER_SETS * 4)
+#define ACTIONS_NUM RC_SOCKETS + (TRIGGER_SETS * 4) + 1
 #define ACTIONCHAINS_NUM 24
-#define ACTIONCHAIN_LENGTH 8
+#define ACTIONCHAIN_LENGTH 16
 
 //Task Manager
-#define TASK_QUEUE_LENGTH 120 //MAX 255!!!
-#define ACTIONCHAIN_TASK_MAXDURATION 90
+#define TASK_QUEUE_LENGTH 240 //MAX 255!!!
+#define ACTIONCHAIN_TASK_MAXDURATION 180
 #define TASK_PARALLEL_SEC 4
 
 //Front Panel
@@ -87,15 +89,15 @@
 #define LED3 25
 
 //LogEngine
-#define LOGBUFFER_SIZE 10
-#define LOGBUFFER_FLUSH 600
+#define LOGBUFFER_SIZE 8
+#define LOGBUFFER_FLUSH 1500
 
 //REST API 
 #define REST_URI_DEPTH 4
 
 enum RelOp { SMALLER, EQUAL, GREATER, NOTEQUAL };
 enum BoolOp { AND, OR, NOT };
-enum Interval { REALTIME, TENSEC, TWENTYSEC, THIRTYSEC, ONEMIN, TWOMIN, FIVEMIN, QUARTER, HALF, ONE, TWO, THREE, FOUR, SIX, TWELVE, DAILY, BIDAILY, WEEKLY, BIWEEKLY};
+enum Interval { REALTIME, TENSEC, TWENTYSEC, THIRTYSEC, ONEMIN, TWOMIN, FIVEMIN, TENMIN, QUARTER, TWENMIN, HALF, FORTMIN, ONE, TWO, THREE, FOUR, SIX, TWELVE, DAILY, BIDAILY, WEEKLY, BIWEEKLY};
 enum Scope { LIST, HEADER, DETAILS, AVG, DATE_MIN, DATE_HOUR, DATE_DAY, DATE_MONTH, DATE_ALL, ACTIVE};
 enum Sort {ASC, DESC, RAW};
 enum TriggerTypes { TIME, SENSOR, COUNTER, SWITCH };
